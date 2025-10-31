@@ -31,7 +31,7 @@ const RecentGallerySection: React.FC = () => {
           <div className="relative grid grid-cols-2 gap-5 rounded-xl overflow-hidden">
             <div className="relative group rounded-xl">
               <Image
-                src="/gallery/image4.jpg"
+                src="/gallery/image6.jpg"
                 alt="Gallery Image 4"
                 fill
                 className="object-cover group-hover:scale-105 transition duration-500 rounded-xl"

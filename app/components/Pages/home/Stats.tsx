@@ -49,7 +49,7 @@ const TravelStatsSection: React.FC = () => {
         {/* Background Image Wrapper */}
         <div className="relative rounded-2xl overflow-hidden shadow-2xl">
           <Image
-            src="/stats/BlackTravel.jpg"
+            src="/stats/Travels.jpg"
             alt="Traveler Background"
             width={1400}
             height={800}
