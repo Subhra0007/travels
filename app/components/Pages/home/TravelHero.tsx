@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
@@ -11,7 +10,7 @@ const springTransition = {
   damping: 14,
 };
 
-// Define variants with proper typing
+// Define variants
 const createImageVariants = (delay: number): Variants => ({
   hidden: { scale: 0, opacity: 0 },
   visible: {
@@ -25,7 +24,6 @@ const createImageVariants = (delay: number): Variants => ({
 });
 
 const TravelHeroSection: React.FC = () => {
-  // Create variants with different delays
   const imageVariants = createImageVariants(0.2);
   const smallImageVariants = createImageVariants(0.4);
   const smallerImageVariants = createImageVariants(0.6);
@@ -37,7 +35,8 @@ const TravelHeroSection: React.FC = () => {
           {/* Left Text Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="relative z-10 max-w-xl text-center lg:text-left"
           >
@@ -56,7 +55,8 @@ const TravelHeroSection: React.FC = () => {
             <motion.div
               variants={imageVariants}
               initial="hidden"
-              animate="visible"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
               className="absolute right-0 top-1/2 -translate-y-1/2 w-40 h-40 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-white shadow-lg"
             >
               <Image
@@ -71,7 +71,8 @@ const TravelHeroSection: React.FC = () => {
             <motion.div
               variants={smallImageVariants}
               initial="hidden"
-              animate="visible"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
               className="absolute top-20 left-16 w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-white shadow-lg"
             >
               <Image
@@ -86,7 +87,8 @@ const TravelHeroSection: React.FC = () => {
             <motion.div
               variants={smallerImageVariants}
               initial="hidden"
-              animate="visible"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
               className="absolute bottom-10 left-20 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg"
             >
               <Image
@@ -104,8 +106,9 @@ const TravelHeroSection: React.FC = () => {
             <motion.div
               variants={imageVariants}
               initial="hidden"
-              animate="visible"
-              className="absolute right-12 top-1/2 -translate-y-1/2 w-40 h-40 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-white shadow-lg"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-40 h-40 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-white shadow-lg"
             >
               <Image
                 src="/journey/journey1.jpg"
@@ -119,8 +122,9 @@ const TravelHeroSection: React.FC = () => {
             <motion.div
               variants={smallImageVariants}
               initial="hidden"
-              animate="visible"
-              className="absolute top-10 left-0 w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-white shadow-lg"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="absolute top-10 left-3 w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-white shadow-lg"
             >
               <Image
                 src="/journey/Journey2.webp"
@@ -134,8 +138,9 @@ const TravelHeroSection: React.FC = () => {
             <motion.div
               variants={smallerImageVariants}
               initial="hidden"
-              animate="visible"
-              className="absolute bottom-5 left-4 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="absolute bottom-5 left-12 w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-lg"
             >
               <Image
                 src="/journey/Journey3.jpg"

@@ -36,7 +36,7 @@ export default function TourCategories() {
   return (
     <div className="bg-sky-50">
       
-      <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto py-15 px-6 lg:px-1">
+      <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto py-15 px-6 lg:px-0">
 
         {/* ✅ Plane icon with animation */}
         <motion.div

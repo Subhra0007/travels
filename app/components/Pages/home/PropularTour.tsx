@@ -40,7 +40,7 @@ const anim = [
 export default function PopularTours() {
   return (
     <section className="bg-sky-50 pt-15">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6 lg:px-0">
 
         {/* ✅ Heading animation (comes from RIGHT) */}
         <motion.div
@@ -58,7 +58,7 @@ export default function PopularTours() {
 
         {/* ✅ Desktop Animation */}
         <div className="lg:block hidden">
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="flex flex-wrap justify-center gap-12">
             {tours.map((tour, index) => (
               <motion.div
                 key={index}
@@ -66,7 +66,7 @@ export default function PopularTours() {
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.7, delay: index * 0.15 }}
                 viewport={{ once: true }}
-                className={`bg-white w-[350px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300  ${offsets[index]}`}
+                className={`bg-white w-[390px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300  ${offsets[index]}`}
               >
                 {/* Image */}
                 <div className="relative w-full h-52">

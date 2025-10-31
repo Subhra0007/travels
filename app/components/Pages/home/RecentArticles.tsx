@@ -48,7 +48,7 @@ const articles: Article[] = [
 const RecentArticlesSection: React.FC = () => {
   return (
     <section className="bg-sky-50 pt-12 text-center">
-      <div className="max-w-7xl mx-auto px-6 lg:px-2">
+      <div className="max-w-7xl mx-auto px-6 lg:px-0">
 
         {/* ✅ Heading Animation (from TOP) */}
         <motion.p
@@ -72,7 +72,7 @@ const RecentArticlesSection: React.FC = () => {
         </motion.h2>
 
         {/* ✅ Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 justify-items-center ">
           {articles.map((article, index) => {
             // Motion rules:
             // Left card (index 0) → from TOP
@@ -91,7 +91,7 @@ const RecentArticlesSection: React.FC = () => {
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
                 viewport={{ once: true }}
-                className="relative w-[320px] md:w-[350px] h-[400px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 group"
+                className="relative w-[320px] md:w-[380px] h-[400px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 group"
               >
                 {/* Full Background Image */}
                 <Image

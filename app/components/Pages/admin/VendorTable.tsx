@@ -19,7 +19,7 @@ const vendors: Vendor[] = [
 
 const VendorTable: React.FC = () => {
   return (
-    <div className="bg-white rounded-xl shadow p-6 mt-6">
+    <div className="bg-sky-50 rounded-xl shadow p-6 mt-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Vendors</h2>
         <div className="flex gap-3">
