@@ -29,7 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <main>
+        <main className=" overflow-hidden bg-sky-50">
           <Navbar/>
         {children}
         <Footer/>

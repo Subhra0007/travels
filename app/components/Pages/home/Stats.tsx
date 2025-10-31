@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { FaGlobeAsia, FaUsers, FaMapMarkedAlt, FaPlane } from "react-icons/fa";
 import { useInView } from "react-intersection-observer";
@@ -10,12 +10,11 @@ interface CounterProps {
   target: number;
   start: boolean;
 }
-
 const Counter: React.FC<CounterProps> = ({ target, start }) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!start) return; // only run when visible
+    if (!start) return;
 
     const duration = 2000;
     const startTime = performance.now();
@@ -29,7 +28,6 @@ const Counter: React.FC<CounterProps> = ({ target, start }) => {
 
     requestAnimationFrame(animate);
 
-    // reset when out of view
     return () => setCount(0);
   }, [start, target]);
 
@@ -39,12 +37,21 @@ const Counter: React.FC<CounterProps> = ({ target, start }) => {
 /* ---------- Main Component ---------- */
 const TravelStatsSection: React.FC = () => {
   const { ref, inView } = useInView({
-    triggerOnce: false, // ✅ now triggers every time you view the section
-    threshold: 0.3, // triggers when 30% of the section is visible
+    triggerOnce: false, // counting will run every time ✅
+    threshold: 0.3,
   });
 
+  // ✅ New state to make motion animation run only ONCE
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    if (inView && !hasAnimated) {
+      setHasAnimated(true);
+    }
+  }, [inView, hasAnimated]);
+
   return (
-    <section className="relative pt-16  bg-sky-50">
+    <section className="relative pt-16 bg-sky-50">
       <div className="max-w-7xl mx-auto relative px-6 lg:px-2">
         {/* Background Image Wrapper */}
         <div className="relative rounded-2xl overflow-hidden shadow-2xl">
@@ -62,12 +69,16 @@ const TravelStatsSection: React.FC = () => {
             className="absolute inset-0 flex flex-col md:flex-row items-center justify-between gap-10 px-10 py-16"
           >
             {/* Stats Box */}
-            <div className="relative bg-white shadow-lg rounded-2xl p-8 w-[280px] md:w-[340px]">
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={hasAnimated ? { scale: 1, opacity: 1 } : {}}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              className="relative bg-white shadow-lg rounded-2xl p-8 w-[280px] md:w-[340px]"
+            >
               {/* Cross lines */}
               <div className="absolute inset-0">
-               {/* Divider Lines */}
-          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-[1.5px] z-0 bg-linear-to-b from-transparent via-gray-500 to-transparent" />
-          <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-[1.5px] z-0 bg-linear-to-r from-transparent via-gray-500 to-transparent" />
+                <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-[1.5px] z-0 bg-linear-to-b from-transparent via-gray-500 to-transparent" />
+                <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-[1.5px] z-0 bg-linear-to-r from-transparent via-gray-500 to-transparent" />
               </div>
 
               <div className="grid grid-cols-2 gap-6 text-center relative z-10">
@@ -103,15 +114,22 @@ const TravelStatsSection: React.FC = () => {
                   <p className="text-gray-500 text-sm">Best Adventures</p>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Blue Circular Tag */}
-            <div className="bg-cyan-500 text-white rounded-full w-44 h-44 flex flex-col items-center justify-center text-center shadow-2xl p-3">
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={hasAnimated ? { scale: 1, opacity: 1 } : {}}
+              transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
+              className="bg-cyan-500 text-white rounded-full w-44 h-44 flex flex-col items-center justify-center text-center shadow-2xl p-3"
+            >
               <p className="text-lg font-medium leading-tight">
                 Travel <br />
-                <span className="lg:text-2xl font-bold italic text-xl">is a Journey</span>
+                <span className="lg:text-2xl font-bold italic text-xl">
+                  is a Journey
+                </span>
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
