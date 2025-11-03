@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { FaLeaf, FaBars, FaTimes } from "react-icons/fa";
 import { motion } from "framer-motion";
 
@@ -18,17 +19,24 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-2 py-3 flex items-center justify-between">
 
         {/* ✅ LOGO – Come From Bottom */}
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}   // ✅ Bottom to top
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex items-center space-x-2 bg-white rounded-full px-4 py-1 shadow-md"
-        >
-          <div className="bg-lime-200 rounded-full p-2">
-            <FaLeaf className="text-lime-700 text-lg" />
-          </div>
-          <span className="font-semibold text-gray-800 text-sm">Abc</span>
-        </motion.div>
+       <motion.div
+  initial={{ y: 40, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.6, delay: 0.1 }}
+  className="flex items-center space-x-2 bg-white rounded-full px-4 py-1 shadow-md"
+>
+  <div className=" rounded-full p-1.5">
+    <Image
+      src="/logo.png"
+      alt="Logo"
+      width={20}
+      height={20}
+      className="rounded-full"
+    />
+  </div>
+
+</motion.div>
+
 
         {/* ✅ MOBILE HAMBURGER – Comes from Bottom */}
         <motion.button
@@ -49,7 +57,7 @@ const Navbar: React.FC = () => {
           className="hidden md:flex items-center bg-white rounded-full shadow-md px-4 py-2 space-x-6 border border-gray-200"
         >
           <Link href="/" className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">Home</Link>
-          <Link href="/admin" className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">About Us</Link>
+          <Link href="/about-us" className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">About Us</Link>
           <Link href="/services" className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">Services</Link>
           <Link href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">Pricing</Link>
           <Link href="/contact" className="text-sm text-gray-600 hover:text-gray-900 transition font-medium">Contact Us</Link>
@@ -90,7 +98,7 @@ const Navbar: React.FC = () => {
 
         <div className="flex flex-col mt-24 items-start px-6 space-y-6">
           <Link href="/" onClick={() => setIsOpen(false)} className="text-lg font-semibold text-gray-800 hover:text-lime-600">Home</Link>
-          <Link href="/admin" onClick={() => setIsOpen(false)} className="text-lg font-semibold text-gray-800 hover:text-lime-600">About Us</Link>
+          <Link href="/about-us" onClick={() => setIsOpen(false)} className="text-lg font-semibold text-gray-800 hover:text-lime-600">About Us</Link>
           <Link href="/services" onClick={() => setIsOpen(false)} className="text-lg font-semibold text-gray-800 hover:text-lime-600">Services</Link>
           <Link href="/pricing" onClick={() => setIsOpen(false)} className="text-lg font-semibold text-gray-800 hover:text-lime-600">Pricing</Link>
           <Link href="/contact" onClick={() => setIsOpen(false)} className="text-lg font-semibold text-gray-800 hover:text-lime-600">Contact Us</Link>
