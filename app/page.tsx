@@ -6,7 +6,7 @@ import Opertunity from "./components/Pages/home/Oppertunity";
 import Stats from "./components/Pages/home/Stats"
 import OffersSection from "./components/Pages/home/OffersSection";
 import TestimonialSection from "./components/Pages/home/Testimonial";
-import RecentArticlesSection from "./components/Pages/home/RecentArticles";
+
 import RecentGallerySection from "./components/Pages/home/RecentGallery";
 import TravelHeroSection from "./components/Pages/home/TravelHero";
 export default function Home() {
@@ -19,7 +19,7 @@ export default function Home() {
      <Stats/>
      <OffersSection/>
      <TestimonialSection/>
-     <RecentArticlesSection/>
+
      <RecentGallerySection/>
      <TravelHeroSection/>
     </div>

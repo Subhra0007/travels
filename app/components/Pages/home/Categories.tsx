@@ -87,7 +87,7 @@ export default function TourCategories() {
         </motion.div>
 
         {/* ✅ DESKTOP CARDS (Animation added — design preserved) */}
-        <div className="lg:block hidden">
+        <div className="lg:block hidden pb-6">
           <div className="flex flex-wrap justify-center gap-4 ">
             {tours.map((tour, index) => (
               <motion.div
