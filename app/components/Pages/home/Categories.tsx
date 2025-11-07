@@ -16,7 +16,7 @@ const tours = [
 const tour2s = [
   { title: "Trekking", image: "/categories/trekking.png" },
   { title: "Hiking", image: "/categories/hiking.jpg" },
-  { title: "Camping", image: "/categories/Camping.png" },
+  { title: "Camping", image: "/categories/camping.png" },
   { title: "Water Rafting", image: "/categories/river-rafting.webp" },
   { title: "Cars", image: "/categories/Cars.jpg" },
   { title: "Bikes", image: "/categories/Bike.jpg" },
