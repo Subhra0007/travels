@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import logo from "@/public/logo.png"
 import Image from "next/image";
 import {
   FaBars,
@@ -25,6 +26,9 @@ import {
   FaBiking,
   FaChevronDown,
   FaChevronUp,
+  FaCampground,
+  FaSuitcaseRolling,
+  FaCar
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
@@ -110,7 +114,11 @@ const Navbar: React.FC = () => {
       icon: <FaCompass />,
       subServices: [
         { name: "Group Tours", href: "/services/tours/group-tours", icon: <FaUsers /> },
-        { name: "Personalized Tours", href: "/services/tours/personalized-tours", icon: <FaUser /> },
+        { 
+    name: "Tour Packages", 
+    href: "/services/tours/tour-packages", 
+    icon: <FaSuitcaseRolling /> 
+  },
       ],
     },
     {
@@ -122,7 +130,11 @@ const Navbar: React.FC = () => {
       subServices: [
         { name: "Trekking", href: "/services/adventures/trekking", icon: <FaRoute /> },
         { name: "Hiking", href: "/services/adventures/hiking", icon: <FaHiking /> },
-        { name: "Mountain Ridge", href: "/services/adventures/mountain-ridge", icon: <FaMountain /> },
+         { 
+    name: "Camping", 
+    href: "/services/adventures/camping", 
+    icon: <FaCampground /> 
+  },
         { name: "Water Rafting", href: "/services/adventures/water-rafting", icon: <FaShip /> },
       ],
     },
@@ -131,7 +143,7 @@ const Navbar: React.FC = () => {
       name: "Vehicle Rental",
       subtext: "Freedom to explore",
       href: "/services/vehicle-rental",
-      icon: <FaCarSide />,
+      icon: <FaCar />,
       subServices: [
         { name: "Cars", href: "/services/vehicle-rental/cars", icon: <FaCarSide /> },
         { name: "Bikes", href: "/services/vehicle-rental/bikes", icon: <FaBiking /> },
@@ -180,15 +192,23 @@ const Navbar: React.FC = () => {
       className="fixed top-0 left-0 w-full z-50 bg-transparent"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-2 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex items-center bg-white rounded-full px-4 lg:py-2 py-1 shadow-md"
-        >
-          <Image src="/logo.png" alt="Logo" width={26} height={26} className="rounded-full" />
-        </motion.div>
+       {/* Logo */}
+<Link href="/" className="cursor-pointer">
+  <motion.div
+    initial={{ y: 40, opacity: 0 }}
+    animate={{ y: 0, opacity: 1 }}
+    transition={{ duration: 0.6, delay: 0.1 }}
+    className="flex items-center bg-white rounded-full px-4 lg:py-2 py-1 shadow-md cursor-pointer"
+  >
+    <Image
+      src={logo}
+      alt="Logo"
+      width={26}
+      height={26}
+      className="rounded-full size-6"
+    />
+  </motion.div>
+</Link>
 
         {/* Mobile Menu Button */}
         <motion.button

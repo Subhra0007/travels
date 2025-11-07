@@ -1,13 +1,25 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import Image from "next/image";
-import { FaSearch, FaCalendarAlt, FaUsers, FaCar, FaPlus, FaMinus } from "react-icons/fa";
+import Typed from "typed.js";
+import {
+  FaSearch,
+  FaCalendarAlt,
+  FaUsers,
+  FaCar,
+  FaPlus,
+  FaMinus,
+  FaCompass,
+  FaMountain,
+} from "react-icons/fa";
 import { BsCompass } from "react-icons/bs";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Menu } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
+/* -------- TABS -------- */
 type Tab = {
   label: string;
   icon?: React.ReactNode;
@@ -15,12 +27,12 @@ type Tab = {
 
 const tabs: Tab[] = [
   { label: "Stays", icon: <FaCalendarAlt className="text-sm" /> },
-  { label: "Tours", icon: <FaSearch className="text-sm" /> },
-  { label: "Adventures", icon: <FaUsers className="text-sm" /> },
+  { label: "Tours", icon: <FaCompass className="text-sm" /> },
+  { label: "Adventures", icon: <FaMountain className="text-sm" /> },
   { label: "Vehicle Rental", icon: <FaCar className="text-sm" /> },
 ];
 
-/* ---------- LOCATION AUTOCOMPLETE DATA (demo) ---------- */
+/* ---------- LOCATION AUTOCOMPLETE DATA ---------- */
 const locations = [
   "Delhi",
   "Mumbai",
@@ -37,16 +49,58 @@ const locations = [
 export default function HeroSection() {
   const [activeTab, setActiveTab] = useState<string>("Stays");
 
+  /* ✅ Typed.js effect */
+  useEffect(() => {
+    const typed = new Typed(".role", {
+      strings: [
+        "Rooms",
+        "Homestays",
+        "BnBs",
+        "Hotels",
+        "Tours",
+        "Group Tours",
+        "Tour Packages",
+        "Adventures",
+        "Trekking",
+        "Hiking",
+        "Camping",
+        "Water Rafting",
+        "Vehicle Rentals",
+        "Cars",
+        "Bikes",
+      ],
+      typeSpeed: 80,
+      backSpeed: 50,
+      backDelay: 1000,
+      loop: true,
+    });
+
+    return () => typed.destroy();
+  }, []);
+
+  /* ---------- BG SLIDESHOW STATE ---------- */
+  const bgImages = ["/hero/hero1.jpg", "/hero/hero2.jpg", "/hero/hero3.jpg"];
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % bgImages.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   /* ---------- STAYS STATE ---------- */
   const [location, setLocation] = useState<string>("Delhi");
-  const [checkIn, setCheckIn] = useState<Date | null>(new Date("2024-06-24"));
-  const [checkOut, setCheckOut] = useState<Date | null>(new Date("2024-06-27"));
+  const [checkIn, setCheckIn] = useState<Date | null>(new Date());
+  const [checkOut, setCheckOut] = useState<Date | null>(new Date());
   const [adults, setAdults] = useState<number>(2);
   const [children, setChildren] = useState<number>(0);
   const [showLocationMenu, setShowLocationMenu] = useState(false);
 
   const totalGuests = adults + children;
 
+  /* Render Forms */
   const renderTabContent = () => {
     switch (activeTab) {
       case "Stays":
@@ -68,12 +122,16 @@ export default function HeroSection() {
             setShowLocationMenu={setShowLocationMenu}
           />
         );
+
       case "Tours":
         return <ToursForm />;
+
       case "Adventures":
         return <AdventuresForm />;
+
       case "Vehicle Rental":
         return <VehicleRentalForm />;
+
       default:
         return null;
     }
@@ -82,32 +140,44 @@ export default function HeroSection() {
   return (
     <div className="">
       <section className="relative w-full flex items-center justify-center overflow-hidden py-20">
-        {/* Background Image */}
-        <Image
-          src="/hero/hero.jpg"
-          alt="Hero Background"
-          fill
-          priority
-          className="object-cover object-center"
-        />
+
+        {/* ✅ AUTO-SWIPING BACKGROUND */}
+        <div className="absolute inset-0">
+          {bgImages.map((img, index) => (
+            <Image
+              key={index}
+              src={img}
+              alt="Hero Background"
+              fill
+              priority
+              className={`object-cover object-center transition-opacity duration-[1200ms] ease-in-out ${
+                index === currentIndex ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+        </div>
 
         {/* Glass Frame */}
         <div className="relative z-10 w-[90%] h-[85vh] border-3 border-white rounded-[40px] shadow-[0_8px_32px_rgba(31,38,135,0.37)] flex flex-col justify-between p-6 md:p-10 max-w-7xl mx-auto">
-          {/* Tagline */}
-          <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 mt-6 mb-8">
-            <div className="hidden md:flex items-center gap-3 text-white/80">
-              <div className="p-3 border border-white/30 rounded-full">
-                <BsCompass className="text-xl" />
-              </div>
-              <p className="max-w-sm text-sm leading-relaxed">
-                Traveling abroad is an exhilarating adventure filled with new
-                experiences, diverse cultures, and unforgettable memories.
-              </p>
-            </div>
-          </div>
+          
+         {/* Heading */}
+<motion.div
+  initial={{ opacity: 0, scale: 0.5 }}
+  animate={{ opacity: 1, scale: 1 }}
+  transition={{ duration: 0.6, ease: "easeOut" }}
+  className="flex flex-col md:flex-row justify-between items-center gap-6 mt-6 mb-8"
+>
+  <div className="flex items-center justify-center w-full">
+    <h1 className="text-center text-5xl font-bold text-black leading-snug">
+      Explore your vast option of <br />
+      <span className="role text-lime-300 bg-green-950 p-2"></span>
+    </h1>
+  </div>
+</motion.div>
 
-          {/* Card with Tabs */}
-          <div className="relative rounded-[30px] overflow-hidden border border-white shadow-lg ">
+          {/* Card With Tabs */}
+          <div className="relative rounded-[30px] overflow-hidden border border-white shadow-lg">
+
             {/* Tabs */}
             <div className="flex items-center justify-center px-4 md:px-8 py-3 backdrop-blur-md border-b border-white/20 w-full">
               <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 justify-center w-full">
@@ -138,7 +208,7 @@ export default function HeroSection() {
 }
 
 /* --------------------------------------------------------------
-   STAYS – REAL INPUTS
+   STAYS FORM
 -------------------------------------------------------------- */
 type StaysFormProps = {
   location: string;
@@ -175,7 +245,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-      {/* ---------- LOCATION ---------- */}
+      {/* LOCATION */}
       <div className="relative">
         <p className="text-xs text-gray-500 uppercase mb-1">Location</p>
         <Menu as="div" className="relative">
@@ -214,7 +284,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
         </Menu>
       </div>
 
-      {/* ---------- CHECK-IN ---------- */}
+      {/* CHECK-IN */}
       <div>
         <p className="text-xs text-gray-500 uppercase mb-1">Check-in</p>
         <DatePicker
@@ -222,11 +292,10 @@ const StaysForm: React.FC<StaysFormProps> = ({
           onChange={(date) => setCheckIn(date)}
           dateFormat="dd MMM yy"
           className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
-          placeholderText="Select date"
         />
       </div>
 
-      {/* ---------- CHECK-OUT ---------- */}
+      {/* CHECK-OUT */}
       <div>
         <p className="text-xs text-gray-500 uppercase mb-1">Check-out</p>
         <DatePicker
@@ -235,11 +304,10 @@ const StaysForm: React.FC<StaysFormProps> = ({
           dateFormat="dd MMM yy"
           minDate={checkIn ?? undefined}
           className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
-          placeholderText="Select date"
         />
       </div>
 
-      {/* ---------- GUESTS ---------- */}
+      {/* GUESTS */}
       <div>
         <p className="text-xs text-gray-500 uppercase mb-1">Guests</p>
         <Menu as="div" className="relative">
@@ -295,7 +363,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
         </Menu>
       </div>
 
-      {/* ---------- SEARCH BUTTON ---------- */}
+      {/* SEARCH */}
       <div className="flex items-end">
         <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
           Search Stays
@@ -306,8 +374,9 @@ const StaysForm: React.FC<StaysFormProps> = ({
 };
 
 /* --------------------------------------------------------------
-   DUMMY FORMS
+   OTHER FORMS
 -------------------------------------------------------------- */
+
 const ToursForm = () => (
   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
     <div>
@@ -316,7 +385,7 @@ const ToursForm = () => (
     </div>
     <div>
       <p className="text-xs text-gray-500 uppercase">Travel Date</p>
-      <h3 className="text-xl font-bold text-gray-900">01 Jul'24</h3>
+      <h3 className="text-xl font-bold text-gray-900">01 Jul '24</h3>
     </div>
     <div>
       <p className="text-xs text-gray-500 uppercase">Duration</p>
@@ -364,11 +433,11 @@ const VehicleRentalForm = () => (
     </div>
     <div>
       <p className="text-xs text-gray-500 uppercase">Pick-up Date</p>
-      <h3 className="text-xl font-bold text-gray-900">05 Jul'24</h3>
+      <h3 className="text-xl font-bold text-gray-900">05 Jul '24</h3>
     </div>
     <div>
       <p className="text-xs text-gray-500 uppercase">Return Date</p>
-      <h3 className="text-xl font-bold text-gray-900">10 Jul'24</h3>
+      <h3 className="text-xl font-bold text-gray-900">10 Jul '24</h3>
     </div>
     <div className="flex items-end">
       <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full">

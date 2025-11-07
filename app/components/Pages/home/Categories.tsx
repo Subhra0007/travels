@@ -5,12 +5,22 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 const tours = [
-  { title: "Adventure Trails", image: "/categories/adventure.webp" },
-  { title: "Cultural Tours", image: "/categories/Cultural.jpg" },
-  { title: "Beach Escapes", image: "/categories/beachescapes.jpg" },
-  { title: "Luxury Voyages", image: "/categories/Luxuryvoyages.jpeg" },
-  { title: "Wildlife Safaris", image: "/categories/Wildlife.jpg" },
-  { title: "Mountain Hikes", image: "/categories/Montblanchike.jpeg" },
+  { title: "Rooms", image: "/categories/room.jpg" },
+  { title: "Homestays", image: "/categories/homestay.jpg" },
+  { title: "BnBs", image: "/categories/Bnbs.webp" },
+  { title: "Hotels", image: "/categories/hotel.jpg" },
+  { title: "Group Tours", image: "/categories/group-tours.png" },
+  { title: "Tour Packages", image: "/categories/tour-package.jpg" },
+ 
+];
+const tour2s = [
+  { title: "Trekking", image: "/categories/trekking.png" },
+  { title: "Hiking", image: "/categories/hiking.jpg" },
+  { title: "Camping", image: "/categories/beachescapes.jpg" },
+  { title: "Water Rafting", image: "/categories/river-rafting.webp" },
+  { title: "Cars", image: "/categories/Cars.jpg" },
+  { title: "Bikes", image: "/categories/Bike.jpg" },
+ 
 ];
 
 // ✅ Animation direction for each card (desktop only)
@@ -118,6 +128,64 @@ export default function TourCategories() {
         <div className="block lg:hidden">
           <div className="flex flex-wrap justify-center gap-4 md:gap-8">
             {tours.map((tour, index) => (
+              <motion.div
+                key={tour.title}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="flex flex-col items-center text-center transition-transform duration-300 hover:scale-105"
+              >
+                <div className="relative w-40 h-40 rounded-xl overflow-hidden shadow-md">
+                  <Image
+                    src={tour.image}
+                    alt={tour.title}
+                    fill
+                    className="object-cover hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
+                  {tour.title}
+                </h3>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto pb-15 px-6 lg:px-0">
+        {/* ✅ DESKTOP CARDS (Animation added — design preserved) */}
+        <div className="lg:block hidden pb-6">
+          <div className="flex flex-wrap justify-center gap-4 ">
+            {tour2s.map((tour, index) => (
+              <motion.div
+                key={tour.title}
+                initial={desktopAnim[index]}
+                whileInView={{ x: 0, y: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: index * 0.1 }}
+                className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 ${offsets[index]}`}
+              >
+                <div className="relative w-49 h-49 rounded-xl overflow-hidden shadow-md">
+                  <Image
+                    src={tour.image}
+                    alt={tour.title}
+                    fill
+                    className="object-cover hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
+                  {tour.title}
+                </h3>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* ✅ MOBILE CARDS (simple fade up – layout unchanged) */}
+        <div className="block lg:hidden">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+            {tour2s.map((tour, index) => (
               <motion.div
                 key={tour.title}
                 initial={{ opacity: 0, y: 50 }}
