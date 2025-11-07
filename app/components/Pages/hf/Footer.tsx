@@ -7,7 +7,7 @@ import { MdEmail, MdLocationOn, MdPhone } from "react-icons/md";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#061a23] text-gray-300 pt-12 pb-6">
+   <footer className="bg-[#061a23] text-gray-300 pt-12 pb-6 z-100">
       <motion.div
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
             max-w-7xl mx-auto px-6 
             grid md:grid-cols-4 gap-10 
             border-b border-gray-700 pb-10
-            sm:place-items-center md:place-items-center
+            sm:place-items-center md:place-items-center z-50
           "
         >
           {/* Column 1 */}

@@ -4,14 +4,13 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Typed from "typed.js";
 import {
-  FaSearch,
-  FaCalendarAlt,
-  FaUsers,
+  
   FaCar,
   FaPlus,
   FaMinus,
   FaCompass,
   FaMountain,
+  FaBed
 } from "react-icons/fa";
 import { BsCompass } from "react-icons/bs";
 import DatePicker from "react-datepicker";
@@ -26,7 +25,7 @@ type Tab = {
 };
 
 const tabs: Tab[] = [
-  { label: "Stays", icon: <FaCalendarAlt className="text-sm" /> },
+  { label: "Stays", icon: <FaBed className="text-sm" /> },
   { label: "Tours", icon: <FaCompass className="text-sm" /> },
   { label: "Adventures", icon: <FaMountain className="text-sm" /> },
   { label: "Vehicle Rental", icon: <FaCar className="text-sm" /> },
@@ -68,6 +67,7 @@ export default function HeroSection() {
         "Vehicle Rentals",
         "Cars",
         "Bikes",
+        
       ],
       typeSpeed: 80,
       backSpeed: 50,
@@ -150,7 +150,7 @@ export default function HeroSection() {
               alt="Hero Background"
               fill
               priority
-              className={`object-cover object-center transition-opacity duration-[1200ms] ease-in-out ${
+              className={`object-cover object-center transition-opacity duration-1200 ease-in-out ${
                 index === currentIndex ? "opacity-100" : "opacity-0"
               }`}
             />

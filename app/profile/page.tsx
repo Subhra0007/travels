@@ -1,4 +1,3 @@
-// app/profile/page.tsx
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -35,11 +34,25 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-    });
+  // Redirect on first load (after visible load)
+useEffect(() => {
+  if (loading) return; // Wait until user is fetched and loading is done
+  if (!user) return; // Ensure user exists before redirecting
 
+  // Delay a bit so Profile page renders first
+  const timer = setTimeout(() => {
+    if (user.accountType === "vendor") {
+      router.replace("/vendor"); // Redirect vendor after short delay
+    }
+  }, 1000); // 1 seconds after load
+
+  return () => clearTimeout(timer);
+}, [user, loading, router]);
+
+  // END OF NEW BLOCK
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
     localStorage.removeItem("user");
     window.location.href = "/";
   };

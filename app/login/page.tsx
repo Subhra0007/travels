@@ -14,21 +14,35 @@ export default function LoginPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      router.push("/profile");
-    } catch (err: any) {
-      setError(err.message);
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message);
+
+    // ✅ Save user into localStorage
+    localStorage.setItem("user", JSON.stringify(data.user));
+
+    // ✅ Vendor → go to vendor page
+    if (data.user.accountType === "vendor") {
+      router.push("/vendor");
+      return;
     }
-  };
+
+    // ✅ Normal User → go to profile page
+    router.push("/profile");
+
+  } catch (err: any) {
+    setError(err.message);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-sky-50">

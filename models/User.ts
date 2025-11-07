@@ -8,6 +8,7 @@ export interface IUser extends Document {
   contactNumber?: string;
   password: string;
   accountType?: "user" | "vendor";
+  isVendorSetupComplete: { type: Boolean, default: false },
   age?: number;
   avatar?: string;
   token?: string;

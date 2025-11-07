@@ -42,10 +42,10 @@ const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  /* ----------  Auth state ---------- */
-  const [user, setUser] = useState<{
+const [user, setUser] = useState<{
     fullName: string;
     avatar?: string;
+    accountType?: "user" | "vendor"; // <-- Added
   } | null>(null);
 
   useEffect(() => {
@@ -198,14 +198,14 @@ const Navbar: React.FC = () => {
     initial={{ y: 40, opacity: 0 }}
     animate={{ y: 0, opacity: 1 }}
     transition={{ duration: 0.6, delay: 0.1 }}
-    className="flex items-center bg-white rounded-full px-4 lg:py-2 py-1 shadow-md cursor-pointer"
+    className="flex items-center bg-green-950 rounded-full px-4 lg:py-2 py-1 shadow-md cursor-pointer"
   >
     <Image
       src={logo}
       alt="Logo"
       width={26}
       height={26}
-      className="rounded-full size-6"
+      className="rounded-full size-7 bg-green-950"
     />
   </motion.div>
 </Link>
@@ -397,49 +397,53 @@ const Navbar: React.FC = () => {
           })}
         </motion.div>
 
-        {/* Desktop Auth Area - Avatar Clickable to Profile */}
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="hidden md:flex items-center space-x-3"
-        >
-          {!user ? (
-            <>
-              <Link href="/login">
-                <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-base font-bold hover:bg-gray-50 transition shadow-md cursor-pointer">
-                  Log In
-                </button>
-              </Link>
-              <Link href="/signup">
-                <button className="px-4 py-2 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-base font-bold hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
-                  Sign Up
-                </button>
-              </Link>
-            </>
-          ) : (
-            <div className="relative group">
-              {/* Clickable Avatar */}
-              <button
-                onClick={() => router.push("/profile")}
-                className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
-              >
-                <UserAvatar size={40} />
-              </button>
+{/* Desktop Auth Area – Avatar Clickable to Profile or Vendor */}
+<motion.div
+  initial={{ y: 40, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.6, delay: 0.35 }}
+  className="hidden md:flex items-center space-x-3"
+>
+  {!user ? (
+    <>
+      <Link href="/login">
+        <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-base font-bold hover:bg-gray-50 transition shadow-md cursor-pointer">
+          Log In
+        </button>
+      </Link>
+      <Link href="/signup">
+        <button className="px-4 py-2 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-base font-bold hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
+          Sign Up
+        </button>
+      </Link>
+    </>
+  ) : (
+    <div className="relative group">
+      {/* Clickable Avatar */}
+      <button
+        onClick={() => {
+          // NEW LOGIC
+          const accountType = user.accountType;          // <-- comes from /api/profile
+          router.push(accountType === "vendor" ? "/vendor" : "/profile");
+        }}
+        className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
+      >
+        <UserAvatar size={40} />
+      </button>
 
-              {/* Hover Tooltip */}
-              <div className="absolute right-0 top-full mt-2 w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-                <div className="bg-white rounded-lg shadow-lg py-2 px-4 whitespace-nowrap flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Hi,</span>
-                  <span className="text-sm font-semibold text-green-600 truncate max-w-[180px]">
-                    {user.fullName}
-                  </span>
-                </div>
-                <div className="absolute -top-1 right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-white"></div>
-              </div>
-            </div>
-          )}
-        </motion.div>
+      {/* Hover Tooltip (unchanged) */}
+      <div className="absolute right-0 top-full mt-2 w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
+        <div className="bg-white rounded-lg shadow-lg py-2 px-4 whitespace-nowrap flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Hi,</span>
+          <span className="text-sm font-semibold text-green-600 truncate max-w-[180px]">
+            {user.fullName}
+          </span>
+        </div>
+        <div className="absolute -top-1 right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-white"></div>
+      </div>
+    </div>
+  )}
+</motion.div>
       </div>
 
       {/* Mobile Menu Drawer */}
@@ -544,36 +548,38 @@ const Navbar: React.FC = () => {
           </motion.div>
         </div>
 
-        {/* Mobile Auth Buttons - Fixed Avatar Size */}
-        <div className="absolute bottom-8 left-6 right-6 flex gap-3">
-          {!user ? (
-            <>
-              <Link href="/login" className="flex-1" onClick={() => setIsOpen(false)}>
-                <button className="w-full py-3 bg-gray-100 border border-gray-300 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition shadow-sm cursor-pointer">
-                  Log In
-                </button>
-              </Link>
-              <Link href="/signup" className="flex-1" onClick={() => setIsOpen(false)}>
-                <button className="w-full py-3 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-sm font-medium hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
-                  Sign Up
-                </button>
-              </Link>
-            </>
-          ) : (
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                router.push("/profile");
-              }}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-green-300 text-green-700 rounded-full text-sm font-medium hover:bg-green-50 transition shadow-sm"
-            >
-              <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
-                <UserAvatar size={36} />
-              </div>
-              <span className="truncate text-sm">{user.fullName.split(" ")[0]}</span>
-            </button>
-          )}
-        </div>
+      {/* Mobile Auth Buttons – Avatar click */}
+<div className="absolute bottom-8 left-6 right-6 flex gap-3">
+  {!user ? (
+    <>
+      <Link href="/login" className="flex-1" onClick={() => setIsOpen(false)}>
+        <button className="w-full py-3 bg-gray-100 border border-gray-300 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition shadow-sm cursor-pointer">
+          Log In
+        </button>
+      </Link>
+      <Link href="/signup" className="flex-1" onClick={() => setIsOpen(false)}>
+        <button className="w-full py-3 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-sm font-medium hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
+          Sign Up
+        </button>
+      </Link>
+    </>
+  ) : (
+    <button
+      onClick={() => {
+        setIsOpen(false);
+        // NEW LOGIC
+        const accountType = user.accountType;
+        router.push(accountType === "vendor" ? "/vendor" : "/profile");
+      }}
+      className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-green-300 text-green-700 rounded-full text-sm font-medium hover:bg-green-50 transition shadow-sm"
+    >
+      <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+        <UserAvatar size={36} />
+      </div>
+      <span className="truncate text-sm">{user.fullName.split(" ")[0]}</span>
+    </button>
+  )}
+</div>
       </div>
 
       {/* Backdrop */}

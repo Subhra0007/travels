@@ -25,11 +25,18 @@ export async function POST(req: NextRequest) {
       { expiresIn: "24h" }
     );
 
-    const response = NextResponse.json({
-      success: true,
-      message: "Login successful",
-      user: { id: user._id, fullName: user.fullName, email: user.email },
-    });
+  const response = NextResponse.json({
+  success: true,
+  message: "Login successful",
+  user: {
+    id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    accountType: user.accountType,
+    isVendorSetupComplete: user.isVendorSetupComplete, // ✅ IMPORTANT
+  },
+});
+
 
     response.cookies.set("token", token, {
       httpOnly: true,
