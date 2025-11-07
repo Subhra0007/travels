@@ -103,7 +103,7 @@ const Footer: React.FC = () => {
             text-center md:text-left
           "
         >
-          <p>© {new Date().getFullYear()} abc. All Rights Reserved.</p>
+          <p>© {new Date().getFullYear()} Safar Hub. All Rights Reserved.</p>
 
           <div className="flex space-x-4 mt-3 md:mt-0">
             <img src="/footer/visa.png" alt="Visa" className="h-6" />
