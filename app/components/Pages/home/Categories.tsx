@@ -56,7 +56,7 @@ export default function TourCategories() {
           className="absolute top-10 lg:left-70 left-5 opacity-70 lg:block hidden"
         >
           <Image
-            src="/categories/plane.png"
+            src="/categories/Plane1.png"
             alt="plane icon"
             width={50}
             height={50}
@@ -72,7 +72,7 @@ export default function TourCategories() {
           className="absolute top-10 lg:right-80 right-10 opacity-70 lg:block hidden"
         >
           <Image
-            src="/categories/camera.png"
+            src="/categories/Camera.png"
             alt="camera icon"
             width={45}
             height={45}
