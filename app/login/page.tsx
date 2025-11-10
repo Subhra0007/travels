@@ -16,6 +16,25 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ✅ Fixed Admin Login (from .env)
+    const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+
+    if (
+      formData.email === ADMIN_EMAIL &&
+      formData.password === ADMIN_PASSWORD
+    ) {
+      const adminUser = {
+        fullName: "Admin",
+        email: ADMIN_EMAIL,
+        accountType: "admin",
+      };
+      localStorage.setItem("user", JSON.stringify(adminUser));
+      router.push("/admin");
+      return;
+    }
+
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -52,7 +71,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-sky-50">
       <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-lime-400">
         <h2 className="text-3xl font-bold text-center mb-6 text-black">Login</h2>
-        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
@@ -83,7 +104,10 @@ export default function LoginPage() {
             </button>
           </div>
           <div className="text-right">
-            <Link href="/forgot-password" className="text-sm text-red-500 hover:underline">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-red-500 hover:underline"
+            >
               Forgot Password?
             </Link>
           </div>

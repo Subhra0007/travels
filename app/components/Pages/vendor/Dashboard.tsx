@@ -1,7 +1,7 @@
+// app/components/Pages/vendor/Dashboard.tsx
 "use client";
 
 import Sidebar from "./Sidebar";
-
 import StatCard from "./StatCard";
 import SalesChart from "./SalesChart";
 import OrderTable from "./OrderTable";
@@ -12,13 +12,12 @@ import { CreditCard, Wallet, Clock, CheckCircle } from "lucide-react";
 export default function Dashboard({ locked }: { locked: boolean }) {
   return (
     <div className="min-h-screen bg-gray-100 flex relative">
-
-      {/* ✅ Soft Blur Layer ONLY (No brightness loss) */}
+      {/* Blur overlay */}
       {locked && (
         <div className="absolute inset-0 z-10 backdrop-blur-[2px] pointer-events-none" />
       )}
 
-      {/* ✅ Center Lock Message */}
+      {/* Lock message */}
       {locked && (
         <div className="absolute inset-0 z-40 flex items-center justify-center">
           <div className="bg-white/90 shadow-xl p-6 rounded-xl border text-center max-w-sm">
@@ -26,21 +25,17 @@ export default function Dashboard({ locked }: { locked: boolean }) {
               Vendor Dashboard Locked
             </h2>
             <p className="mt-2 text-gray-600">
-              Complete your vendor profile to unlock your dashboard.
+              Your account is under review. Please wait for admin approval.
             </p>
           </div>
         </div>
       )}
 
-      {/* ✅ Sidebar (always visible at full clarity) */}
       <Sidebar />
 
       <div className="flex-1 my-20 ml-20">
-      
-
-        {/* ✅ ONLY content becomes blurred + unclickable */}
         <div
-          className={`p-6 space-y-6 transition ${
+          className={`p-6 space-y-6 transition-all ${
             locked ? "blur-[1.5px] pointer-events-none" : ""
           }`}
         >
@@ -55,7 +50,6 @@ export default function Dashboard({ locked }: { locked: boolean }) {
             <div className="col-span-2">
               <SalesChart />
             </div>
-
             <div className="col-span-1">
               <SalesDonutChart />
             </div>

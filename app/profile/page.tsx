@@ -52,7 +52,7 @@ useEffect(() => {
   // END OF NEW BLOCK
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/logout", { method: "POST" });
     localStorage.removeItem("user");
     window.location.href = "/";
   };

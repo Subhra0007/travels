@@ -408,59 +408,84 @@ const Navbar: React.FC = () => {
           })}
         </motion.div>
 
-        {/* ✅ Desktop Auth — ADMIN FIX */}
-        <motion.div
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.35 }}
-          className="hidden md:flex items-center space-x-3"
+       {/* ========== DESKTOP AUTH (with Logout) ========== */}
+<motion.div
+  initial={{ y: 40, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.6, delay: 0.35 }}
+  className="hidden md:flex items-center space-x-3"
+>
+  {!user ? (
+    <>
+      <Link href="/login">
+        <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-base font-bold hover:bg-gray-50 transition shadow-md cursor-pointer">
+          Log In
+        </button>
+      </Link>
+      <Link href="/signup">
+        <button className="px-4 py-2 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-base font-bold hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
+          Sign Up
+        </button>
+      </Link>
+    </>
+  ) : (
+    <div className="flex items-center gap-3">
+      {user.accountType === "admin" ? (
+        <button
+          onClick={() => router.push("/admin")}
+          className="px-5 py-2 bg-green-600 text-white rounded-full font-bold shadow-md hover:bg-green-700 cursor-pointer"
         >
-          {!user ? (
-            <>
-              <Link href="/login">
-                <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-base font-bold hover:bg-gray-50 transition shadow-md cursor-pointer">
-                  Log In
-                </button>
-              </Link>
-              <Link href="/signup">
-                <button className="px-4 py-2 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-base font-bold hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
-                  Sign Up
-                </button>
-              </Link>
-            </>
-          ) : user.accountType === "admin" ? (
-            // ✅ ADMIN BUTTON
-            <button
-              onClick={() => router.push("/admin")}
-              className="px-5 py-2 bg-green-600 text-white rounded-full font-bold shadow-md hover:bg-green-700 cursor-pointer"
-            >
-              Admin
-            </button>
-          ) : (
-            // ✅ User/Vendor Avatar
-            <div className="relative group">
-              <button
-                onClick={() => {
-                  const accountType = user.accountType;
-                  router.push(accountType === "vendor" ? "/vendor" : "/profile");
-                }}
-                className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
-              >
-                <UserAvatar size={40} />
-              </button>
-
-              <div className="absolute right-0 top-full mt-2 w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-                <div className="bg-white rounded-lg shadow-lg py-2 px-4 whitespace-nowrap flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">Hi,</span>
-                  <span className="text-sm font-semibold text-green-600 truncate max-w-[180px]">
-                    {user.fullName}
-                  </span>
-                </div>
-                <div className="absolute -top-1 right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-white"></div>
-              </div>
+          Admin
+        </button>
+      ) : (
+        <div className="relative group">
+          <button
+            onClick={() => {
+              const accountType = user.accountType;
+              router.push(accountType === "vendor" ? "/vendor" : "/profile");
+            }}
+            className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
+          >
+            <UserAvatar size={40} />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute right-0 top-full mt-2 w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
+            <div className="bg-white rounded-lg shadow-lg py-2 px-4 whitespace-nowrap flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Hi,</span>
+              <span className="text-sm font-semibold text-green-600 truncate max-w-[180px]">
+                {user.fullName}
+              </span>
             </div>
-          )}
-        </motion.div>
+            <div className="absolute -top-1 right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-white"></div>
+          </div>
+        </div>
+      )}
+
+      {/* LOGOUT BUTTON - Visible for all logged-in users */}
+      {/* <button
+        onClick={async () => {
+        
+          localStorage.removeItem("user");
+
+         
+          try {
+            await fetch("/api/logout", { method: "POST" });
+          } catch (e) {}
+
+          
+          setUser(null);
+
+      
+          router.push("/");
+        }}
+        className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-bold hover:bg-red-600 transition shadow-md"
+      >
+        Logout
+      </button> */}
+    </div>
+  )}
+</motion.div>
+      
       </div>
 
       {/* ✅ MOBILE MENU */}
@@ -561,49 +586,66 @@ const Navbar: React.FC = () => {
             </div>
           </motion.div>
         </div>
+{/* ========== MOBILE AUTH (with Logout) ========== */}
+<div className="absolute bottom-8 left-6 right-6 flex gap-3">
+  {!user ? (
+    <>
+      <Link href="/login" className="flex-1" onClick={() => setIsOpen(false)}>
+        <button className="w-full py-3 bg-gray-100 border border-gray-300 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition shadow-sm cursor-pointer">
+          Log In
+        </button>
+      </Link>
+      <Link href="/signup" className="flex-1" onClick={() => setIsOpen(false)}>
+        <button className="w-full py-3 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-sm font-medium hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
+          Sign Up
+        </button>
+      </Link>
+    </>
+  ) : (
+    <div className="flex gap-3 w-full">
+      {user.accountType === "admin" ? (
+        <button
+          onClick={() => {
+            setIsOpen(false);
+            router.push("/admin");
+          }}
+          className="flex-1 py-3 bg-green-600 text-white rounded-full text-sm font-semibold shadow-md hover:bg-green-700"
+        >
+          Admin
+        </button>
+      ) : (
+        <button
+          onClick={() => {
+            setIsOpen(false);
+            const accountType = user.accountType;
+            router.push(accountType === "vendor" ? "/vendor" : "/profile");
+          }}
+          className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-green-300 text-green-700 rounded-full text-sm font-medium hover:bg-green-50 transition shadow-sm"
+        >
+          <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+            <UserAvatar size={36} />
+          </div>
+          <span className="truncate text-sm">{user.fullName.split(" ")[0]}</span>
+        </button>
+      )}
 
-        {/* ✅ MOBILE AUTH */}
-        <div className="absolute bottom-8 left-6 right-6 flex gap-3">
-          {!user ? (
-            <>
-              <Link href="/login" className="flex-1" onClick={() => setIsOpen(false)}>
-                <button className="w-full py-3 bg-gray-100 border border-gray-300 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-50 transition shadow-sm cursor-pointer">
-                  Log In
-                </button>
-              </Link>
-              <Link href="/signup" className="flex-1" onClick={() => setIsOpen(false)}>
-                <button className="w-full py-3 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-sm font-medium hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
-                  Sign Up
-                </button>
-              </Link>
-            </>
-          ) : user.accountType === "admin" ? (
-            // ✅ Mobile Admin Button
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                router.push("/admin");
-              }}
-              className="flex-1 py-3 bg-green-600 text-white rounded-full text-sm font-semibold shadow-md hover:bg-green-700"
-            >
-              Admin
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                const accountType = user.accountType;
-                router.push(accountType === "vendor" ? "/vendor" : "/profile");
-              }}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-green-300 text-green-700 rounded-full text-sm font-medium hover:bg-green-50 transition shadow-sm"
-            >
-              <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
-                <UserAvatar size={36} />
-              </div>
-              <span className="truncate text-sm">{user.fullName.split(" ")[0]}</span>
-            </button>
-          )}
-        </div>
+      {/* <button
+        onClick={async () => {
+          localStorage.removeItem("user");
+          try {
+            await fetch("/api/logout", { method: "POST" });
+          } catch (e) {}
+          setUser(null);
+          setIsOpen(false);
+          router.push("/");
+        }}
+        className="flex-1 py-3 bg-red-500 text-white rounded-full text-sm font-bold hover:bg-red-600 transition shadow-md"
+      >
+        Logout
+      </button> */}
+    </div>
+  )}
+</div>
       </div>
 
       {isOpen && (

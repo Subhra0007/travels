@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
     const { email, password } = await req.json();
 
     // ✅ 1. Admin Login using .env credentials (NO HARDCODE)
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+    const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
     if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
       throw new Error("Admin credentials missing in .env");
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     // ✅ 2. Normal USER / VENDOR login logic (UNCHANGED)
     const user = await User.findOne({ email }).populate("additionalDetails");
     if (!user) {
-      return NextResponse.json(
+         return NextResponse.json(
         { success: false, message: "User not found" },
         { status: 404 }
       );
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return NextResponse.json(
+        return NextResponse.json(
         { success: false, message: "Invalid credentials" },
         { status: 401 }
       );
@@ -68,8 +68,7 @@ export async function POST(req: NextRequest) {
       process.env.JWT_SECRET!,
       { expiresIn: "24h" }
     );
-
-    const response = NextResponse.json({
+     const response = NextResponse.json({
       success: true,
       message: "Login successful",
       user: {
@@ -96,4 +95,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+  }

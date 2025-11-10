@@ -1,14 +1,51 @@
 // app/api/admin/vendors/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/config/database";
 import User from "@/models/User";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   await dbConnect();
 
-  // return vendors sorted by newest (createdAt desc)
-  const vendors = await User.find({ accountType: "vendor" })
-    .sort({ createdAt: -1 });
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+
+  // Single vendor lookup (used by vendor page polling)
+  if (id) {
+    const vendor = await User.findById(id).select(
+      "isVendorApproved vendorServices fullName email contactNumber createdAt"
+    );
+    return NextResponse.json({ success: !!vendor, vendor: vendor || null });
+  }
+
+  // Full list
+  const vendors = await User.find({ accountType: "vendor" }).select(
+    "fullName email contactNumber vendorServices isVendorApproved createdAt"
+  );
 
   return NextResponse.json({ success: true, vendors });
+}
+
+export async function PUT(req: NextRequest) {
+  await dbConnect();
+  const { vendorId, action } = await req.json();
+
+  const vendor = await User.findById(vendorId);
+  if (!vendor) {
+    return NextResponse.json(
+      { success: false, message: "Vendor not found" },
+      { status: 404 }
+    );
+  }
+
+  if (action === "accept") vendor.isVendorApproved = true;
+  if (action === "reject") vendor.isVendorApproved = false;
+
+  await vendor.save();
+
+  // Return FULL updated vendor
+  const updatedVendor = await User.findById(vendorId).select(
+    "fullName email contactNumber vendorServices isVendorApproved createdAt"
+  );
+
+  return NextResponse.json({ success: true, vendor: updatedVendor });
 }
