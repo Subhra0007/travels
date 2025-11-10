@@ -1,4 +1,4 @@
-//app/models/User.ts
+// app/models/User.ts
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 import { IProfile } from "./Profile";
@@ -8,13 +8,18 @@ export interface IUser extends Document {
   email: string;
   contactNumber?: string;
   password: string;
-  accountType?: "user" | "vendor" | "admin"; // ✅ added admin
-  isVendorSetupComplete?: boolean; // ✅ fixed
+  accountType?: "user" | "vendor" | "admin";
+  isVendorSetupComplete?: boolean;
   age?: number;
   avatar?: string;
   token?: string;
   resetPasswordExpires?: Date;
   additionalDetails: mongoose.Types.ObjectId | IProfile | null;
+
+  // new vendor fields
+  vendorServices?: string[];       // ["Stays","Tours",...]
+  isVendorApproved?: boolean;      // admin approval
+
   comparePassword?: (candidate: string) => Promise<boolean>;
 }
 
@@ -24,8 +29,13 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true },
     contactNumber: String,
     password: { type: String, required: true },
-    accountType: { type: String, enum: ["user", "vendor", "admin"], default: "user" }, // ✅ added admin
+    accountType: { type: String, enum: ["user", "vendor", "admin"], default: "user" },
     isVendorSetupComplete: { type: Boolean, default: false },
+
+    // vendor fields
+    vendorServices: { type: [String], default: [] },
+    isVendorApproved: { type: Boolean, default: false },
+
     age: Number,
     avatar: String,
     token: String,

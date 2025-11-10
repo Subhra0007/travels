@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";   // ✅ ADD THIS
+import { useRouter } from "next/navigation";   
 import {
   FaChartPie,
   FaUmbrellaBeach,
@@ -16,7 +16,7 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 const Sidebar: React.FC = () => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const router = useRouter(); // ✅ NEXT.JS ROUTER
+  const router = useRouter(); 
 
   const toggleMenu = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu);
