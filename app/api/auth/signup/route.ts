@@ -1,4 +1,4 @@
-//app/api/auth/signup/route.ts
+// app/api/auth/signup/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/config/database";
 import User from "@/models/User";
@@ -8,6 +8,8 @@ import OTP from "@/models/OTP";
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
+    const body = await req.json();
+
     const {
       fullName,
       email,
@@ -17,7 +19,8 @@ export async function POST(req: NextRequest) {
       contactNumber,
       accountType,
       otp,
-    } = await req.json();
+      vendorServices,
+    } = body;
 
     if (
       !fullName ||
@@ -57,7 +60,8 @@ export async function POST(req: NextRequest) {
     }
 
     const profile = await Profile.create({});
-    const user = await User.create({
+
+    const userDoc = await User.create({
       fullName,
       email,
       age: Number(age),
@@ -65,14 +69,31 @@ export async function POST(req: NextRequest) {
       contactNumber,
       accountType: accountType ?? "user",
       additionalDetails: profile._id,
+
+      // IMPORTANT: save vendorServices only when accountType === 'vendor'
+      vendorServices: accountType === "vendor" ? (vendorServices || []) : [],
+      isVendorApproved: false, // default locked until admin approves
     });
+
+    // Return a normalized user object (no password)
+    const user = {
+      _id: userDoc._id,
+      fullName: userDoc.fullName,
+      email: userDoc.email,
+      contactNumber: userDoc.contactNumber,
+      accountType: userDoc.accountType,
+      vendorServices: userDoc.vendorServices,
+      isVendorApproved: userDoc.isVendorApproved,
+      createdAt: userDoc.createdAt,
+    };
 
     return NextResponse.json({
       success: true,
       message: "Signup successful",
-      user: { id: user._id, fullName, email },
+      user,
     });
   } catch (error: any) {
+    console.error("Signup error:", error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

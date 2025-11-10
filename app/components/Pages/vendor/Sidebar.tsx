@@ -1,6 +1,7 @@
 "use client";
+
 import { useState } from "react";
-import { 
+import {
   LayoutDashboard,
   Building2,
   CalendarCheck,
@@ -8,18 +9,9 @@ import {
   UserCog,
   LogOut,
   ChevronDown,
-  Hotel,
-  Route,
-  Mountain,
-  Car
 } from "lucide-react";
 import {
-  FaSearch,
-  FaCalendarAlt,
-  FaUsers,
   FaCar,
-  FaPlus,
-  FaMinus,
   FaCompass,
   FaMountain,
   FaBed
@@ -28,6 +20,16 @@ import Link from "next/link";
 
 export default function Sidebar() {
   const [openProperties, setOpenProperties] = useState(false);
+
+  // ✅ Logout Method
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+      window.location.href = "/login"; // ✅ redirect
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   const menu = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, href: "/vendor" },
@@ -49,16 +51,18 @@ export default function Sidebar() {
 
     { name: "Profile", icon: <UserCog size={18} />, href: "/vendor/profile" },
 
-    { name: "Logout", icon: <LogOut size={18} />, href: "" },
+    // ✅ Logout now uses an action, not a link
+    { name: "Logout", icon: <LogOut size={18} />, action: "logout" },
   ];
 
   return (
-    <aside className="max-h-full w-60 bg-white border-r shadow-sm  left-0 top-0 px-4 py-6 ">
+    <aside className="max-h-full w-60 bg-white border-r shadow-sm left-0 top-0 px-4 py-6">
 
       <nav className="space-y-3 mt-10">
         {menu.map((item) => (
           <div key={item.name}>
-            {/* ✅ Handle submenu */}
+            
+            {/* ✅ SUBMENU */}
             {item.submenu ? (
               <>
                 <button
@@ -69,6 +73,7 @@ export default function Sidebar() {
                     {item.icon}
                     <span>{item.name}</span>
                   </div>
+
                   <ChevronDown
                     size={16}
                     className={`transition-transform ${
@@ -77,7 +82,6 @@ export default function Sidebar() {
                   />
                 </button>
 
-                {/* ✅ Submenu dropdown */}
                 {openProperties && (
                   <div className="ml-8 mt-2 space-y-2">
                     {item.submenu.map((sub) => (
@@ -93,10 +97,22 @@ export default function Sidebar() {
                   </div>
                 )}
               </>
+            ) : item.action === "logout" ? (
+              
+              /* ✅ LOGOUT BUTTON */
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 text-gray-700 hover:bg-red-100 p-2 rounded-md transition w-full"
+              >
+                {item.icon}
+                <span>{item.name}</span>
+              </button>
+
             ) : (
-              /* ✅ Normal menu item */
+              
+              /* ✅ NORMAL MENU ITEM */
               <Link
-                href={item.href}
+                href={item.href!}
                 className="flex items-center gap-2 text-gray-700 hover:bg-blue-100 p-2 rounded-md transition"
               >
                 {item.icon}

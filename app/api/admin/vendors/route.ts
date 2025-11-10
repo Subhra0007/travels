@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   // Single vendor lookup (used by vendor page polling)
   if (id) {
     const vendor = await User.findById(id).select(
-      "isVendorApproved vendorServices fullName email contactNumber createdAt"
+      "isVendorApproved vendorServices fullName email contactNumber createdAt accountType"
     );
     return NextResponse.json({ success: !!vendor, vendor: vendor || null });
   }
@@ -27,7 +27,8 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   await dbConnect();
-  const { vendorId, action } = await req.json();
+  const body = await req.json();
+  const { vendorId, action } = body;
 
   const vendor = await User.findById(vendorId);
   if (!vendor) {
@@ -42,9 +43,9 @@ export async function PUT(req: NextRequest) {
 
   await vendor.save();
 
-  // Return FULL updated vendor
+  // return the updated vendor document
   const updatedVendor = await User.findById(vendorId).select(
-    "fullName email contactNumber vendorServices isVendorApproved createdAt"
+    "_id fullName email contactNumber vendorServices isVendorApproved createdAt accountType"
   );
 
   return NextResponse.json({ success: true, vendor: updatedVendor });

@@ -88,43 +88,51 @@ export default function SignUpPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords don't match");
-      return;
-    }
-    if (!passwordValid) {
-      setError("Password too weak");
-      return;
-    }
-    if (isVendor && selectedServices.length === 0) {
-      setError("Select at least one service");
-      return;
-    }
-    try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: formData.name,
-          email: formData.email,
-          age: formData.age,
-          password: formData.password,
-          confirmPassword: formData.confirmPassword,
-          contactNumber: formData.mobile,
-          accountType: isVendor ? "vendor" : "user",
-          otp: formData.otp,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-      alert("Account created!");
-      router.push("/login");
-    } catch (err: any) {
-      setError(err.message);
-    }
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (formData.password !== formData.confirmPassword) {
+    setError("Passwords don't match");
+    return;
+  }
+  if (!passwordValid) {
+    setError("Password too weak");
+    return;
+  }
+  if (isVendor && selectedServices.length === 0) {
+    setError("Select at least one service");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: formData.name,
+        email: formData.email,
+        age: formData.age,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        contactNumber: formData.mobile,
+        accountType: isVendor ? "vendor" : "user",
+        otp: formData.otp,
+
+        // ✅ FIX — SEND SERVICES TO BACKEND
+        vendorServices: selectedServices,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    alert("Account created!");
+    router.push("/login");
+  } catch (err: any) {
+    setError(err.message);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 mt-10">

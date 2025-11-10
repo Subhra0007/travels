@@ -12,16 +12,18 @@ export default function VendorPage() {
 
   // Refresh user from server
   const refreshUser = async () => {
-    const stored = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!stored?._id) return;
-
     try {
-      const res = await fetch(`/api/admin/vendors?id=${stored._id}`);
+      const stored = JSON.parse(localStorage.getItem("user") || "{}");
+      const vendorId = stored?._id || stored?.id;
+      if (!vendorId) return;
+
+      const res = await fetch(`/api/admin/vendors?id=${vendorId}`);
       const data = await res.json();
 
       if (data.success && data.vendor) {
         const updatedUser = {
           ...stored,
+          _id: data.vendor._id || stored._id,
           isVendorApproved: data.vendor.isVendorApproved,
           vendorServices: data.vendor.vendorServices || [],
         };
@@ -51,6 +53,7 @@ export default function VendorPage() {
       const interval = setInterval(refreshUser, 7000);
       return () => clearInterval(interval);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   // React to live updates

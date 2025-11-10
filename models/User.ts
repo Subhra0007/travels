@@ -16,7 +16,6 @@ export interface IUser extends Document {
   resetPasswordExpires?: Date;
   additionalDetails: mongoose.Types.ObjectId | IProfile | null;
 
-  // Vendor fields
   vendorServices?: string[];
   isVendorApproved?: boolean;
   createdAt?: Date;
@@ -33,8 +32,8 @@ const userSchema = new Schema<IUser>(
     accountType: { type: String, enum: ["user", "vendor", "admin"], default: "user" },
     isVendorSetupComplete: { type: Boolean, default: false },
 
-    // Vendor fields
-    vendorServices: { type: [String], default: [] },
+    // Vendor fields (defaults)
+    vendorServices: { type: [String], default: [] }, // <-- simple array of service ids
     isVendorApproved: { type: Boolean, default: false },
 
     age: Number,
@@ -47,9 +46,10 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password")) {
+  // hash password if modified
+  if ((this as any).isModified("password")) {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    (this as any).password = await bcrypt.hash((this as any).password, salt);
   }
   next();
 });

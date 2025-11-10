@@ -11,6 +11,7 @@ interface Vendor {
   vendorServices: string[];
   createdAt: string;
   isVendorApproved: boolean;
+  accountType?: string;
 }
 
 const VendorTable: React.FC = () => {
@@ -21,7 +22,7 @@ const VendorTable: React.FC = () => {
     try {
       const res = await fetch("/api/admin/vendors");
       const data = await res.json();
-      if (data.success) setVendors(data.vendors);
+      if (data.success) setVendors(data.vendors || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -39,11 +40,23 @@ const VendorTable: React.FC = () => {
     const data = await res.json();
 
     if (data.success) {
-      // Update localStorage if this is the logged-in vendor
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      if (user?._id === vendorId) {
-        localStorage.setItem("user", JSON.stringify(data.vendor));
+      // If the updated vendor is the currently logged-in user, merge updates into localStorage
+      try {
+        const stored = JSON.parse(localStorage.getItem("user") || "{}");
+        if (stored?._id === vendorId || stored?.id === vendorId) {
+          const merged = {
+            ...stored,
+            // data.vendor may be a mongoose doc - ensure plain object
+            isVendorApproved: data.vendor.isVendorApproved,
+            vendorServices: data.vendor.vendorServices || [],
+          };
+          localStorage.setItem("user", JSON.stringify(merged));
+        }
+      } catch (e) {
+        console.warn("Could not merge localStorage user:", e);
       }
+
+      // refresh list
       fetchVendors();
     }
   };
