@@ -461,27 +461,7 @@ const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* LOGOUT BUTTON - Visible for all logged-in users */}
-      {/* <button
-        onClick={async () => {
-        
-          localStorage.removeItem("user");
-
-         
-          try {
-            await fetch("/api/logout", { method: "POST" });
-          } catch (e) {}
-
-          
-          setUser(null);
-
-      
-          router.push("/");
-        }}
-        className="px-4 py-2 bg-red-500 text-white rounded-full text-sm font-bold hover:bg-red-600 transition shadow-md"
-      >
-        Logout
-      </button> */}
+    
     </div>
   )}
 </motion.div>
@@ -629,20 +609,7 @@ const Navbar: React.FC = () => {
         </button>
       )}
 
-      {/* <button
-        onClick={async () => {
-          localStorage.removeItem("user");
-          try {
-            await fetch("/api/logout", { method: "POST" });
-          } catch (e) {}
-          setUser(null);
-          setIsOpen(false);
-          router.push("/");
-        }}
-        className="flex-1 py-3 bg-red-500 text-white rounded-full text-sm font-bold hover:bg-red-600 transition shadow-md"
-      >
-        Logout
-      </button> */}
+     
     </div>
   )}
 </div>

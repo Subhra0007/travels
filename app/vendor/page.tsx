@@ -41,16 +41,16 @@ export default function VendorPage() {
     const stored = JSON.parse(localStorage.getItem("user") || "{}");
 
     if (!stored || stored.accountType !== "vendor") {
-      router.push("/profile");
+      router.push("/login");
       return;
     }
 
     setUser(stored);
     setLocked(!stored.isVendorApproved);
 
-    // Poll every 7 seconds while locked
+    
     if (!stored.isVendorApproved) {
-      const interval = setInterval(refreshUser, 7000);
+      const interval = setInterval(refreshUser);
       return () => clearInterval(interval);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
