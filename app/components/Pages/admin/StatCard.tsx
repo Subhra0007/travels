@@ -1,3 +1,4 @@
+//app/components/pages/admin/StatCard.tsx
 import React from "react";
 
 interface StatCardProps {

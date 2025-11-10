@@ -1,3 +1,4 @@
+//app/components/pages/admin/VendorTable.tsx
 import React from "react";
 import { FaEye, FaTrash, FaEdit, FaStar } from "react-icons/fa";
 

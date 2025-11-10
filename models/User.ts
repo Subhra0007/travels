@@ -1,3 +1,4 @@
+//app/models/User.ts
 import mongoose, { Schema, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 import { IProfile } from "./Profile";
@@ -7,8 +8,8 @@ export interface IUser extends Document {
   email: string;
   contactNumber?: string;
   password: string;
-  accountType?: "user" | "vendor";
-  isVendorSetupComplete: { type: Boolean, default: false },
+  accountType?: "user" | "vendor" | "admin"; // ✅ added admin
+  isVendorSetupComplete?: boolean; // ✅ fixed
   age?: number;
   avatar?: string;
   token?: string;
@@ -23,7 +24,8 @@ const userSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true, lowercase: true },
     contactNumber: String,
     password: { type: String, required: true },
-    accountType: { type: String, enum: ["user", "vendor"], default: "user" },
+    accountType: { type: String, enum: ["user", "vendor", "admin"], default: "user" }, // ✅ added admin
+    isVendorSetupComplete: { type: Boolean, default: false },
     age: Number,
     avatar: String,
     token: String,

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";   // ✅ ADD THIS
 import {
   FaChartPie,
   FaUmbrellaBeach,
@@ -8,16 +9,31 @@ import {
   FaUsers,
   FaFileAlt,
   FaComments,
-  FaUserCircle,
-  FaCog
+  FaUserCircle
 } from "react-icons/fa";
+import { TbLogout } from "react-icons/tb";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 const Sidebar: React.FC = () => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const router = useRouter(); // ✅ NEXT.JS ROUTER
 
   const toggleMenu = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu);
+  };
+
+  // ✅ LOGOUT FUNCTION
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+      });
+
+      // ✅ Redirect to login
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const menuItem = (key: string, label: string, icon: any) => (
@@ -39,10 +55,8 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col">
-      <h1 className="text-xl font-bold text-indigo-600 mb-8">TRAVEL ADMIN</h1>
 
-      <nav className="flex-1 space-y-2 text-sm">
-
+      <nav className="flex-1 space-y-2 text-sm mt-15">
         {/* Dashboard */}
         <button className="flex w-full items-center gap-3 p-2 rounded font-medium text-indigo-600 bg-indigo-50">
           <FaChartPie size={14}/> Dashboard
@@ -54,10 +68,10 @@ const Sidebar: React.FC = () => {
           {openMenu === "partners" && (
             <div className="ml-8 mt-2 text-sm space-y-1 text-gray-700">
               <div className="hover:text-indigo-600 cursor-pointer">All Partners</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Tours & Packages</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Hotels & Stays</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Transport Services</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Payout</div>
+              <div className="hover:text-indigo-600 cursor-pointer">Stays</div>
+              <div className="hover:text-indigo-600 cursor-pointer">Tours</div>  
+              <div className="hover:text-indigo-600 cursor-pointer">Adventures</div>
+              <div className="hover:text-indigo-600 cursor-pointer">Vehicle Rental</div>
             </div>
           )}
         </div>
@@ -67,9 +81,10 @@ const Sidebar: React.FC = () => {
           {menuItem("bookings", "Manage Bookings", <FaPlaneDeparture size={14}/>)}
           {openMenu === "bookings" && (
             <div className="ml-8 mt-2 text-sm space-y-1 text-gray-700">
-              <div className="hover:text-indigo-600 cursor-pointer">Trips</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Flights</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Hotels</div>
+              <div className="hover:text-indigo-600 cursor-pointer">Stays</div>
+              <div className="hover:text-indigo-600 cursor-pointer">Tours</div>
+              <div className="hover:text-indigo-600 cursor-pointer">Adventures</div>
+              <div className="hover:text-indigo-600 cursor-pointer">Vehicle Rental</div>
               <div className="hover:text-indigo-600 cursor-pointer">Cancellations</div>
             </div>
           )}
@@ -121,13 +136,17 @@ const Sidebar: React.FC = () => {
         <button className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm">
           <FaUserCircle size={14}/> Profile
         </button>
-        <button className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm">
-          <FaCog size={14}/> Settings
+
+        {/* ✅ LOGOUT BUTTON */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 w-full text-gray-700 hover:text-red-600 text-sm"
+        >
+          <TbLogout size={14}/> Logout
         </button>
       </div>
     </aside>
   );
 };
-
 
 export default Sidebar;

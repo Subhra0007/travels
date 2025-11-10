@@ -1,3 +1,4 @@
+//app/components/pages/admin/Dashboard.tsx
 import React from "react";
 import StatCard from "./StatCard";
 import VendorTable from "./VendorTable";
@@ -12,7 +13,7 @@ const Dashboard: React.FC = () => {
         <StatCard title="Total Users" value="14,890" color="bg-indigo-500" />
         <StatCard title="Total Orders" value="55,450" color="bg-yellow-500" />
         <StatCard title="Total Vendors" value="6,652" color="bg-red-400" />
-        <StatCard title="Total Earnings" value="$31,160" color="bg-green-500" />
+        <StatCard title="Total Earnings" value="₹31,160" color="bg-green-500" />
       </div>
 
       <VendorTable />
