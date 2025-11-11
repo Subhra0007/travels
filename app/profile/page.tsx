@@ -5,85 +5,67 @@ import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("profile");
 
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/profile", {
-        credentials: "include",
-      });
+  // ---------- Verify User from /api/auth/verify ----------
+  useEffect(() => {
+    const verifyUser = async () => {
+      try {
+        const res = await fetch("/api/auth/verify", { credentials: "include" });
 
-      if (res.status === 401) {
-        router.push("/login");
-        return;
-      }
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
 
-      const data = await res.json();
-      if (data.success) {
+        const data = await res.json();
+
+        // Redirect vendor to vendor dashboard
+        if (data.user.accountType === "vendor") {
+          router.replace("/vendor");
+          return;
+        }
+
         setUser(data.user);
-      } else {
-        router.push("/login");
+      } catch (err) {
+        console.error("Verify failed:", err);
+        router.replace("/login");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Fetch error:", err);
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  // Redirect on first load (after visible load)
-useEffect(() => {
-  if (loading) return; // Wait until user is fetched and loading is done
-  if (!user) return; // Ensure user exists before redirecting
+    verifyUser();
+  }, [router]);
 
-  // Delay a bit so Profile page renders first
-  const timer = setTimeout(() => {
-    if (user.accountType === "vendor") {
-      router.replace("/vendor"); // Redirect vendor after short delay
-    }
-  }, 1000); // 1 seconds after load
-
-  return () => clearTimeout(timer);
-}, [user, loading, router]);
-
-  // END OF NEW BLOCK
-
+  // ---------- Logout ----------
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     localStorage.removeItem("user");
     window.location.href = "/";
   };
 
+  // ---------- Delete Account ----------
   const deleteAccount = async () => {
     if (!confirm("Are you sure? This cannot be undone.")) return;
-
     try {
-      const res = await fetch("/api/profile", {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const res = await fetch("/api/profile", { method: "DELETE", credentials: "include" });
       const data = await res.json();
       if (data.success) {
         alert("Account deleted");
         router.push("/");
       }
-    } catch (err) {
+    } catch {
       alert("Failed to delete account");
     }
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  if (loading) return <p className="text-center mt-20">Loading...</p>;
-  if (!user) return <p className="text-center mt-20">No user found.</p>;
-
-  /* ---------- Avatar with first-letter fallback (no design change) ---------- */
+  // ---------- Avatar ----------
   const Avatar = ({ size = 64 }: { size?: number }) => {
+    if (!user) return null;
     if (user.avatar) {
       return (
         <Image
@@ -112,6 +94,11 @@ useEffect(() => {
     );
   };
 
+  // ---------- Loading States ----------
+  if (loading) return <p className="text-center mt-20">Loading...</p>;
+  if (!user) return <p className="text-center mt-20">No user found.</p>;
+
+  // ---------- Render ----------
   return (
     <div className="flex min-h-screen bg-sky-50 text-black">
       {/* Sidebar */}
@@ -258,7 +245,12 @@ useEffect(() => {
                   onClick={() => router.push("/")}
                   className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all duration-200 flex items-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -273,7 +265,12 @@ useEffect(() => {
                   onClick={() => router.push("/profile/edit")}
                   className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-xl font-medium shadow-md transition-all duration-200 flex items-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -290,7 +287,9 @@ useEffect(() => {
               <div className="flex gap-6 mb-8">
                 <Avatar size={100} />
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">{user.fullName}</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {user.fullName}
+                  </h2>
                   <p className="text-gray-500 mt-1">{user.email}</p>
                 </div>
               </div>
@@ -298,17 +297,27 @@ useEffect(() => {
               <div className="grid grid-cols-2 gap-8 text-gray-700">
                 <div>
                   <p className="mb-3">
-                    <span className="font-semibold text-gray-800">Full Name:</span> {user.fullName}
+                    <span className="font-semibold text-gray-800">
+                      Full Name:
+                    </span>{" "}
+                    {user.fullName}
                   </p>
                   <p className="mb-3">
-                    <span className="font-semibold text-gray-800">Phone:</span> {user.contactNumber || "N/A"}
+                    <span className="font-semibold text-gray-800">
+                      Phone:
+                    </span>{" "}
+                    {user.contactNumber || "N/A"}
                   </p>
                   <p className="mb-3">
-                    <span className="font-semibold text-gray-800">Gender:</span>{" "}
+                    <span className="font-semibold text-gray-800">
+                      Gender:
+                    </span>{" "}
                     {user.additionalDetails?.gender || "N/A"}
                   </p>
                   <p className="mb-3">
-                    <span className="font-semibold text-gray-800">Address:</span>{" "}
+                    <span className="font-semibold text-gray-800">
+                      Address:
+                    </span>{" "}
                     {(() => {
                       const a = user.additionalDetails?.addresses?.[0];
                       if (!a) return "N/A";
@@ -320,10 +329,12 @@ useEffect(() => {
                 </div>
                 <div>
                   <p className="mb-3">
-                    <span className="font-semibold text-gray-800">Email:</span> {user.email}
+                    <span className="font-semibold text-gray-800">Email:</span>{" "}
+                    {user.email}
                   </p>
                   <p className="mb-3">
-                    <span className="font-semibold text-gray-800">Age:</span> {user.age || "N/A"}
+                    <span className="font-semibold text-gray-800">Age:</span>{" "}
+                    {user.age || "N/A"}
                   </p>
                   <p className="mb-3">
                     <span className="font-semibold text-gray-800">DOB:</span>{" "}

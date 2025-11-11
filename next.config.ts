@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
+  experimental: {
+    turbo: false, // ✅ Disable Turbopack (fix panic error)
+  },
+
   images: {
     remotePatterns: [
       {

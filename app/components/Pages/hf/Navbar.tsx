@@ -30,6 +30,7 @@ import {
   FaSuitcaseRolling,
   FaCar,
 } from "react-icons/fa";
+import { MdShoppingCart } from "react-icons/md";
 import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
@@ -104,7 +105,8 @@ const Navbar: React.FC = () => {
   };
 
   /* ----------  Services Data ---------- */
-  const mainServices = [
+  
+   const mainServices = [
     {
       id: "stays",
       name: "Stays",
@@ -126,11 +128,7 @@ const Navbar: React.FC = () => {
       icon: <FaCompass />,
       subServices: [
         { name: "Group Tours", href: "/services/tours/group-tours", icon: <FaUsers /> },
-        {
-          name: "Tour Packages",
-          href: "/services/tours/tour-packages",
-          icon: <FaSuitcaseRolling />,
-        },
+        { name: "Tour Packages", href: "/services/tours/tour-packages", icon: <FaSuitcaseRolling /> },
       ],
     },
     {
@@ -156,6 +154,14 @@ const Navbar: React.FC = () => {
         { name: "Cars", href: "/services/vehicle-rental/cars", icon: <FaCarSide /> },
         { name: "Bikes", href: "/services/vehicle-rental/bikes", icon: <FaBiking /> },
       ],
+    },
+    {
+      id: "shop",
+      name: "Shop",
+      subtext: "Travel essentials",
+      href: "/services/shop",
+      icon: <MdShoppingCart  />,
+      subServices: [],
     },
   ];
 
@@ -207,9 +213,9 @@ const Navbar: React.FC = () => {
             <Image
               src={logo}
               alt="Logo"
-              width={26}
-              height={26}
-              className="rounded-full size-7 bg-green-950"
+              width={50}
+              height={50}
+              className="rounded-full h-8.5 w-auto bg-green-950"
             />
           </motion.div>
         </Link>
@@ -219,7 +225,7 @@ const Navbar: React.FC = () => {
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="md:hidden text-gray-800 bg-white p-2 rounded-full shadow-md"
+          className="md:hidden text-gray-800 bg-white p-3 rounded-full shadow-md"
           onClick={() => setIsOpen(true)}
         >
           <FaBars size={18} />
@@ -230,7 +236,7 @@ const Navbar: React.FC = () => {
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.25 }}
-          className="hidden md:flex items-center bg-white rounded-full shadow-md px-6 py-2 space-x-8 border border-gray-200"
+          className="hidden md:flex items-center bg-white rounded-full shadow-md px-6 py-3 space-x-8 border border-gray-200"
         >
           {navItems.map((item) => {
             if (item.label === "Services") {
@@ -337,7 +343,6 @@ const Navbar: React.FC = () => {
                                       </p>
                                     </div>
                                   </div>
-
                                   <div className="grid grid-cols-2 gap-6">
                                     {category.subServices.map((sub) => (
                                       <Link
@@ -418,12 +423,12 @@ const Navbar: React.FC = () => {
   {!user ? (
     <>
       <Link href="/login">
-        <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-base font-bold hover:bg-gray-50 transition shadow-md cursor-pointer">
+        <button className="px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-full text-base font-bold hover:bg-gray-50 transition shadow-md cursor-pointer">
           Log In
         </button>
       </Link>
       <Link href="/signup">
-        <button className="px-4 py-2 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-base font-bold hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
+        <button className="px-4 py-3 bg-linear-to-r from-lime-400 to-green-400 text-white rounded-full text-base font-bold hover:from-lime-500 hover:to-green-500 transition shadow-md cursor-pointer">
           Sign Up
         </button>
       </Link>
@@ -433,7 +438,7 @@ const Navbar: React.FC = () => {
       {user.accountType === "admin" ? (
         <button
           onClick={() => router.push("/admin")}
-          className="px-5 py-2 bg-green-600 text-white rounded-full font-bold shadow-md hover:bg-green-700 cursor-pointer"
+          className="px-5 py-3 bg-green-950 text-white rounded-full font-bold shadow-md hover:bg-green-900 cursor-pointer"
         >
           Admin
         </button>

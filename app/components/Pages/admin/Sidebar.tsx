@@ -1,7 +1,6 @@
-//app/components/Pages/admin/Sidebar.tsx
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   FaChartPie,
   FaUmbrellaBeach,
@@ -18,23 +17,30 @@ import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 const Sidebar: React.FC = () => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
-  // ✅ Toggle dropdown menus
+  // ✅ Highlight current path
+  const isActive = (path: string) => pathname === path;
+
+  // ✅ Auto open dropdown based on current path
+  useEffect(() => {
+    if (pathname.startsWith("/admin/partners")) setOpenMenu("partners");
+    else if (pathname.startsWith("/admin/bookings")) setOpenMenu("bookings");
+    else if (pathname.startsWith("/admin/accounting")) setOpenMenu("accounting");
+    else if (pathname.startsWith("/admin/customers")) setOpenMenu("customers");
+    else if (pathname.startsWith("/admin/reports")) setOpenMenu("reports");
+  }, [pathname]);
+
   const toggleMenu = (menu: string) => {
     setOpenMenu(openMenu === menu ? null : menu);
   };
 
-  // ✅ Logout function
+  // ✅ Logout
   const handleLogout = async () => {
     try {
-      await fetch("/api/logout", {
-        method: "POST",
-        credentials: "include", // if cookies used
-      });
-
-      // Clear local user data
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
       localStorage.removeItem("user");
-      router.push("/"); // Redirect to homepage
+      router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
       localStorage.removeItem("user");
@@ -42,11 +48,16 @@ const Sidebar: React.FC = () => {
     }
   };
 
-  // ✅ Reusable menu button
+  // ✅ Dropdown button (parent)
   const menuItem = (key: string, label: string, icon: any) => (
     <button
       onClick={() => toggleMenu(key)}
-      className="flex w-full items-center justify-between p-2 rounded text-gray-700 hover:bg-gray-100 font-medium"
+      className={`flex w-full items-center justify-between p-2 rounded font-medium transition-colors
+        ${
+          openMenu === key
+            ? "text-indigo-600 bg-indigo-50"
+            : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+        }`}
     >
       <span className="flex items-center gap-3">
         {icon} {label}
@@ -60,12 +71,17 @@ const Sidebar: React.FC = () => {
   );
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col mt-15">
-      <nav className="flex-1 space-y-2 text-sm mt-2">
+    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col">
+      <nav className="flex-1 space-y-2 text-sm mt-15">
         {/* Dashboard */}
         <button
           onClick={() => router.push("/admin")}
-          className="flex w-full items-center gap-3 p-2 rounded font-medium text-indigo-600 bg-indigo-50"
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors
+            ${
+              isActive("/admin")
+                ? "text-indigo-600 bg-indigo-50"
+                : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+            }`}
         >
           <FaChartPie size={14} /> Dashboard
         </button>
@@ -74,17 +90,57 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("partners", "Travel Partners", <FaUmbrellaBeach size={14} />)}
           {openMenu === "partners" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 text-gray-700">
+            <div className="ml-8 mt-2 text-sm space-y-1">
               <div
-                className="hover:text-indigo-600 cursor-pointer"
                 onClick={() => router.push("/admin/partners")}
+                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  isActive("/admin/partners")
+                    ? "text-indigo-600 bg-indigo-50"
+                    : "text-gray-700 hover:text-indigo-600"
+                }`}
               >
                 All Partners
               </div>
-              <div className="hover:text-indigo-600 cursor-pointer">Stays</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Tours</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Adventures</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Vehicle Rental</div>
+              <div
+                onClick={() => router.push("/admin/partners/stays")}
+                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  isActive("/admin/partners/stays")
+                    ? "text-indigo-600 bg-indigo-50"
+                    : "text-gray-700 hover:text-indigo-600"
+                }`}
+              >
+                Stays
+              </div>
+              <div
+                onClick={() => router.push("/admin/partners/tours")}
+                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  isActive("/admin/partners/tours")
+                    ? "text-indigo-600 bg-indigo-50"
+                    : "text-gray-700 hover:text-indigo-600"
+                }`}
+              >
+                Tours
+              </div>
+              <div
+                onClick={() => router.push("/admin/partners/adventures")}
+                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  isActive("/admin/partners/adventures")
+                    ? "text-indigo-600 bg-indigo-50"
+                    : "text-gray-700 hover:text-indigo-600"
+                }`}
+              >
+                Adventures
+              </div>
+              <div
+                onClick={() => router.push("/admin/partners/vehicle-rental")}
+                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  isActive("/admin/partners/vehicle-rental")
+                    ? "text-indigo-600 bg-indigo-50"
+                    : "text-gray-700 hover:text-indigo-600"
+                }`}
+              >
+                Vehicle Rental
+              </div>
             </div>
           )}
         </div>
@@ -93,12 +149,26 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("bookings", "Manage Bookings", <FaPlaneDeparture size={14} />)}
           {openMenu === "bookings" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 text-gray-700">
-              <div className="hover:text-indigo-600 cursor-pointer">Stays</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Tours</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Adventures</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Vehicle Rental</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Cancellations</div>
+            <div className="ml-8 mt-2 text-sm space-y-1">
+              {[
+                { label: "Stays", path: "/admin/bookings/stays" },
+                { label: "Tours", path: "/admin/bookings/tours" },
+                { label: "Adventures", path: "/admin/bookings/adventures" },
+                { label: "Vehicle Rental", path: "/admin/bookings/vehicle-rental" },
+                { label: "Cancellations", path: "/admin/bookings/cancellations" },
+              ].map((item) => (
+                <div
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
+                  className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                    isActive(item.path)
+                      ? "text-indigo-600 bg-indigo-50"
+                      : "text-gray-700 hover:text-indigo-600"
+                  }`}
+                >
+                  {item.label}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -107,10 +177,24 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("accounting", "Accounting", <FaMoneyCheckAlt size={14} />)}
           {openMenu === "accounting" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 text-gray-700">
-              <div className="hover:text-indigo-600 cursor-pointer">Transactions</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Invoices</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Refunds</div>
+            <div className="ml-8 mt-2 text-sm space-y-1">
+              {[
+                { label: "Transactions", path: "/admin/accounting/transactions" },
+                { label: "Invoices", path: "/admin/accounting/invoices" },
+                { label: "Refunds", path: "/admin/accounting/refunds" },
+              ].map((item) => (
+                <div
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
+                  className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                    isActive(item.path)
+                      ? "text-indigo-600 bg-indigo-50"
+                      : "text-gray-700 hover:text-indigo-600"
+                  }`}
+                >
+                  {item.label}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -119,14 +203,27 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("customers", "Customers", <FaUsers size={14} />)}
           {openMenu === "customers" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 text-gray-700">
+            <div className="ml-8 mt-2 text-sm space-y-1">
               <div
-                className="hover:text-indigo-600 cursor-pointer"
                 onClick={() => router.push("/admin/customers")}
+                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  isActive("/admin/customers")
+                    ? "text-indigo-600 bg-indigo-50"
+                    : "text-gray-700 hover:text-indigo-600"
+                }`}
               >
                 All Customers
               </div>
-              <div className="hover:text-indigo-600 cursor-pointer">Reviews</div>
+              <div
+                onClick={() => router.push("/admin/customers/reviews")}
+                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  isActive("/admin/customers/reviews")
+                    ? "text-indigo-600 bg-indigo-50"
+                    : "text-gray-700 hover:text-indigo-600"
+                }`}
+              >
+                Reviews
+              </div>
             </div>
           )}
         </div>
@@ -135,23 +232,47 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("reports", "Reports", <FaFileAlt size={14} />)}
           {openMenu === "reports" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 text-gray-700">
-              <div className="hover:text-indigo-600 cursor-pointer">Sales</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Bookings</div>
-              <div className="hover:text-indigo-600 cursor-pointer">Performance</div>
+            <div className="ml-8 mt-2 text-sm space-y-1">
+              {[
+                { label: "Sales", path: "/admin/reports/sales" },
+                { label: "Bookings", path: "/admin/reports/bookings" },
+                { label: "Performance", path: "/admin/reports/performance" },
+              ].map((item) => (
+                <div
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
+                  className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                    isActive(item.path)
+                      ? "text-indigo-600 bg-indigo-50"
+                      : "text-gray-700 hover:text-indigo-600"
+                  }`}
+                >
+                  {item.label}
+                </div>
+              ))}
             </div>
           )}
         </div>
 
         {/* Chat */}
-        <button className="flex w-full items-center gap-3 p-2 rounded text-gray-700 hover:bg-gray-100 font-medium">
+        <button
+          onClick={() => router.push("/admin/chat")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors ${
+            isActive("/admin/chat")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
           <FaComments size={14} /> Chat
         </button>
       </nav>
 
       {/* Bottom Section */}
       <div className="mt-auto space-y-2">
-        <button className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm">
+        <button
+          onClick={() => router.push("/admin/profile")}
+          className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm"
+        >
           <FaUserCircle size={14} /> Profile
         </button>
 

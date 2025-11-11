@@ -10,6 +10,36 @@ export default function VendorPage() {
   const [locked, setLocked] = useState(true);
   const [user, setUser] = useState<any>(null);
 
+  // ✅ NEW: Verify vendor token from backend
+  useEffect(() => {
+    const verify = async () => {
+      try {
+        const res = await fetch("/api/auth/verify", {
+          credentials: "include",
+        });
+
+        if (res.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        const data = await res.json();
+
+        // ✅ only vendor allowed
+        if (data.user.accountType !== "vendor") {
+          router.replace("/login");
+          return;
+        }
+      } catch (err) {
+        router.replace("/login");
+      }
+    };
+
+    verify();
+  }, [router]);
+
+
+  // ✅ YOUR CODE (UNCHANGED)
   // Refresh user from server
   const refreshUser = async () => {
     try {
@@ -48,11 +78,10 @@ export default function VendorPage() {
     setUser(stored);
     setLocked(!stored.isVendorApproved);
 
-    
-    if (!stored.isVendorApproved) {
-      const interval = setInterval(refreshUser);
-      return () => clearInterval(interval);
-    }
+   if (!stored.isVendorApproved) {
+  const interval = setInterval(refreshUser, 1000); // every 10 seconds
+  return () => clearInterval(interval);
+}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 

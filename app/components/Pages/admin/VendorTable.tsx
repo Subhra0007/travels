@@ -69,7 +69,7 @@ const VendorTable: React.FC = () => {
 
   return (
     <div className="bg-white rounded-xl shadow p-6 mt-6">
-      <h2 className="text-lg font-semibold mb-4">All Vendors</h2>
+      <h2 className="text-lg font-semibold mb-4 text-black">All Vendors</h2>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left text-gray-600">

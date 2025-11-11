@@ -1,0 +1,59 @@
+import { NextRequest, NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
+import dbConnect from "@/lib/config/database";
+import User from "@/models/User";
+
+export async function GET(req: NextRequest) {
+  try {
+    await dbConnect();
+
+    const token = req.cookies.get("token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: "No token provided" },
+        { status: 401 }
+      );
+    }
+
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    } catch {
+      return NextResponse.json(
+        { success: false, message: "Invalid or expired token" },
+        { status: 401 }
+      );
+    }
+
+    // ✅ Handle fixed admin
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
+    if (decoded.accountType === "admin" && decoded.email === ADMIN_EMAIL) {
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: "admin-fixed",
+          fullName: "Super Admin",
+          email: ADMIN_EMAIL,
+          accountType: "admin",
+        },
+      });
+    }
+
+    // ✅ Otherwise find user in DB
+    const user = await User.findById(decoded.id).populate("additionalDetails");
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "User not found" },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json({ success: true, user });
+  } catch (err) {
+    console.error("Verify Error:", err);
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    );
+  }
+}
