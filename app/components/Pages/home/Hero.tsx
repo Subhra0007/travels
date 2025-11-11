@@ -12,6 +12,7 @@ import {
   FaMountain,
   FaBed
 } from "react-icons/fa";
+
 import { BsCompass } from "react-icons/bs";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -202,7 +203,7 @@ export default function HeroSection() {
         </div>
 
         {/* Glass Frame */}
-        <div className="relative z-50 w-[90%] h-[85vh] border-3 border-white rounded-3xl shadow-[0_8px_32px_rgba(31,38,135,0.37)] flex flex-col justify-between p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
+        <div className="elative z-50 w-[90%] h-[85vh] border-3 border-white rounded-3xl shadow-[0_8px_32px_rgba(31,38,135,0.37)] flex flex-col justify-between p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
           
          {/* Heading */}
 <motion.div
@@ -223,7 +224,7 @@ export default function HeroSection() {
           <div className="relative rounded-3xl overflow-visible border border-white shadow-lg text-black">
 
             {/* Tabs */}
-            <div className="flex items-center justify-center px-2 sm:px-4 md:px-8 py-3 backdrop-blur-md border-b border-white/20 w-full relative z-30 rounded-t-3xl">
+            <div className="flex items-center justify-center px-2 sm:px-4 md:px-8 py-3 backdrop-blur-md border-b border-white/20 w-full relative z-0 rounded-t-3xl">
               <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 justify-center w-full overflow-x-auto scrollbar-none">
                 {tabs.map((tab) => (
                   <button
@@ -313,7 +314,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
         <Menu as="div" className="relative">
           <Menu.Button
             onClick={() => setShowLocationMenu(!showLocationMenu)}
-            className={`w-full text-left text-xl font-bold ${locationTextClass} flex items-center justify-between`}
+            className={`w-full text-left text-md font-bold ${locationTextClass} flex items-center justify-between`}
           >
             {locationLabel}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
@@ -322,7 +323,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
           {showLocationMenu && (
             <Menu.Items
               static
-              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto"
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y"
             >
               {/* Search input */}
               <div className="p-2 border-b sticky top-0 bg-white">
@@ -431,7 +432,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
           {showGuests && (
             <Menu.Items
               static
-              className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4"
+              className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y"
             >
             {/* Rooms */}
             <div className="flex items-center justify-between mb-3">
@@ -518,8 +519,8 @@ const ToursForm: React.FC<{
   const [destination, setDestination] = useState<string>(defaultLocation || "");
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState("");
-  const [date, setDate] = useState<Date | null>(new Date());
-  const [days, setDays] = useState<number>(3);
+  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(new Date());
 
   const filteredWB = wbLocations.filter((c) =>
     c.toLowerCase().includes(search.toLowerCase())
@@ -535,7 +536,7 @@ const ToursForm: React.FC<{
         <Menu as="div" className="relative">
           <Menu.Button
             onClick={() => setShow(!show)}
-            className={`w-full text-left text-xl font-bold ${
+            className={`w-full text-left text-md font-bold ${
               destination ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
           >
@@ -543,7 +544,7 @@ const ToursForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {show && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={search}
@@ -594,32 +595,29 @@ const ToursForm: React.FC<{
       </div>
 
       <div>
-        <p className="text-xs text-gray-500 uppercase mb-1">Travel Date</p>
+        <p className="text-xs text-gray-500 uppercase mb-1">Start Date</p>
         <DatePicker
-          selected={date}
-          onChange={(d) => setDate(d)}
+          selected={startDate}
+          onChange={(d) => {
+            setStartDate(d);
+            if (d && endDate && endDate < d) {
+              setEndDate(d);
+            }
+          }}
           dateFormat="dd MMM yy"
           className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
         />
       </div>
 
       <div>
-        <p className="text-xs text-gray-500 uppercase mb-1">Duration</p>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setDays(Math.max(1, days - 1))}
-            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
-          >
-            <FaMinus className="w-3 h-3" />
-          </button>
-          <span className="text-xl font-bold w-16 text-center">{days} {days === 1 ? "Day" : "Days"}</span>
-          <button
-            onClick={() => setDays(days + 1)}
-            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
-          >
-            <FaPlus className="w-3 h-3" />
-          </button>
-        </div>
+        <p className="text-xs text-gray-500 uppercase mb-1">End Date</p>
+        <DatePicker
+          selected={endDate}
+          onChange={(d) => setEndDate(d)}
+          minDate={startDate ?? undefined}
+          dateFormat="dd MMM yy"
+          className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
+        />
       </div>
 
       <div className="flex items-end">
@@ -657,7 +655,7 @@ const AdventuresForm: React.FC<{
         <Menu as="div" className="relative">
           <Menu.Button
             onClick={() => setShowActivity(!showActivity)}
-            className={`w-full text-left text-xl font-bold ${
+            className={`w-full text-left text-md font-bold ${
               activity ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
           >
@@ -665,7 +663,7 @@ const AdventuresForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showActivity && (
-            <Menu.Items className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+            <Menu.Items className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
               {["Trekking", "Rafting", "Camping", "Paragliding", "Hiking"].map((a) => (
                 <Menu.Item key={a}>
                   {({ active }) => (
@@ -691,7 +689,7 @@ const AdventuresForm: React.FC<{
         <Menu as="div" className="relative">
           <Menu.Button
             onClick={() => setShow(!show)}
-            className={`w-full text-left text-xl font-bold ${
+            className={`w-full text-left text-md font-bold ${
               destination ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
           >
@@ -699,7 +697,7 @@ const AdventuresForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {show && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={search}
@@ -801,15 +799,15 @@ const VehicleRentalForm: React.FC<{
         <Menu as="div" className="relative">
           <Menu.Button
             onClick={() => setShowPickup(!showPickup)}
-            className={`w-full text-left text-xl font-bold ${
+            className={`w-full text-left text-md font-bold ${
               pickup ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
           >
-            {pickup || "Where will you pick up from?"}
+            {pickup || "Where to pick up?"}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showPickup && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={searchPickup}
@@ -867,7 +865,7 @@ const VehicleRentalForm: React.FC<{
         <Menu as="div" className="relative">
           <Menu.Button
             onClick={() => setShowDropoff(!showDropoff)}
-            className={`w-full text-left text-xl font-bold ${
+            className={`w-full text-left text-md font-bold ${
               dropoff ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
           >
@@ -875,7 +873,7 @@ const VehicleRentalForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showDropoff && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={searchDropoff}

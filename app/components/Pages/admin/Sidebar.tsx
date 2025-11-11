@@ -11,6 +11,7 @@ import {
   FaComments,
   FaUserCircle,
 } from "react-icons/fa";
+import { TbLogs } from "react-icons/tb";
 import { RiCouponLine } from "react-icons/ri";
 
 import { TbLogout } from "react-icons/tb";
@@ -79,7 +80,7 @@ const Sidebar: React.FC = () => {
   );
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col">
+    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col h-full overflow-y-auto">
       <nav className="flex-1 space-y-2 text-sm mt-15 ">
         {/* Dashboard */}
         <button
@@ -285,6 +286,17 @@ const Sidebar: React.FC = () => {
             </div>
           )}
         </div>
+         {/* Blogs */}
+        <button
+          onClick={() => router.push("/admin/blogs")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer  ${
+            isActive("/admin/blogs")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <TbLogs size={14} /> Blogs
+        </button>
 
         {/* Chat */}
         <button
@@ -300,7 +312,7 @@ const Sidebar: React.FC = () => {
       </nav>
 
       {/* Bottom Section */}
-      <div className=" space-y-2 p-2 mt-25">
+      <div className=" space-y-2 p-2 mt-10 ">
         <button
           onClick={() => router.push("/admin/profile")}
           className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm cursor-pointer"
