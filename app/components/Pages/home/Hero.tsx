@@ -32,16 +32,39 @@ const tabs: Tab[] = [
 ];
 
 /* ---------- LOCATION AUTOCOMPLETE DATA ---------- */
-const locations = [
+const wbLocations = [
+  "Kolkata",
+  "Darjeeling",
+  "Kalimpong",
+  "Siliguri",
+  "Digha",
+  "Sundarbans",
+  "Mandarmani",
+  "Shantiniketan",
+  "Bakkhali",
+  "Bankura",
+];
+
+const indiaLocations = [
   "Delhi",
   "Mumbai",
-  "Bangalore",
+  "Bengaluru",
   "Chennai",
   "Hyderabad",
-  "Kolkata",
   "Goa",
   "Jaipur",
+  "Udaipur",
+  "Agra",
   "Pune",
+  "Manali",
+  "Shimla",
+  "Rishikesh",
+  "Varanasi",
+  "Kochi",
+  "Munnar",
+  "Ooty",
+  "Alleppey",
+  "Mysuru",
   "Ahmedabad",
 ];
 
@@ -91,9 +114,10 @@ export default function HeroSection() {
   }, []);
 
   /* ---------- STAYS STATE ---------- */
-  const [location, setLocation] = useState<string>("Delhi");
+  const [location, setLocation] = useState<string>("");
   const [checkIn, setCheckIn] = useState<Date | null>(new Date());
   const [checkOut, setCheckOut] = useState<Date | null>(new Date());
+  const [rooms, setRooms] = useState<number>(1);
   const [adults, setAdults] = useState<number>(2);
   const [children, setChildren] = useState<number>(0);
   const [showLocationMenu, setShowLocationMenu] = useState(false);
@@ -112,25 +136,45 @@ export default function HeroSection() {
             setCheckIn={setCheckIn}
             checkOut={checkOut}
             setCheckOut={setCheckOut}
+            rooms={rooms}
+            setRooms={setRooms}
             adults={adults}
             setAdults={setAdults}
             children={children}
             setChildren={setChildren}
             totalGuests={totalGuests}
-            locations={locations}
+            wbLocations={wbLocations}
+            indiaLocations={indiaLocations}
             showLocationMenu={showLocationMenu}
             setShowLocationMenu={setShowLocationMenu}
           />
         );
 
       case "Tours":
-        return <ToursForm />;
+        return (
+          <ToursForm
+            defaultLocation={location}
+            wbLocations={wbLocations}
+            indiaLocations={indiaLocations}
+          />
+        );
 
       case "Adventures":
-        return <AdventuresForm />;
+        return (
+          <AdventuresForm
+            defaultLocation={location}
+            wbLocations={wbLocations}
+            indiaLocations={indiaLocations}
+          />
+        );
 
       case "Vehicle Rental":
-        return <VehicleRentalForm />;
+        return (
+          <VehicleRentalForm
+            wbLocations={wbLocations}
+            indiaLocations={indiaLocations}
+          />
+        );
 
       default:
         return null;
@@ -139,7 +183,7 @@ export default function HeroSection() {
 
   return (
     <div className="">
-      <section className="relative w-full flex items-center justify-center overflow-hidden py-20">
+      <section className="relative z-40 w-full flex items-center justify-center overflow-visible py-20">
 
         {/* ✅ AUTO-SWIPING BACKGROUND */}
         <div className="absolute inset-0">
@@ -158,7 +202,7 @@ export default function HeroSection() {
         </div>
 
         {/* Glass Frame */}
-        <div className="relative z-10 w-[90%] h-[85vh] border-3 border-white rounded-[40px] shadow-[0_8px_32px_rgba(31,38,135,0.37)] flex flex-col justify-between p-6 md:p-10 max-w-7xl mx-auto">
+        <div className="relative z-50 w-[90%] h-[85vh] border-3 border-white rounded-3xl shadow-[0_8px_32px_rgba(31,38,135,0.37)] flex flex-col justify-between p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
           
          {/* Heading */}
 <motion.div
@@ -176,11 +220,11 @@ export default function HeroSection() {
 </motion.div>
 
           {/* Card With Tabs */}
-          <div className="relative rounded-[30px] overflow-hidden border border-white shadow-lg">
+          <div className="relative rounded-3xl overflow-visible border border-white shadow-lg text-black">
 
             {/* Tabs */}
-            <div className="flex items-center justify-center px-4 md:px-8 py-3 backdrop-blur-md border-b border-white/20 w-full">
-              <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 justify-center w-full">
+            <div className="flex items-center justify-center px-2 sm:px-4 md:px-8 py-3 backdrop-blur-md border-b border-white/20 w-full relative z-30 rounded-t-3xl">
+              <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 justify-center w-full overflow-x-auto scrollbar-none">
                 {tabs.map((tab) => (
                   <button
                     key={tab.label}
@@ -199,7 +243,7 @@ export default function HeroSection() {
             </div>
 
             {/* Dynamic Form */}
-            <div className="bg-white rounded-b-[30px] p-5">{renderTabContent()}</div>
+            <div className="bg-white rounded-b-3xl p-4 sm:p-5">{renderTabContent()}</div>
           </div>
         </div>
       </section>
@@ -217,12 +261,15 @@ type StaysFormProps = {
   setCheckIn: (v: Date | null) => void;
   checkOut: Date | null;
   setCheckOut: (v: Date | null) => void;
+  rooms: number;
+  setRooms: (v: number) => void;
   adults: number;
   setAdults: (v: number) => void;
   children: number;
   setChildren: (v: number) => void;
   totalGuests: number;
-  locations: string[];
+  wbLocations: string[];
+  indiaLocations: string[];
   showLocationMenu: boolean;
   setShowLocationMenu: (v: boolean) => void;
 };
@@ -234,15 +281,30 @@ const StaysForm: React.FC<StaysFormProps> = ({
   setCheckIn,
   checkOut,
   setCheckOut,
+  rooms,
+  setRooms,
   adults,
   setAdults,
   children,
   setChildren,
   totalGuests,
-  locations,
+  wbLocations,
+  indiaLocations,
   showLocationMenu,
   setShowLocationMenu,
 }) => {
+  const [showGuests, setShowGuests] = useState<boolean>(false);
+  const [search, setSearch] = useState<string>("");
+  const filteredWB = wbLocations.filter((c) =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredIndia = indiaLocations.filter((c) =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const locationLabel = location || "Where are you going?";
+  const locationTextClass = location ? "text-gray-900" : "text-gray-400";
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
       {/* LOCATION */}
@@ -251,34 +313,78 @@ const StaysForm: React.FC<StaysFormProps> = ({
         <Menu as="div" className="relative">
           <Menu.Button
             onClick={() => setShowLocationMenu(!showLocationMenu)}
-            className="w-full text-left text-xl font-bold text-gray-900 flex items-center justify-between"
+            className={`w-full text-left text-xl font-bold ${locationTextClass} flex items-center justify-between`}
           >
-            {location}
+            {locationLabel}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
 
           {showLocationMenu && (
             <Menu.Items
               static
-              className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto"
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto"
             >
-              {locations.map((city) => (
-                <Menu.Item key={city}>
-                  {({ active }) => (
-                    <button
-                      onClick={() => {
-                        setLocation(city);
-                        setShowLocationMenu(false);
-                      }}
-                      className={`block w-full text-left px-4 py-2 text-sm ${
-                        active ? "bg-gray-100" : ""
-                      }`}
-                    >
-                      {city}
-                    </button>
-                  )}
-                </Menu.Item>
-              ))}
+              {/* Search input */}
+              <div className="p-2 border-b sticky top-0 bg-white">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search location..."
+                  className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500"
+                />
+              </div>
+              {/* West Bengal group */}
+              <div className="px-2 pt-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                  West Bengal
+                </div>
+                {filteredWB.length === 0 && (
+                  <div className="px-4 py-2 text-sm text-gray-500">No results</div>
+                )}
+                {filteredWB.map((city) => (
+                  <Menu.Item key={`wb-${city}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setLocation(city);
+                          setShowLocationMenu(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${
+                          active ? "bg-gray-100" : ""
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+              {/* India group */}
+              <div className="px-2 pt-2 pb-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                  India
+                </div>
+                {filteredIndia.length === 0 && (
+                  <div className="px-4 py-2 text-sm text-gray-500">No results</div>
+                )}
+                {filteredIndia.map((city) => (
+                  <Menu.Item key={`in-${city}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setLocation(city);
+                          setShowLocationMenu(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${
+                          active ? "bg-gray-100" : ""
+                        }`}
+                      >
+                        {city}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
             </Menu.Items>
           )}
         </Menu>
@@ -291,6 +397,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
           selected={checkIn}
           onChange={(date) => setCheckIn(date)}
           dateFormat="dd MMM yy"
+          popperClassName="z-50"
           className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
         />
       </div>
@@ -303,6 +410,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
           onChange={(date) => setCheckOut(date)}
           dateFormat="dd MMM yy"
           minDate={checkIn ?? undefined}
+          popperClassName="z-50"
           className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
         />
       </div>
@@ -311,15 +419,39 @@ const StaysForm: React.FC<StaysFormProps> = ({
       <div>
         <p className="text-xs text-gray-500 uppercase mb-1">Guests</p>
         <Menu as="div" className="relative">
-          <Menu.Button className="w-full text-left text-xl font-bold text-gray-900 flex items-center justify-between">
+          <Menu.Button
+            onClick={() => setShowGuests(!showGuests)}
+            className="w-full text-left text-xl font-bold text-gray-900 flex items-center justify-between"
+          >
+            {rooms} {rooms === 1 ? "Room" : "Rooms"},{" "}
             {totalGuests} {totalGuests === 1 ? "Guest" : "Guests"}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
 
-          <Menu.Items
-            static
-            className="absolute z-20 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4"
-          >
+          {showGuests && (
+            <Menu.Items
+              static
+              className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4"
+            >
+            {/* Rooms */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">Rooms</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setRooms(Math.max(1, rooms - 1))}
+                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                >
+                  <FaMinus className="w-3 h-3" />
+                </button>
+                <span className="w-8 text-center">{rooms}</span>
+                <button
+                  onClick={() => setRooms(rooms + 1)}
+                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                >
+                  <FaPlus className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
             {/* Adults */}
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium">Adults</span>
@@ -360,6 +492,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
               </div>
             </div>
           </Menu.Items>
+          )}
         </Menu>
       </div>
 
@@ -377,72 +510,451 @@ const StaysForm: React.FC<StaysFormProps> = ({
    OTHER FORMS
 -------------------------------------------------------------- */
 
-const ToursForm = () => (
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Destination</p>
-      <h3 className="text-xl font-bold text-gray-900">Mumbai</h3>
-    </div>
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Travel Date</p>
-      <h3 className="text-xl font-bold text-gray-900">01 Jul '24</h3>
-    </div>
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Duration</p>
-      <h3 className="text-xl font-bold text-gray-900">3 Days</h3>
-    </div>
-    <div className="flex items-end">
-      <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full">
-        Find Tours
-      </button>
-    </div>
-  </div>
-);
+const ToursForm: React.FC<{
+  defaultLocation: string;
+  wbLocations: string[];
+  indiaLocations: string[];
+}> = ({ defaultLocation, wbLocations, indiaLocations }) => {
+  const [destination, setDestination] = useState<string>(defaultLocation || "");
+  const [show, setShow] = useState(false);
+  const [search, setSearch] = useState("");
+  const [date, setDate] = useState<Date | null>(new Date());
+  const [days, setDays] = useState<number>(3);
 
-const AdventuresForm = () => (
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Activity</p>
-      <h3 className="text-xl font-bold text-gray-900">Trekking</h3>
-    </div>
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Location</p>
-      <h3 className="text-xl font-bold text-gray-900">Himalayas</h3>
-    </div>
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Group Size</p>
-      <h3 className="text-xl font-bold text-gray-900">4-6</h3>
-    </div>
-    <div className="flex items-end">
-      <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full">
-        Book Adventure
-      </button>
-    </div>
-  </div>
-);
+  const filteredWB = wbLocations.filter((c) =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredIndia = indiaLocations.filter((c) =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
 
-const VehicleRentalForm = () => (
-  <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Pick-up</p>
-      <h3 className="text-xl font-bold text-gray-900">Delhi Airport</h3>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="relative">
+        <p className="text-xs text-gray-500 uppercase mb-1">Destination</p>
+        <Menu as="div" className="relative">
+          <Menu.Button
+            onClick={() => setShow(!show)}
+            className={`w-full text-left text-xl font-bold ${
+              destination ? "text-gray-900" : "text-gray-400"
+            } flex items-center justify-between`}
+          >
+            {destination || "Where are you going?"}
+            <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
+          </Menu.Button>
+          {show && (
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+              <div className="p-2 border-b sticky top-0 bg-white">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search destination..."
+                  className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500"
+                />
+              </div>
+              <div className="px-2 pt-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                {filteredWB.map((c) => (
+                  <Menu.Item key={`tour-wb-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setDestination(c);
+                          setShow(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+              <div className="px-2 pt-2 pb-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                {filteredIndia.map((c) => (
+                  <Menu.Item key={`tour-in-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setDestination(c);
+                          setShow(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+            </Menu.Items>
+          )}
+        </Menu>
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-500 uppercase mb-1">Travel Date</p>
+        <DatePicker
+          selected={date}
+          onChange={(d) => setDate(d)}
+          dateFormat="dd MMM yy"
+          className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
+        />
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-500 uppercase mb-1">Duration</p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDays(Math.max(1, days - 1))}
+            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
+          >
+            <FaMinus className="w-3 h-3" />
+          </button>
+          <span className="text-xl font-bold w-16 text-center">{days} {days === 1 ? "Day" : "Days"}</span>
+          <button
+            onClick={() => setDays(days + 1)}
+            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
+          >
+            <FaPlus className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-end">
+        <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
+          Find Tours
+        </button>
+      </div>
     </div>
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Drop-off</p>
-      <h3 className="text-xl font-bold text-gray-900">Mumbai City</h3>
+  );
+};
+
+const AdventuresForm: React.FC<{
+  defaultLocation: string;
+  wbLocations: string[];
+  indiaLocations: string[];
+}> = ({ defaultLocation, wbLocations, indiaLocations }) => {
+  const [activity, setActivity] = useState<string>("");
+  const [showActivity, setShowActivity] = useState<boolean>(false);
+  const [destination, setDestination] = useState<string>(defaultLocation || "");
+  const [show, setShow] = useState(false);
+  const [search, setSearch] = useState("");
+  const [groupSize, setGroupSize] = useState<number>(4);
+
+  const filteredWB = wbLocations.filter((c) =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
+  const filteredIndia = indiaLocations.filter((c) =>
+    c.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div>
+        <p className="text-xs text-gray-500 uppercase mb-1">Activity</p>
+        <Menu as="div" className="relative">
+          <Menu.Button
+            onClick={() => setShowActivity(!showActivity)}
+            className={`w-full text-left text-xl font-bold ${
+              activity ? "text-gray-900" : "text-gray-400"
+            } flex items-center justify-between`}
+          >
+            {activity || "Choose activity"}
+            <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
+          </Menu.Button>
+          {showActivity && (
+            <Menu.Items className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+              {["Trekking", "Rafting", "Camping", "Paragliding", "Hiking"].map((a) => (
+                <Menu.Item key={a}>
+                  {({ active }) => (
+                    <button
+                      onClick={() => {
+                        setActivity(a);
+                        setShowActivity(false);
+                      }}
+                      className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                    >
+                      {a}
+                    </button>
+                  )}
+                </Menu.Item>
+              ))}
+            </Menu.Items>
+          )}
+        </Menu>
+      </div>
+
+      <div className="relative">
+        <p className="text-xs text-gray-500 uppercase mb-1">Location</p>
+        <Menu as="div" className="relative">
+          <Menu.Button
+            onClick={() => setShow(!show)}
+            className={`w-full text-left text-xl font-bold ${
+              destination ? "text-gray-900" : "text-gray-400"
+            } flex items-center justify-between`}
+          >
+            {destination || "Where are you going?"}
+            <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
+          </Menu.Button>
+          {show && (
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+              <div className="p-2 border-b sticky top-0 bg-white">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search location..."
+                  className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500"
+                />
+              </div>
+              <div className="px-2 pt-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                {filteredWB.map((c) => (
+                  <Menu.Item key={`adv-wb-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setDestination(c);
+                          setShow(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+              <div className="px-2 pt-2 pb-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                {filteredIndia.map((c) => (
+                  <Menu.Item key={`adv-in-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setDestination(c);
+                          setShow(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+            </Menu.Items>
+          )}
+        </Menu>
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-500 uppercase mb-1">Group Size</p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setGroupSize(Math.max(1, groupSize - 1))}
+            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
+          >
+            <FaMinus className="w-3 h-3" />
+          </button>
+          <span className="text-xl font-bold w-16 text-center">{groupSize}</span>
+          <button
+            onClick={() => setGroupSize(groupSize + 1)}
+            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
+          >
+            <FaPlus className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-end">
+        <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
+          Book Adventure
+        </button>
+      </div>
     </div>
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Pick-up Date</p>
-      <h3 className="text-xl font-bold text-gray-900">05 Jul '24</h3>
+  );
+};
+
+const VehicleRentalForm: React.FC<{
+  wbLocations: string[];
+  indiaLocations: string[];
+}> = ({ wbLocations, indiaLocations }) => {
+  const [pickup, setPickup] = useState<string>("");
+  const [dropoff, setDropoff] = useState<string>("");
+  const [showPickup, setShowPickup] = useState(false);
+  const [showDropoff, setShowDropoff] = useState(false);
+  const [searchPickup, setSearchPickup] = useState("");
+  const [searchDropoff, setSearchDropoff] = useState("");
+  const [pickupDate, setPickupDate] = useState<Date | null>(new Date());
+  const [returnDate, setReturnDate] = useState<Date | null>(new Date());
+
+  const filter = (list: string[], q: string) =>
+    list.filter((c) => c.toLowerCase().includes(q.toLowerCase()));
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      {/* Pick-up */}
+      <div className="relative">
+        <p className="text-xs text-gray-500 uppercase mb-1">Pick-up</p>
+        <Menu as="div" className="relative">
+          <Menu.Button
+            onClick={() => setShowPickup(!showPickup)}
+            className={`w-full text-left text-xl font-bold ${
+              pickup ? "text-gray-900" : "text-gray-400"
+            } flex items-center justify-between`}
+          >
+            {pickup || "Where will you pick up from?"}
+            <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
+          </Menu.Button>
+          {showPickup && (
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+              <div className="p-2 border-b sticky top-0 bg-white">
+                <input
+                  value={searchPickup}
+                  onChange={(e) => setSearchPickup(e.target.value)}
+                  placeholder="Search pick-up..."
+                  className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500"
+                />
+              </div>
+              {/* WB */}
+              <div className="px-2 pt-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                {filter(wbLocations, searchPickup).map((c) => (
+                  <Menu.Item key={`pu-wb-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setPickup(c);
+                          setShowPickup(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+              {/* India */}
+              <div className="px-2 pt-2 pb-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                {filter(indiaLocations, searchPickup).map((c) => (
+                  <Menu.Item key={`pu-in-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setPickup(c);
+                          setShowPickup(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+            </Menu.Items>
+          )}
+        </Menu>
+      </div>
+
+      {/* Drop-off */}
+      <div className="relative">
+        <p className="text-xs text-gray-500 uppercase mb-1">Drop-off</p>
+        <Menu as="div" className="relative">
+          <Menu.Button
+            onClick={() => setShowDropoff(!showDropoff)}
+            className={`w-full text-left text-xl font-bold ${
+              dropoff ? "text-gray-900" : "text-gray-400"
+            } flex items-center justify-between`}
+          >
+            {dropoff || "Where to return?"}
+            <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
+          </Menu.Button>
+          {showDropoff && (
+            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-auto">
+              <div className="p-2 border-b sticky top-0 bg-white">
+                <input
+                  value={searchDropoff}
+                  onChange={(e) => setSearchDropoff(e.target.value)}
+                  placeholder="Search drop-off..."
+                  className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500"
+                />
+              </div>
+              {/* WB */}
+              <div className="px-2 pt-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                {filter(wbLocations, searchDropoff).map((c) => (
+                  <Menu.Item key={`do-wb-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setDropoff(c);
+                          setShowDropoff(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+              {/* India */}
+              <div className="px-2 pt-2 pb-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                {filter(indiaLocations, searchDropoff).map((c) => (
+                  <Menu.Item key={`do-in-${c}`}>
+                    {({ active }) => (
+                      <button
+                        onClick={() => {
+                          setDropoff(c);
+                          setShowDropoff(false);
+                        }}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""}`}
+                      >
+                        {c}
+                      </button>
+                    )}
+                  </Menu.Item>
+                ))}
+              </div>
+            </Menu.Items>
+          )}
+        </Menu>
+      </div>
+
+      {/* Pick-up Date */}
+      <div>
+        <p className="text-xs text-gray-500 uppercase mb-1">Pick-up Date</p>
+        <DatePicker
+          selected={pickupDate}
+          onChange={(d) => setPickupDate(d)}
+          dateFormat="dd MMM yy"
+          className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
+        />
+      </div>
+
+      {/* Return Date */}
+      <div>
+        <p className="text-xs text-gray-500 uppercase mb-1">Return Date</p>
+        <DatePicker
+          selected={returnDate}
+          onChange={(d) => setReturnDate(d)}
+          dateFormat="dd MMM yy"
+          minDate={pickupDate ?? undefined}
+          className="w-full text-xl font-bold text-gray-900 border-b-2 border-transparent focus:border-lime-500 outline-none"
+        />
+      </div>
+
+      <div className="flex items-end">
+        <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
+          Rent Vehicle
+        </button>
+      </div>
     </div>
-    <div>
-      <p className="text-xs text-gray-500 uppercase">Return Date</p>
-      <h3 className="text-xl font-bold text-gray-900">10 Jul '24</h3>
-    </div>
-    <div className="flex items-end">
-      <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full">
-        Rent Vehicle
-      </button>
-    </div>
-  </div>
-);
+  );
+};

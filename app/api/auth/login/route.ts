@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/config/database";
 import User from "@/models/User";
+import AdminMeta from "@/models/AdminMeta";
 import "@/models/Profile";
 
 export async function POST(req: NextRequest) {
@@ -28,6 +29,17 @@ export async function POST(req: NextRequest) {
         process.env.JWT_SECRET!,
         { expiresIn: "24h" }
       );
+
+      // ✅ Upsert admin login metrics
+      try {
+        await AdminMeta.updateOne(
+          { email: ADMIN_EMAIL },
+          { $inc: { loginCount: 1 }, $set: { lastLogin: new Date() } },
+          { upsert: true }
+        );
+      } catch (e) {
+        console.error("Failed to update admin meta:", e);
+      }
 
       const response = NextResponse.json({
         success: true,

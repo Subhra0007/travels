@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../components/Pages/admin/Sidebar";
 import Dashboard from "../components/Pages/admin/Dashboard";
 
+
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const verify = async () => {
@@ -37,11 +39,51 @@ export default function AdminPage() {
   if (!authorized) return null;
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto mt-15">
-        <Dashboard />
-      </main>
+    <div className="flex h-screen bg-gray-50 relative">
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+      {/* Content */}
+      <div className="flex-1 flex flex-col mt-15">
+        {/* Topbar with mobile trigger */}
+        <div className="sticky top-0 z-40 bg-sky-50">
+          <div className="flex items-center gap-3 p-3 border-b">
+            <button
+              className="lg:hidden px-3 py-2 rounded border text-gray-700"
+              onClick={() => setMobileSidebarOpen(true)}
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+         
+          </div>
+        </div>
+        <main className="flex-1 overflow-y-auto overflow-x-auto">
+          <Dashboard />
+        </main>
+      </div>
+      {/* Mobile Sidebar Drawer */}
+      {mobileSidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
+            <div className="p-4 border-b flex items-center justify-between">
+              <span className="text-lg font-semibold text-gray-800">Menu</span>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="px-3 py-1.5 rounded-md border text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+            <Sidebar />
+          </div>
+        </>
+      )}
     </div>
   );
 }

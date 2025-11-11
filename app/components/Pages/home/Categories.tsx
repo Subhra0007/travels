@@ -44,9 +44,9 @@ export default function TourCategories() {
   ];
 
   return (
-    <div className="bg-sky-50">
+    <div className="bg-sky-50 ">
       
-      <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto py-15 px-6 lg:px-0">
+      <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto py-15 px-6 lg:px-0 z-0 lg:mt-2 mt-45 ">
 
         {/* ✅ Plane icon with animation */}
         <motion.div
@@ -125,7 +125,7 @@ export default function TourCategories() {
         </div>
 
         {/* ✅ MOBILE CARDS (simple fade up – layout unchanged) */}
-        <div className="block lg:hidden">
+        <div className="block lg:hidden ">
           <div className="flex flex-wrap justify-center gap-4 md:gap-8">
             {tours.map((tour, index) => (
               <motion.div
@@ -153,7 +153,7 @@ export default function TourCategories() {
         </div>
       </section>
 
-      <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto pb-15 px-6 lg:px-0">
+      <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto pb-15 px-6 lg:px-0 ">
         {/* ✅ DESKTOP CARDS (Animation added — design preserved) */}
         <div className="lg:block hidden pb-6">
           <div className="flex flex-wrap justify-center gap-4 ">

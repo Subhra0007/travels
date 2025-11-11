@@ -11,6 +11,8 @@ import {
   FaComments,
   FaUserCircle,
 } from "react-icons/fa";
+import { RiCouponLine } from "react-icons/ri";
+
 import { TbLogout } from "react-icons/tb";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
@@ -90,6 +92,30 @@ const Sidebar: React.FC = () => {
             }`}
         >
           <FaChartPie size={14} /> Dashboard
+        </button>
+
+        {/* Products */}
+        <button
+          onClick={() => router.push("/admin/products")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/products")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaUsers size={14} /> Products
+        </button>
+
+        {/* Coupons */}
+        <button
+          onClick={() => router.push("/admin/coupons")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/coupons")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <RiCouponLine  size={14} /> Coupons
         </button>
 
         {/* Travel Partners */}
@@ -263,7 +289,7 @@ const Sidebar: React.FC = () => {
         {/* Chat */}
         <button
           onClick={() => router.push("/admin/chat")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer  ${
             isActive("/admin/chat")
               ? "text-indigo-600 bg-indigo-50"
               : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
@@ -274,7 +300,7 @@ const Sidebar: React.FC = () => {
       </nav>
 
       {/* Bottom Section */}
-      <div className="mt-auto space-y-2">
+      <div className=" space-y-2 p-2 mt-25">
         <button
           onClick={() => router.push("/admin/profile")}
           className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm cursor-pointer"
