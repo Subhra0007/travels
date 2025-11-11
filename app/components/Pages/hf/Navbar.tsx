@@ -49,21 +49,20 @@ const Navbar: React.FC = () => {
     accountType?: "user" | "vendor" | "admin";
   } | null>(null);
 
-  // ✅ FIX — support admin login
+  // ✅ Keep navbar in sync with auth changes and route changes
   useEffect(() => {
     const fetchMe = async () => {
       try {
-        // ✅ Check localStorage for ADMIN
+        // Check localStorage first (covers fixed admin and quick reflect)
         const stored = localStorage.getItem("user");
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (parsed.accountType === "admin") {
-            setUser({ fullName: "Admin", accountType: "admin" });
-            return;
-          }
+          setUser(parsed);
+        } else {
+          setUser(null);
         }
 
-        // ✅ Normal user/vendor from DB
+        // Then verify server session (cookie) to hydrate fresh user data
         const res = await fetch("/api/profile", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
@@ -72,8 +71,43 @@ const Navbar: React.FC = () => {
       } catch (_) {}
     };
 
+    // Initial load
     fetchMe();
+
+    // React to custom auth events (login/logout from any component)
+    const onAuthChanged = (e: any) => {
+      const nextUser = e?.detail ?? null;
+      setUser(nextUser);
+    };
+    window.addEventListener("auth:changed", onAuthChanged as EventListener);
+
+    return () => {
+      window.removeEventListener("auth:changed", onAuthChanged as EventListener);
+    };
   }, []);
+
+  // Refetch on route change to stay fresh after redirects like /login -> /profile
+  useEffect(() => {
+    const refreshOnPathChange = async () => {
+      try {
+        const res = await fetch("/api/profile", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            setUser(data.user);
+            return;
+          }
+        }
+        // Fallback to localStorage if no session
+        const stored = localStorage.getItem("user");
+        setUser(stored ? JSON.parse(stored) : null);
+      } catch {
+        const stored = localStorage.getItem("user");
+        setUser(stored ? JSON.parse(stored) : null);
+      }
+    };
+    refreshOnPathChange();
+  }, [pathname]);
 
   /* ----------  Avatar Component ---------- */
   const UserAvatar = ({ size = 40 }: { size?: number }) => {

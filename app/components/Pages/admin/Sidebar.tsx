@@ -40,10 +40,16 @@ const Sidebar: React.FC = () => {
     try {
       await fetch("/api/logout", { method: "POST", credentials: "include" });
       localStorage.removeItem("user");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:changed", { detail: null }));
+      }
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
       localStorage.removeItem("user");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:changed", { detail: null }));
+      }
       router.push("/");
     }
   };

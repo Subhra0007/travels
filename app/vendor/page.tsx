@@ -7,6 +7,7 @@ import Dashboard from "@/app/components/Pages/vendor/Dashboard";
 
 export default function VendorPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [locked, setLocked] = useState(true);
   const [user, setUser] = useState<any>(null);
 
@@ -32,6 +33,8 @@ export default function VendorPage() {
         }
       } catch (err) {
         router.replace("/login");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -91,6 +94,13 @@ export default function VendorPage() {
       setLocked(false);
     }
   }, [user]);
+
+  if (loading)
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
+      </div>
+    );
 
   return (
     <main className="min-h-screen">

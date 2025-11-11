@@ -31,6 +31,9 @@ export default function LoginPage() {
         accountType: "admin",
       };
       localStorage.setItem("user", JSON.stringify(adminUser));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:changed", { detail: adminUser }));
+      }
       router.push("/admin");
       return;
     }
@@ -47,6 +50,10 @@ export default function LoginPage() {
 
       // ✅ Save user info in localStorage
       localStorage.setItem("user", JSON.stringify(data.user));
+      // ✅ Notify navbar immediately
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("auth:changed", { detail: data.user }));
+      }
 
       // ✅ Admin login
       if (data.user.accountType === "admin") {

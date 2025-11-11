@@ -45,6 +45,9 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     localStorage.removeItem("user");
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("auth:changed", { detail: null }));
+    }
     window.location.href = "/";
   };
 
@@ -95,7 +98,12 @@ export default function ProfilePage() {
   };
 
   // ---------- Loading States ----------
-  if (loading) return <p className="text-center mt-20">Loading...</p>;
+  if (loading)
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
+      </div>
+    );
   if (!user) return <p className="text-center mt-20">No user found.</p>;
 
   // ---------- Render ----------
