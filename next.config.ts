@@ -3,8 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
 
+  // ✅ Removed "turbo" (not valid anymore)
   experimental: {
-    turbo: false, // ✅ Disable Turbopack (fix panic error)
+    // You can still include other valid flags here, for example:
+    // reactCompiler: true, // already top-level
+    // serverActions: true,
   },
 
   images: {
