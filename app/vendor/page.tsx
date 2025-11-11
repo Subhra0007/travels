@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Dashboard from "@/app/components/Pages/vendor/Dashboard";
-
+import Sidebar from "../components/Pages/vendor/Sidebar";
 export default function VendorPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -97,14 +97,21 @@ export default function VendorPage() {
 
   if (loading)
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
 
   return (
-    <main className="min-h-screen">
+    <main className="flex h-screen bg-gray-50">
+       {/* Desktop sidebar */}
+   <div className="hidden lg:block ">
+     <Sidebar />
+   </div>
+   <main className="flex-1 overflow-y-auto ">
       <Dashboard locked={locked} />
+   </main>
+    
     </main>
   );
 }

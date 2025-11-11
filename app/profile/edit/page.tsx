@@ -123,7 +123,7 @@ export default function EditProfilePage() {
 
   if (loading)
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -149,36 +149,51 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-8 bg-sky-50 shadow-xl rounded-3xl mt-20 mb-10">
-      <h1 className="text-3xl font-bold mb-8 text-black">Edit Profile</h1>
+    <div className="max-w-3xl mx-auto p-4 md:p-8 bg-sky-50 shadow-xl rounded-3xl mt-20 mb-10">
+      <div className="mb-4 md:mb-6 flex items-center justify-between">
+        <h1 className="text-2xl md:text-3xl font-bold text-black">Edit Profile</h1>
+        <button
+          onClick={() => router.push("/profile")}
+          className="bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 md:px-6 py-2 md:py-2.5 rounded-xl font-medium shadow-md transition-all duration-200 flex items-center gap-2 text-sm md:text-base"
+        >
+          Back to Profile
+        </button>
+      </div>
 
       {/* Picture */}
-      <div className="flex items-center gap-6 mb-8">
-        <Avatar />
-        <div>
+      <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8 flex-wrap">
+        <div className="md:hidden">
+          <Avatar />
+        </div>
+        <div className="hidden md:block">
+          <Avatar />
+        </div>
+        <div className="w-full md:w-auto">
           <input
             type="file"
             accept="image/*"
             onChange={(e) => setNewPicture(e.target.files?.[0] ?? null)}
             className="block mb-2 text-gray-900"
           />
-          <button
-            onClick={uploadPicture}
-            className="bg-blue-600 text-white px-4 py-1.5 rounded mr-2"
-          >
-            Upload
-          </button>
-          <button
-            onClick={removePicture}
-            className="bg-red-600 text-white px-4 py-1.5 rounded"
-          >
-            Remove
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={uploadPicture}
+              className="bg-blue-600 text-white px-3 md:px-4 py-1.5 rounded"
+            >
+              Upload
+            </button>
+            <button
+              onClick={removePicture}
+              className="bg-red-600 text-white px-3 md:px-4 py-1.5 rounded"
+            >
+              Remove
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Read-only Name & Email */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-900">
             Full Name
@@ -257,7 +272,7 @@ export default function EditProfilePage() {
           onChange={(e) => setForm({ ...form, about: e.target.value })}
           className="w-full p-2 border rounded text-gray-600 border-gray-300"
         />
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           <input
             key="street"
             placeholder="Street"
@@ -298,16 +313,16 @@ export default function EditProfilePage() {
       </div>
 
       {/* Buttons */}
-      <div className="mt-8 flex justify-end gap-3">
+      <div className="mt-6 md:mt-8 flex flex-col-reverse sm:flex-row justify-end gap-2 md:gap-3">
         <button
           onClick={() => router.push("/profile")}
-          className="px-5 py-2 bg-gray-500 text-white rounded"
+          className="px-4 md:px-5 py-2 bg-gray-500 text-white rounded"
         >
           Cancel
         </button>
         <button
           onClick={save}
-          className="px-6 py-2 bg-green-600 text-white rounded"
+          className="px-5 md:px-6 py-2 bg-green-600 text-white rounded"
         >
           Save Changes
         </button>

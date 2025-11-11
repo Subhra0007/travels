@@ -104,9 +104,9 @@ export default function Sidebar() {
   const anyPropertiesActive = filteredProperties.some((sub) => isActiveHref(sub.href));
 
   return (
-    <aside className="max-h-full w-60 bg-white border-r shadow-sm left-0 top-0 px-4 py-6">
+    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col px-4 py-6">
 
-      <nav className="space-y-3 mt-10">
+      <nav className="space-y-3 mt-15">
         {menu
           // If no allowed services, omit Properties menu entirely
           .filter((item) => !item.submenu || item.submenu.length > 0)
@@ -161,7 +161,7 @@ export default function Sidebar() {
               /* ✅ LOGOUT BUTTON */
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 text-gray-700 hover:text-indigo-600 p-2 rounded-md transition w-full"
+                className="flex items-center gap-2 text-gray-700 hover:text-red-600 p-2 rounded-md transition w-full cursor-pointer"
               >
                 {item.icon}
                 <span>{item.name}</span>

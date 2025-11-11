@@ -78,11 +78,11 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col">
-      <nav className="flex-1 space-y-2 text-sm mt-15">
+      <nav className="flex-1 space-y-2 text-sm mt-15 ">
         {/* Dashboard */}
         <button
           onClick={() => router.push("/admin")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer
             ${
               isActive("/admin")
                 ? "text-indigo-600 bg-indigo-50"
@@ -96,7 +96,7 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("partners", "Travel Partners", <FaUmbrellaBeach size={14} />)}
           {openMenu === "partners" && (
-            <div className="ml-8 mt-2 text-sm space-y-1">
+            <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
               <div
                 onClick={() => router.push("/admin/partners")}
                 className={`cursor-pointer rounded px-2 py-1 transition-colors ${
@@ -109,7 +109,7 @@ const Sidebar: React.FC = () => {
               </div>
               <div
                 onClick={() => router.push("/admin/partners/stays")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                className={`cursor-pointer rounded px-2 py-1 transition-colors  ${
                   isActive("/admin/partners/stays")
                     ? "text-indigo-600 bg-indigo-50"
                     : "text-gray-700 hover:text-indigo-600"
@@ -155,7 +155,7 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("bookings", "Manage Bookings", <FaPlaneDeparture size={14} />)}
           {openMenu === "bookings" && (
-            <div className="ml-8 mt-2 text-sm space-y-1">
+            <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
               {[
                 { label: "Stays", path: "/admin/bookings/stays" },
                 { label: "Tours", path: "/admin/bookings/tours" },
@@ -183,7 +183,7 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("accounting", "Accounting", <FaMoneyCheckAlt size={14} />)}
           {openMenu === "accounting" && (
-            <div className="ml-8 mt-2 text-sm space-y-1">
+            <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
               {[
                 { label: "Transactions", path: "/admin/accounting/transactions" },
                 { label: "Invoices", path: "/admin/accounting/invoices" },
@@ -238,7 +238,7 @@ const Sidebar: React.FC = () => {
         <div>
           {menuItem("reports", "Reports", <FaFileAlt size={14} />)}
           {openMenu === "reports" && (
-            <div className="ml-8 mt-2 text-sm space-y-1">
+            <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
               {[
                 { label: "Sales", path: "/admin/reports/sales" },
                 { label: "Bookings", path: "/admin/reports/bookings" },
@@ -263,7 +263,7 @@ const Sidebar: React.FC = () => {
         {/* Chat */}
         <button
           onClick={() => router.push("/admin/chat")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
             isActive("/admin/chat")
               ? "text-indigo-600 bg-indigo-50"
               : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
@@ -277,14 +277,14 @@ const Sidebar: React.FC = () => {
       <div className="mt-auto space-y-2">
         <button
           onClick={() => router.push("/admin/profile")}
-          className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm"
+          className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm cursor-pointer"
         >
           <FaUserCircle size={14} /> Profile
         </button>
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full text-gray-700 hover:text-red-600 text-sm"
+          className="flex items-center gap-3 w-full text-gray-700 hover:text-red-600 text-sm cursor-pointer"
         >
           <TbLogout size={14} /> Logout
         </button>
