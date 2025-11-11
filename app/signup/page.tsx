@@ -148,7 +148,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             required
             className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-lime-500 outline-none text-gray-800 border-gray-400"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2 lg:flex-row flex-col">
             <input
               name="email"
               type="email"

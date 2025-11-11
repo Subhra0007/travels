@@ -59,7 +59,7 @@ export default function AdminPage() {
          
           </div>
         </div>
-        <main className="flex-1 overflow-y-auto overflow-x-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden">
           <Dashboard />
         </main>
       </div>

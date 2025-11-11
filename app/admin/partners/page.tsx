@@ -29,7 +29,7 @@ export default function PartnersAdminPage() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto overflow-x-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
           <VendorTable />
         </main>
       </div>

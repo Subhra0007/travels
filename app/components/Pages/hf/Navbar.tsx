@@ -573,15 +573,25 @@ const Navbar: React.FC = () => {
               <div className="max-h-[70vh] overflow-y-auto pr-2 space-y-8">
                 {mainServices.map((service) => (
                   <div key={service.id} className="space-y-4">
-                    <div className="flex items-center gap-4 p-4 bg-linear-to-r from-green-50 to-lime-50 rounded-xl shadow-sm">
+                    <Link
+                      href={service.href}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setMobileServicesOpen(false);
+                      }}
+                      className="flex items-center gap-4 p-4 bg-linear-to-r from-green-50 to-lime-50 rounded-xl shadow-sm transition-all duration-200 hover:bg-linear-to-r hover:from-green-100 hover:to-lime-100"
+                    >
                       <div className="w-12 h-12 bg-linear-to-br from-green-500 to-lime-500 rounded-xl flex items-center justify-center text-white shadow-md">
                         {service.icon}
                       </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900">{service.name}</h4>
+                      <div className="flex flex-col gap-1">
+                        <h4 className="font-bold text-gray-900 flex items-center gap-2">
+                          {service.name}
+                          <FaArrowRight className="text-sm text-green-600" />
+                        </h4>
                         <p className="text-xs text-gray-600">{service.subtext}</p>
                       </div>
-                    </div>
+                    </Link>
 
                     <div className="space-y-2">
                       {service.subServices.map((sub) => (
@@ -656,7 +666,9 @@ const Navbar: React.FC = () => {
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+              className={`fixed inset-0 z-40 md:hidden ${
+                mobileServicesOpen ? "bg-black/60" : "bg-black/40"
+              }`}
           onClick={() => {
             setIsOpen(false);
             setMobileServicesOpen(false);
