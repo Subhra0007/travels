@@ -68,7 +68,7 @@ const VendorTable: React.FC = () => {
   if (loading) return <p className="text-center py-8">Loading vendors...</p>;
 
   return (
-    <div className="bg-white rounded-xl shadow p-6 mt-6">
+    <div className="bg-white rounded-xl shadow p-6 mt-6 overflow-y-auto overflow-x-auto">
       <h2 className="text-lg font-semibold mb-4 text-black">All Vendors</h2>
 
       <div className="overflow-x-auto">

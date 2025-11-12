@@ -26,7 +26,7 @@ export default function Sidebar() {
 
   // Open Properties submenu when on any properties route
   useEffect(() => {
-    if (pathname?.startsWith("/vendor/properties")) {
+    if (pathname?.startsWith("/vendor/properties") || pathname?.startsWith("/vendor/stays")) {
       setOpenProperties(true);
     }
   }, [pathname]);
@@ -65,7 +65,7 @@ export default function Sidebar() {
 
   // Full Properties list with ids to filter by vendor selection
   const propertiesSubmenu = [
-    { id: "stays", name: "Stays", icon: <FaBed size={16} />, href: "/vendor/properties/stays" },
+    { id: "stays", name: "Stays", icon: <FaBed size={16} />, href: "/vendor/stays" },
     { id: "tours", name: "Tours", icon: <FaCompass size={16} />, href: "/vendor/properties/tours" },
     { id: "adventures", name: "Adventures", icon: <FaMountain size={16} />, href: "/vendor/properties/adventures" },
     { id: "vehicle-rental", name: "Vehicle Rental", icon: <FaCar size={16} />, href: "/vendor/properties/vehicle-rental" },

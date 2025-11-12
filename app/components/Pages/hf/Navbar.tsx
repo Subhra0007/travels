@@ -312,7 +312,7 @@ const Navbar: React.FC = () => {
                       scale: isServicesOpen ? 1 : 0.95,
                     }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className={`absolute left-1/2 -translate-x-1/2 mt-4 w-2xl backdrop-blur-3xl border-b border-white/20 rounded-2xl shadow-2xl border overflow-hidden ${
+                    className={`absolute left-1/2 -translate-x-1/2 mt-4 w-2xl backdrop-blur-3xl border-b border-white/20 rounded-2xl shadow-2xl border overflow-x-hidden max-h-[80vh] overflow-y-auto ${
                       isServicesOpen
                         ? "pointer-events-auto"
                         : "pointer-events-none"

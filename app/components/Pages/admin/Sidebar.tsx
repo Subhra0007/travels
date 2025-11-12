@@ -10,6 +10,7 @@ import {
   FaFileAlt,
   FaComments,
   FaUserCircle,
+  FaBed,
 } from "react-icons/fa";
 import { TbLogs } from "react-icons/tb";
 import { RiCouponLine } from "react-icons/ri";
@@ -93,6 +94,17 @@ const Sidebar: React.FC = () => {
             }`}
         >
           <FaChartPie size={14} /> Dashboard
+        </button>
+
+        <button
+          onClick={() => router.push("/admin/stays")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/stays")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaBed size={14} /> Stays
         </button>
 
         {/* Products */}
