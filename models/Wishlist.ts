@@ -18,7 +18,7 @@ const wishlistSchema = new Schema<IWishlist>(
     adventureId: { type: Schema.Types.ObjectId, ref: "Adventure", index: true },
     vehicleRentalId: { type: Schema.Types.ObjectId, ref: "VehicleRental", index: true },
   },
-  { timestamps: true, strictPopulate: false, strict: true }
+  { timestamps: true, strict: true }
 );
 
 // Ensure only one of the service IDs is set

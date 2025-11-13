@@ -57,7 +57,9 @@ export async function POST(req: NextRequest) {
     let taxes = 0;
 
     const normalizedRooms = rooms.map((requested: any) => {
-      const stayRoom = stay.rooms.id(requested.roomId) || stay.rooms.find((r) => r.name === requested.roomName);
+      const stayRoom =
+        stay.rooms.id(requested.roomId) ||
+        stay.rooms.find((room: any) => room.name === requested.roomName);
       if (!stayRoom) {
         throw new Error(`Room ${requested.roomName || requested.roomId} not found`);
       }

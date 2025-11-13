@@ -18,7 +18,8 @@ export const GET = auth(async (req: NextRequest) => {
       );
     }
 
-    const { status } = new URL(req.url).searchParams;
+    const searchParams = new URL(req.url).searchParams;
+    const status = searchParams.get("status");
     const query: any = {};
     if (status) {
       query.status = status;

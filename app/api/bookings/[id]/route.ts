@@ -9,11 +9,14 @@ const ensureObjectId = (value: string) => mongoose.Types.ObjectId.isValid(value)
 
 export const GET = auth(async (
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context?: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
     const user = (req as any).user;
+    if (!context) {
+      return NextResponse.json({ success: false, message: "Missing route parameters" }, { status: 400 });
+    }
     const { id } = await context.params;
 
     if (!ensureObjectId(id)) {
@@ -58,11 +61,14 @@ export const GET = auth(async (
 
 export const PATCH = auth(async (
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context?: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
     const user = (req as any).user;
+    if (!context) {
+      return NextResponse.json({ success: false, message: "Missing route parameters" }, { status: 400 });
+    }
     const { id } = await context.params;
 
     if (!ensureObjectId(id)) {

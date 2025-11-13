@@ -228,7 +228,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
                           disabled={
                             booking.status === "cancelled" ||
                             booking.status === "completed" ||
-                            (loadingBookingId && loadingBookingId === booking._id)
+                            (loadingBookingId ? loadingBookingId === booking._id : false)
                           }
                           onClick={() => onCancel?.(booking._id)}
                           className="rounded-full border border-rose-300 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400"
