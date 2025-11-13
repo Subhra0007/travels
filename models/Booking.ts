@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export type BookingStatus = "pending" | "confirmed" | "completed" | "cancelled";
 export type PaymentStatus = "unpaid" | "pending" | "paid" | "refunded";
+export type BookingServiceType = "stay" | "tour" | "adventure" | "vehicle";
 
 export interface IBookingRoom {
   roomId?: mongoose.Types.ObjectId;
@@ -14,8 +15,21 @@ export interface IBookingRoom {
   addons?: string[];
 }
 
+export interface IBookingItem {
+  itemId?: mongoose.Types.ObjectId;
+  itemName: string;
+  quantity: number;
+  pricePerUnit: number;
+  taxes: number;
+  metadata?: Record<string, any>;
+}
+
 export interface IBooking extends Document {
-  stayId: mongoose.Types.ObjectId;
+  serviceType: BookingServiceType;
+  stayId?: mongoose.Types.ObjectId;
+  tourId?: mongoose.Types.ObjectId;
+  adventureId?: mongoose.Types.ObjectId;
+  vehicleRentalId?: mongoose.Types.ObjectId;
   vendorId: mongoose.Types.ObjectId;
   customerId?: mongoose.Types.ObjectId | null;
   customer: {
@@ -24,8 +38,12 @@ export interface IBooking extends Document {
     phone?: string;
     notes?: string;
   };
-  checkIn: Date;
-  checkOut: Date;
+  checkIn?: Date;
+  checkOut?: Date;
+  startDate?: Date;
+  endDate?: Date;
+  pickupDate?: Date;
+  dropoffDate?: Date;
   nights: number;
   guests: {
     adults: number;
@@ -33,6 +51,7 @@ export interface IBooking extends Document {
     infants: number;
   };
   rooms: IBookingRoom[];
+  items: IBookingItem[];
   currency: string;
   subtotal: number;
   taxes: number;
@@ -61,9 +80,30 @@ const bookingRoomSchema = new Schema<IBookingRoom>(
   { _id: false }
 );
 
+const bookingItemSchema = new Schema<IBookingItem>(
+  {
+    itemId: { type: Schema.Types.ObjectId },
+    itemName: { type: String, required: true },
+    quantity: { type: Number, required: true, min: 1 },
+    pricePerUnit: { type: Number, required: true, min: 0 },
+    taxes: { type: Number, default: 0, min: 0 },
+    metadata: Schema.Types.Mixed,
+  },
+  { _id: false }
+);
+
 const bookingSchema = new Schema<IBooking>(
   {
-    stayId: { type: Schema.Types.ObjectId, ref: "Stay", required: true, index: true },
+    serviceType: {
+      type: String,
+      enum: ["stay", "tour", "adventure", "vehicle"],
+      default: "stay",
+      index: true,
+    },
+    stayId: { type: Schema.Types.ObjectId, ref: "Stay", index: true },
+    tourId: { type: Schema.Types.ObjectId, ref: "Tour", index: true },
+    adventureId: { type: Schema.Types.ObjectId, ref: "Adventure", index: true },
+    vehicleRentalId: { type: Schema.Types.ObjectId, ref: "VehicleRental", index: true },
     vendorId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     customerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     customer: {
@@ -72,15 +112,20 @@ const bookingSchema = new Schema<IBooking>(
       phone: String,
       notes: String,
     },
-    checkIn: { type: Date, required: true },
-    checkOut: { type: Date, required: true },
+    checkIn: { type: Date },
+    checkOut: { type: Date },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    pickupDate: { type: Date },
+    dropoffDate: { type: Date },
     nights: { type: Number, required: true, min: 1 },
     guests: {
       adults: { type: Number, required: true, min: 1 },
       children: { type: Number, default: 0, min: 0 },
       infants: { type: Number, default: 0, min: 0 },
     },
-    rooms: { type: [bookingRoomSchema], required: true },
+    rooms: { type: [bookingRoomSchema], default: [] },
+    items: { type: [bookingItemSchema], default: [] },
     currency: { type: String, default: "INR" },
     subtotal: { type: Number, required: true, min: 0 },
     taxes: { type: Number, default: 0, min: 0 },
@@ -104,6 +149,9 @@ const bookingSchema = new Schema<IBooking>(
 );
 
 bookingSchema.index({ stayId: 1, checkIn: 1 });
+bookingSchema.index({ tourId: 1, startDate: 1 });
+bookingSchema.index({ adventureId: 1, startDate: 1 });
+bookingSchema.index({ vehicleRentalId: 1, pickupDate: 1 });
 bookingSchema.index({ vendorId: 1, status: 1 });
 bookingSchema.index({ "customer.email": 1 });
 

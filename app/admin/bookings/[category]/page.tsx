@@ -13,6 +13,13 @@ const CATEGORY_LABELS: Record<string, string> = {
   cancellations: "Cancelled bookings",
 };
 
+const SERVICE_TYPE_BY_CATEGORY: Record<string, BookingRecord["serviceType"]> = {
+  stays: "stay",
+  tours: "tour",
+  adventures: "adventure",
+  "vehicle-rental": "vehicle",
+};
+
 const AdminBookingsCategoryPage = () => {
   const router = useRouter();
   const params = useParams();
@@ -79,19 +86,30 @@ const AdminBookingsCategoryPage = () => {
   }, [categoryParam, router]);
 
   const filteredBookings = useMemo(() => {
-    if (category === "stays") return bookings;
-    if (category === "cancellations") return bookings.filter((booking) => booking.status === "cancelled");
-    return [];
+    if (category === "cancellations") {
+      return bookings.filter((booking) => booking.status === "cancelled");
+    }
+
+    const serviceType = SERVICE_TYPE_BY_CATEGORY[category];
+    if (!serviceType) return bookings;
+
+    return bookings.filter((booking) => booking.serviceType === serviceType);
   }, [bookings, category]);
 
   const emptyMessage = useMemo(() => {
     switch (category) {
       case "stays":
-        return "Confirmed stay reservations will appear here as soon as guests complete the booking form.";
+        return "Stay reservations will appear here as soon as a guest completes the booking form.";
+      case "tours":
+        return "Tour reservations will show up once travellers submit their booking details.";
+      case "adventures":
+        return "Adventure reservations will appear here when travellers confirm their trip.";
+      case "vehicle-rental":
+        return "Vehicle rental bookings will display here after drivers provide their pickup information.";
       case "cancellations":
-        return "When a booking is cancelled it will appear in this view for quick follow-up.";
+        return "When any booking is cancelled it will be listed here for quick follow-up.";
       default:
-        return "Support for this booking category is coming soon.";
+        return "Bookings for this category will display here.";
     }
   }, [category]);
 
@@ -125,13 +143,8 @@ const AdminBookingsCategoryPage = () => {
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-900">{CATEGORY_LABELS[category]}</h1>
             <p className="text-sm text-gray-600">
-              Monitor reservations submitted by travellers. Use this dashboard to confirm stays, audit platform fees, and follow up with guests and vendors.
+              Monitor reservations submitted by travellers. Use this dashboard to confirm requests, audit platform fees, and follow up with guests and vendors.
             </p>
-            {category !== "stays" && category !== "cancellations" && (
-              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-xs text-blue-700">
-                We&apos;re still wiring up bookings for this category. You can continue to manage stay bookings while the additional services sync is completed.
-              </div>
-            )}
           </div>
 
           {error ? (

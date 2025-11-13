@@ -4,7 +4,38 @@ import { useMemo } from "react";
 
 export type BookingRecord = {
   _id: string;
+  serviceType?: "stay" | "tour" | "adventure" | "vehicle";
   stayId?: {
+    _id: string;
+    name: string;
+    category?: string;
+    location?: {
+      city?: string;
+      state?: string;
+      country?: string;
+    };
+  };
+  tourId?: {
+    _id: string;
+    name: string;
+    category?: string;
+    location?: {
+      city?: string;
+      state?: string;
+      country?: string;
+    };
+  };
+  adventureId?: {
+    _id: string;
+    name: string;
+    category?: string;
+    location?: {
+      city?: string;
+      state?: string;
+      country?: string;
+    };
+  };
+  vehicleRentalId?: {
     _id: string;
     name: string;
     category?: string;
@@ -17,6 +48,10 @@ export type BookingRecord = {
   checkIn: string;
   checkOut: string;
   nights: number;
+  startDate?: string;
+  endDate?: string;
+  pickupDate?: string;
+  dropoffDate?: string;
   guests: {
     adults: number;
     children: number;
@@ -25,6 +60,11 @@ export type BookingRecord = {
   rooms: Array<{
     roomId?: string;
     roomName: string;
+    quantity: number;
+  }>;
+  items?: Array<{
+    itemId?: string;
+    itemName: string;
     quantity: number;
   }>;
   currency?: string;
@@ -108,12 +148,12 @@ const BookingTable: React.FC<BookingTableProps> = ({
           <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
             <tr>
               <th className="px-4 py-3 text-left">Reference</th>
-              <th className="px-4 py-3 text-left">Property</th>
+              <th className="px-4 py-3 text-left">Service</th>
               {variant !== "user" && <th className="px-4 py-3 text-left">Guest</th>}
-              <th className="px-4 py-3 text-left">Check-in</th>
-              <th className="px-4 py-3 text-left">Check-out</th>
+              <th className="px-4 py-3 text-left">Start</th>
+              <th className="px-4 py-3 text-left">End</th>
               <th className="px-4 py-3 text-left">Guests</th>
-              <th className="px-4 py-3 text-left">Rooms</th>
+              <th className="px-4 py-3 text-left">Selection</th>
               <th className="px-4 py-3 text-left">Total</th>
               <th className="px-4 py-3 text-left">Status</th>
               {variant === "admin" && <th className="px-4 py-3 text-left">Vendor</th>}
@@ -123,22 +163,64 @@ const BookingTable: React.FC<BookingTableProps> = ({
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
             {rows.map((booking) => {
-              const totalRooms = booking.rooms?.reduce((sum, room) => sum + (room.quantity || 0), 0) ?? 0;
-              const roomsLabel = booking.rooms
-                ?.map((room) => `${room.roomName} × ${room.quantity}`)
+              const serviceType =
+                booking.serviceType ||
+                (booking.stayId
+                  ? "stay"
+                  : booking.tourId
+                    ? "tour"
+                    : booking.adventureId
+                      ? "adventure"
+                      : booking.vehicleRentalId
+                        ? "vehicle"
+                        : "stay");
+
+              const serviceName =
+                booking.stayId?.name ||
+                booking.tourId?.name ||
+                booking.adventureId?.name ||
+                booking.vehicleRentalId?.name ||
+                "Service unavailable";
+
+              const locationInfo =
+                booking.stayId?.location ||
+                booking.tourId?.location ||
+                booking.adventureId?.location ||
+                booking.vehicleRentalId?.location;
+
+              const locationLabel = locationInfo?.city
+                ? `${locationInfo.city}${locationInfo.state ? `, ${locationInfo.state}` : ""}`
+                : "—";
+
+              const startDate = booking.checkIn || booking.startDate || booking.pickupDate;
+              const endDate = booking.checkOut || booking.endDate || booking.dropoffDate;
+
+              const lineItems =
+                serviceType === "stay"
+                  ? booking.rooms?.map((room) => ({
+                      name: room.roomName,
+                      quantity: room.quantity,
+                    }))
+                  : booking.items?.map((item) => ({
+                      name: item.itemName,
+                      quantity: item.quantity,
+                    }));
+
+              const totalUnits = lineItems?.reduce((sum, item) => sum + (item.quantity ?? 0), 0) ?? 0;
+              const lineItemsLabel = lineItems
+                ?.map((item) => `${item.name} × ${item.quantity}`)
                 .slice(0, 3)
                 .join(", ");
-              const hasMoreRooms = (booking.rooms?.length ?? 0) > 3;
+              const hasMoreLineItems = (lineItems?.length ?? 0) > 3;
 
               return (
                 <tr key={booking._id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 align-top font-semibold text-gray-900">#{booking._id.slice(-8).toUpperCase()}</td>
                   <td className="px-4 py-3 align-top">
                     <div className="flex flex-col">
-                      <span className="font-medium text-gray-900">{booking.stayId?.name ?? "Stay unavailable"}</span>
-                      <span className="text-xs text-gray-500">
-                        {booking.stayId?.location?.city ? `${booking.stayId.location.city}, ${booking.stayId.location?.state ?? ""}`.trim() : "—"}
-                      </span>
+                      <span className="font-medium text-gray-900">{serviceName}</span>
+                      <span className="text-xs text-gray-500 capitalize">{serviceType}</span>
+                      <span className="text-xs text-gray-500">{locationLabel}</span>
                     </div>
                   </td>
                   {variant !== "user" && (
@@ -150,13 +232,20 @@ const BookingTable: React.FC<BookingTableProps> = ({
                       </div>
                     </td>
                   )}
-                  <td className="px-4 py-3 align-top">{formatDate(booking.checkIn)}</td>
-                  <td className="px-4 py-3 align-top">{formatDate(booking.checkOut)}</td>
+                  <td className="px-4 py-3 align-top">{formatDate(startDate)}</td>
+                  <td className="px-4 py-3 align-top">{formatDate(endDate)}</td>
                   <td className="px-4 py-3 align-top">{formatGuests(booking)}</td>
                   <td className="px-4 py-3 align-top text-xs">
-                    <span className="font-semibold text-gray-900">{totalRooms} room{totalRooms === 1 ? "" : "s"}</span>
-                    <div className="text-gray-500">{roomsLabel || "—"}</div>
-                    {hasMoreRooms && <div className="text-gray-400">+{(booking.rooms?.length ?? 0) - 3} more</div>}
+                    <span className="font-semibold text-gray-900">
+                      {totalUnits} {serviceType === "vehicle" ? "vehicle" : serviceType === "stay" ? "room" : "option"}
+                      {totalUnits === 1 ? "" : "s"}
+                    </span>
+                    <div className="text-gray-500">{lineItemsLabel || "—"}</div>
+                    {hasMoreLineItems && (
+                      <div className="text-gray-400">
+                        +{(lineItems?.length ?? 0) - 3} more
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 align-top font-semibold text-gray-900">
                     {booking.currency ?? "₹"}

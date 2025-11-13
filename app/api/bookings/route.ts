@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import dbConnect from "@/lib/config/database";
 import Stay from "@/models/Stay";
+import Tour from "@/models/Tour";
+import Adventure from "@/models/Adventure";
+import VehicleRental from "@/models/VehicleRental";
 import Booking from "@/models/Booking";
 import Settlement from "@/models/Settlement";
 import { auth } from "@/lib/middlewares/auth";
@@ -11,16 +14,30 @@ function calculateNights(checkIn: Date, checkOut: Date) {
   return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
+function calculateDays(start: Date, end: Date) {
+  const diff = end.getTime() - start.getTime();
+  return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
     const body = await req.json();
 
     const {
+      serviceType: rawServiceType,
       stayId,
+      tourId,
+      adventureId,
+      vehicleRentalId,
       checkIn,
       checkOut,
+      startDate,
+      endDate,
+      pickupDate,
+      dropoffDate,
       rooms,
+      items,
       guests,
       customer,
       currency = "INR",
@@ -28,106 +45,356 @@ export async function POST(req: NextRequest) {
       source = "web",
     } = body;
 
-    if (!stayId || !mongoose.Types.ObjectId.isValid(stayId)) {
-      return NextResponse.json({ success: false, message: "Invalid stay id" }, { status: 400 });
-    }
-
-    if (!Array.isArray(rooms) || rooms.length === 0) {
-      return NextResponse.json({ success: false, message: "At least one room booking is required" }, { status: 400 });
-    }
-
     if (!customer?.fullName || !customer?.email) {
       return NextResponse.json({ success: false, message: "Guest name and email are required" }, { status: 400 });
     }
 
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
-    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
-      return NextResponse.json({ success: false, message: "Invalid check-in/out dates" }, { status: 400 });
+    const serviceType =
+      rawServiceType ||
+      (stayId ? "stay" : tourId ? "tour" : adventureId ? "adventure" : vehicleRentalId ? "vehicle" : null);
+
+    if (!serviceType) {
+      return NextResponse.json({ success: false, message: "A valid service type or reference id is required" }, { status: 400 });
     }
 
-    const stay = await Stay.findById(stayId);
-    if (!stay || !stay.isActive) {
-      return NextResponse.json({ success: false, message: "Stay not found" }, { status: 404 });
-    }
+    let bookingPayload: any = {
+      serviceType,
+      customerId: body.customerId ?? null,
+      customer: {
+        fullName: customer.fullName,
+        email: customer.email,
+        phone: customer.phone,
+        notes: customer.notes,
+      },
+      currency,
+      fees: Number(body.fees ?? 0),
+      status: "pending",
+      paymentStatus: "unpaid",
+      metadata: {
+        source,
+        notes,
+      },
+    };
 
-    const nights = calculateNights(checkInDate, checkOutDate);
+    const parsedGuests = {
+      adults: Number(guests?.adults ?? 1),
+      children: Number(guests?.children ?? 0),
+      infants: Number(guests?.infants ?? 0),
+    };
 
     let subtotal = 0;
     let taxes = 0;
 
-    const normalizedRooms = rooms.map((requested: any) => {
-      const stayRoom =
-        stay.rooms.id(requested.roomId) ||
-        stay.rooms.find((room: any) => room.name === requested.roomName);
-      if (!stayRoom) {
-        throw new Error(`Room ${requested.roomName || requested.roomId} not found`);
+    if (serviceType === "stay") {
+      if (!stayId || !mongoose.Types.ObjectId.isValid(stayId)) {
+        return NextResponse.json({ success: false, message: "Invalid stay id" }, { status: 400 });
       }
 
-      const quantity = Number(requested.quantity ?? 1);
-      if (!Number.isFinite(quantity) || quantity <= 0) {
-        throw new Error("Invalid room quantity");
+      if (!Array.isArray(rooms) || rooms.length === 0) {
+        return NextResponse.json({ success: false, message: "At least one room booking is required" }, { status: 400 });
       }
 
-      const pricePerNight = Number(requested.pricePerNight ?? stayRoom.price);
-      const roomTaxes = Number(requested.taxes ?? stayRoom.taxes ?? 0);
-      const total = (pricePerNight + roomTaxes) * quantity * nights;
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+        return NextResponse.json({ success: false, message: "Invalid check-in/out dates" }, { status: 400 });
+      }
 
-      subtotal += pricePerNight * quantity * nights;
-      taxes += roomTaxes * quantity * nights;
+      const stay = await Stay.findById(stayId);
+      if (!stay || !stay.isActive) {
+        return NextResponse.json({ success: false, message: "Stay not found" }, { status: 404 });
+      }
 
-      return {
-        roomId: stayRoom._id,
-        roomName: stayRoom.name,
-        quantity,
-        pricePerNight,
-        taxes: roomTaxes,
+      const nights = calculateNights(checkInDate, checkOutDate);
+
+      const normalizedRooms = rooms.map((requested: any) => {
+        const stayRoom =
+          stay.rooms.id(requested.roomId) ||
+          stay.rooms.find((room: any) => room.name === requested.roomName);
+        if (!stayRoom) {
+          throw new Error(`Room ${requested.roomName || requested.roomId} not found`);
+        }
+
+        const quantity = Number(requested.quantity ?? 1);
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          throw new Error("Invalid room quantity");
+        }
+
+        const pricePerNight = Number(requested.pricePerNight ?? stayRoom.price);
+        const roomTaxes = Number(requested.taxes ?? stayRoom.taxes ?? 0);
+        const total = (pricePerNight + roomTaxes) * quantity * nights;
+
+        subtotal += pricePerNight * quantity * nights;
+        taxes += roomTaxes * quantity * nights;
+
+        return {
+          roomId: stayRoom._id,
+          roomName: stayRoom.name,
+          quantity,
+          pricePerNight,
+          taxes: roomTaxes,
+          nights,
+          total,
+          addons: Array.isArray(requested.addons) ? requested.addons : [],
+        };
+      });
+
+      bookingPayload = {
+        ...bookingPayload,
+        stayId: stay._id,
+        vendorId: stay.vendorId,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
         nights,
-        total,
-        addons: Array.isArray(requested.addons) ? requested.addons : [],
+        guests: parsedGuests,
+        rooms: normalizedRooms,
+        items: [],
+        subtotal,
+        taxes,
+        totalAmount: subtotal + taxes + bookingPayload.fees,
       };
-    });
 
-    const booking = await Booking.create({
-      stayId: stay._id,
-      vendorId: stay.vendorId,
-      customerId: body.customerId ?? null,
-      customer,
-      checkIn: checkInDate,
-      checkOut: checkOutDate,
-      nights,
-      guests: {
-        adults: Number(guests?.adults ?? 1),
-        children: Number(guests?.children ?? 0),
-        infants: Number(guests?.infants ?? 0),
-      },
-      rooms: normalizedRooms,
-      currency,
-      subtotal,
-      taxes,
-      fees: Number(body.fees ?? 0),
-      totalAmount: subtotal + taxes + Number(body.fees ?? 0),
-      status: "pending",
-      paymentStatus: "unpaid",
-      metadata: { source, notes },
-    });
+      const booking = await Booking.create(bookingPayload);
 
-    const settlementDueDate = new Date(checkOutDate);
-    settlementDueDate.setDate(settlementDueDate.getDate() + 7);
+      const settlementDueDate = new Date(checkOutDate);
+      settlementDueDate.setDate(settlementDueDate.getDate() + 7);
 
-    await Settlement.create({
-      bookingId: booking._id,
-      stayId: stay._id,
-      vendorId: stay.vendorId,
-      amountDue: booking.totalAmount,
-      amountPaid: 0,
-      currency,
-      scheduledDate: settlementDueDate,
-      status: "pending",
-      notes: "Auto-generated from booking",
-    });
+      await Settlement.create({
+        bookingId: booking._id,
+        stayId: stay._id,
+        vendorId: stay.vendorId,
+        amountDue: booking.totalAmount,
+        amountPaid: 0,
+        currency,
+        scheduledDate: settlementDueDate,
+        status: "pending",
+        notes: "Auto-generated from booking",
+      });
 
-    return NextResponse.json({ success: true, booking });
+      return NextResponse.json({ success: true, booking });
+    }
+
+    if (serviceType === "tour") {
+      if (!tourId || !mongoose.Types.ObjectId.isValid(tourId)) {
+        return NextResponse.json({ success: false, message: "Invalid tour id" }, { status: 400 });
+      }
+
+      if (!Array.isArray(items) || items.length === 0) {
+        return NextResponse.json({ success: false, message: "Select at least one tour option" }, { status: 400 });
+      }
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+        return NextResponse.json({ success: false, message: "Invalid start/end dates" }, { status: 400 });
+      }
+
+      const tour = await Tour.findById(tourId);
+      if (!tour || !(tour as any).isActive) {
+        return NextResponse.json({ success: false, message: "Tour not found" }, { status: 404 });
+      }
+
+      const days = calculateDays(start, end);
+
+      const normalizedItems = items.map((requested: any) => {
+        const option =
+          tour.options.id(requested.optionId) ||
+          tour.options.find((opt: any) => opt.name === requested.optionName);
+        if (!option) {
+          throw new Error(`Option ${requested.optionName || requested.optionId} not found`);
+        }
+
+        const quantity = Number(requested.quantity ?? 1);
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          throw new Error("Invalid option quantity");
+        }
+
+        const pricePerUnit = Number(requested.price ?? option.price);
+        const optionTaxes = Number(requested.taxes ?? option.taxes ?? 0);
+        subtotal += pricePerUnit * quantity * days;
+        taxes += optionTaxes * quantity * days;
+
+        return {
+          itemId: option._id,
+          itemName: option.name,
+          quantity,
+          pricePerUnit,
+          taxes: optionTaxes,
+          metadata: {
+            duration: option.duration,
+            capacity: option.capacity,
+          },
+        };
+      });
+
+      bookingPayload = {
+        ...bookingPayload,
+        tourId: tour._id,
+        vendorId: tour.vendorId,
+        startDate: start,
+        endDate: end,
+        nights: days,
+        guests: parsedGuests,
+        rooms: [],
+        items: normalizedItems,
+        subtotal,
+        taxes,
+        totalAmount: subtotal + taxes + bookingPayload.fees,
+      };
+
+      const booking = await Booking.create(bookingPayload);
+      return NextResponse.json({ success: true, booking });
+    }
+
+    if (serviceType === "adventure") {
+      if (!adventureId || !mongoose.Types.ObjectId.isValid(adventureId)) {
+        return NextResponse.json({ success: false, message: "Invalid adventure id" }, { status: 400 });
+      }
+
+      if (!Array.isArray(items) || items.length === 0) {
+        return NextResponse.json({ success: false, message: "Select at least one adventure option" }, { status: 400 });
+      }
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+        return NextResponse.json({ success: false, message: "Invalid start/end dates" }, { status: 400 });
+      }
+
+      const adventure = await Adventure.findById(adventureId);
+      if (!adventure || !(adventure as any).isActive) {
+        return NextResponse.json({ success: false, message: "Adventure not found" }, { status: 404 });
+      }
+
+      const days = calculateDays(start, end);
+
+      const normalizedItems = items.map((requested: any) => {
+        const option =
+          adventure.options.id(requested.optionId) ||
+          adventure.options.find((opt: any) => opt.name === requested.optionName);
+        if (!option) {
+          throw new Error(`Option ${requested.optionName || requested.optionId} not found`);
+        }
+
+        const quantity = Number(requested.quantity ?? 1);
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          throw new Error("Invalid option quantity");
+        }
+
+        const pricePerUnit = Number(requested.price ?? option.price);
+        const optionTaxes = Number(requested.taxes ?? option.taxes ?? 0);
+        subtotal += pricePerUnit * quantity * days;
+        taxes += optionTaxes * quantity * days;
+
+        return {
+          itemId: option._id,
+          itemName: option.name,
+          quantity,
+          pricePerUnit,
+          taxes: optionTaxes,
+          metadata: {
+            duration: option.duration,
+            difficulty: option.difficulty,
+            capacity: option.capacity,
+          },
+        };
+      });
+
+      bookingPayload = {
+        ...bookingPayload,
+        adventureId: adventure._id,
+        vendorId: adventure.vendorId,
+        startDate: start,
+        endDate: end,
+        nights: days,
+        guests: parsedGuests,
+        rooms: [],
+        items: normalizedItems,
+        subtotal,
+        taxes,
+        totalAmount: subtotal + taxes + bookingPayload.fees,
+      };
+
+      const booking = await Booking.create(bookingPayload);
+      return NextResponse.json({ success: true, booking });
+    }
+
+    if (serviceType === "vehicle") {
+      if (!vehicleRentalId || !mongoose.Types.ObjectId.isValid(vehicleRentalId)) {
+        return NextResponse.json({ success: false, message: "Invalid vehicle rental id" }, { status: 400 });
+      }
+
+      if (!Array.isArray(items) || items.length === 0) {
+        return NextResponse.json({ success: false, message: "Select at least one vehicle" }, { status: 400 });
+      }
+
+      const pickup = new Date(pickupDate);
+      const dropoff = new Date(dropoffDate);
+      if (Number.isNaN(pickup.getTime()) || Number.isNaN(dropoff.getTime()) || dropoff <= pickup) {
+        return NextResponse.json({ success: false, message: "Invalid pickup/dropoff dates" }, { status: 400 });
+      }
+
+      const rental = await VehicleRental.findById(vehicleRentalId);
+      if (!rental || !(rental as any).isActive) {
+        return NextResponse.json({ success: false, message: "Vehicle rental not found" }, { status: 404 });
+      }
+
+      const days = calculateDays(pickup, dropoff);
+
+      const normalizedItems = items.map((requested: any) => {
+        const option =
+          rental.options.id(requested.optionId) ||
+          rental.options.find(
+            (opt: any) =>
+              (opt._id?.toString() ?? opt.model) === requested.optionId ||
+              opt.model === requested.optionName
+          );
+        if (!option) {
+          throw new Error(`Vehicle ${requested.optionName || requested.optionId} not found`);
+        }
+
+        const quantity = Number(requested.quantity ?? 1);
+        if (!Number.isFinite(quantity) || quantity <= 0) {
+          throw new Error("Invalid vehicle quantity");
+        }
+
+        const pricePerUnit = Number(requested.price ?? requested.pricePerDay ?? option.pricePerDay);
+        const optionTaxes = Number(requested.taxes ?? option.taxes ?? 0);
+        subtotal += pricePerUnit * quantity * days;
+        taxes += optionTaxes * quantity * days;
+
+        return {
+          itemId: option._id,
+          itemName: option.model,
+          quantity,
+          pricePerUnit,
+          taxes: optionTaxes,
+          metadata: {
+            type: option.type,
+          },
+        };
+      });
+
+      bookingPayload = {
+        ...bookingPayload,
+        vehicleRentalId: rental._id,
+        vendorId: rental.vendorId,
+        pickupDate: pickup,
+        dropoffDate: dropoff,
+        nights: days,
+        guests: parsedGuests,
+        rooms: [],
+        items: normalizedItems,
+        subtotal,
+        taxes,
+        totalAmount: subtotal + taxes + bookingPayload.fees,
+      };
+
+      const booking = await Booking.create(bookingPayload);
+      return NextResponse.json({ success: true, booking });
+    }
+
+    return NextResponse.json({ success: false, message: "Unsupported service type" }, { status: 400 });
   } catch (error: any) {
     console.error("Booking creation error", error);
     return NextResponse.json(
@@ -170,6 +437,9 @@ export const GET = auth(async (req: NextRequest) => {
 
     const bookings = await Booking.find(query)
       .populate("stayId", "name category location vendorId")
+      .populate("tourId", "name category location vendorId")
+      .populate("adventureId", "name category location vendorId")
+      .populate("vehicleRentalId", "name category location vendorId")
       .populate("vendorId", "fullName email contactNumber")
       .sort({ createdAt: -1 })
       .lean();
