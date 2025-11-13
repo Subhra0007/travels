@@ -6,11 +6,11 @@ import { auth } from "@/lib/middlewares/auth";
 // GET - Fetch single stay
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
-    const { id } = await params;
+    const { id } = await context.params;
     const stay = await Stay.findById(id).populate(
       "vendorId",
       "fullName email contactNumber"
@@ -34,9 +34,8 @@ export async function GET(
 }
 
 // PUT - Update stay
-export const PUT = auth(async (
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+export const PUT = auth(async (req: NextRequest,
+context: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
@@ -53,7 +52,7 @@ export const PUT = auth(async (
     const vendorId = user.id;
 
     // Check if stay exists and belongs to vendor
-    const { id } = await params;
+    const { id } = await context.params;
     const stay = await Stay.findById(id);
     if (!stay) {
       return NextResponse.json(
@@ -86,9 +85,15 @@ export const PUT = auth(async (
       beds: number;
       capacity: number;
       price: number;
+      taxes?: number;
+      currency?: string;
       size: string;
       features: string[];
+      amenities: string[];
+      available: number;
       images: string[];
+      isRefundable?: boolean;
+      refundableUntilHours?: number;
     }> | undefined;
     if (body.rooms) {
       if (!Array.isArray(body.rooms) || !body.rooms.length) {
@@ -99,12 +104,14 @@ export const PUT = auth(async (
       }
 
       for (const room of body.rooms) {
+        const availabilityValue = room?.available ?? room?.inventory ?? 1;
         if (
           !room?.name ||
           !room?.bedType ||
           typeof room?.beds !== "number" ||
           typeof room?.capacity !== "number" ||
           typeof room?.price !== "number" ||
+          !Number.isFinite(Number(availabilityValue)) ||
           !Array.isArray(room?.images) ||
           room.images.length < 3
         ) {
@@ -125,9 +132,16 @@ export const PUT = auth(async (
         beds: Number(room.beds),
         capacity: Number(room.capacity),
         price: Number(room.price),
+        taxes: room.taxes != null ? Number(room.taxes) : 0,
+        currency: typeof room.currency === "string" && room.currency.trim().length ? room.currency : "INR",
         size: room.size ?? "",
         features: Array.isArray(room.features) ? room.features : [],
+        amenities: Array.isArray(room.amenities) ? room.amenities : [],
+        available: Number(room.available ?? room.inventory ?? 1),
         images: room.images,
+        isRefundable: room.isRefundable !== undefined ? Boolean(room.isRefundable) : true,
+        refundableUntilHours:
+          room.refundableUntilHours !== undefined ? Number(room.refundableUntilHours) : 48,
       }));
     }
 
@@ -175,10 +189,34 @@ export const PUT = auth(async (
       );
     }
 
+    const normalizedTags = Array.isArray(body.tags)
+      ? body.tags
+          .filter((tag: any) => typeof tag === "string" && tag.trim().length)
+          .map((tag: string) => tag.trim())
+      : undefined;
+
+    const normalizedCuratedHighlights = Array.isArray(body.curatedHighlights)
+      ? body.curatedHighlights
+          .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
+          .map((item: any) => ({
+            title: item.title.trim(),
+            description:
+              typeof item.description === "string" && item.description.trim().length
+                ? item.description.trim()
+                : undefined,
+            icon:
+              typeof item.icon === "string" && item.icon.trim().length
+                ? item.icon.trim()
+                : undefined,
+          }))
+      : undefined;
+
     const payload: any = { ...body };
     if (normalizedRooms) payload.rooms = normalizedRooms;
     if (normalizedVideos) payload.videos = normalizedVideos;
     if (normalizedAmenities) payload.amenities = normalizedAmenities;
+    if (normalizedTags !== undefined) payload.tags = normalizedTags;
+    if (normalizedCuratedHighlights !== undefined) payload.curatedHighlights = normalizedCuratedHighlights;
 
     // Update stay
     const updatedStay = await Stay.findByIdAndUpdate(
@@ -200,7 +238,7 @@ export const PUT = auth(async (
 // DELETE - Delete stay
 export const DELETE = auth(async (
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
@@ -218,7 +256,7 @@ export const DELETE = auth(async (
     const vendorId = user.id;
 
     // Check if stay exists
-    const { id } = await params;
+    const { id } = await context.params;
     const stay = await Stay.findById(id);
     if (!stay) {
       return NextResponse.json(

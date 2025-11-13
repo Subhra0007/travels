@@ -1,3 +1,4 @@
+//stays/categories.ts
 export const STAY_CATEGORIES = [
   { label: "All", value: "all" },
   { label: "Rooms", value: "rooms" },

@@ -1,3 +1,4 @@
+//properties/stays/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -54,6 +55,15 @@ export default function VendorStaysPage() {
           router.replace("/login");
           return;
         }
+
+        // Verify lock status from server
+        const vRes = await fetch(`/api/admin/vendors?id=${id}`, { credentials: "include" });
+        const vData = await vRes.json();
+        if (vData?.vendor?.isVendorLocked) {
+          router.replace("/vendor");
+          return;
+        }
+
         setVendorId(id);
 
         // Fetch stays for this vendor
@@ -63,6 +73,9 @@ export default function VendorStaysPage() {
         const data = await res.json();
         if (data.success) {
           setStays(data.stays || []);
+        } else if (res.status === 403) {
+          router.replace("/vendor");
+          return;
         }
       } catch (error) {
         console.error("Error loading stays:", error);

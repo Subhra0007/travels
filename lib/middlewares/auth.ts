@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-export const auth = (handler: Function) => {
-  return async (req: NextRequest) => {
+export const auth = <TContext = any>(handler: (req: NextRequest, context?: TContext) => Promise<Response>) => {
+  return async (req: NextRequest, context?: TContext) => {
     try {
       const authHeader = req.headers.get("authorization");
       const tokenFromHeader = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
@@ -20,7 +20,7 @@ export const auth = (handler: Function) => {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
       (req as any).user = decoded;
-      return handler(req);
+      return handler(req, context);
     } catch (error) {
       return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
     }

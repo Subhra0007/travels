@@ -24,7 +24,9 @@ export default function Dashboard({ locked }: { locked: boolean }) {
         <div className="absolute inset-0 z-40 flex items-center justify-center">
           <div className="bg-white/90 shadow-xl p-6 rounded-xl border text-center max-w-sm">
             <h2 className="text-2xl font-bold text-gray-800">Vendor Dashboard Locked</h2>
-            <p className="mt-2 text-gray-600">Your account is under review. Please wait for admin approval.</p>
+            <p className="mt-2 text-gray-600">
+              Your account has been locked by the administrator. Please contact support for assistance.
+            </p>
           </div>
         </div>
       )}

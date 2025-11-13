@@ -184,7 +184,7 @@ export default function ProfilePage() {
           </button>
 
           <button
-            onClick={() => router.push("/inbox")}
+            onClick={() => router.push("/profile/inbox")}
             className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
               activeTab === "inbox"
                 ? "bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
@@ -202,7 +202,7 @@ export default function ProfilePage() {
           </button>
 
           <button
-            onClick={() => router.push("/support")}
+            onClick={() => router.push("/profile/support")}
             className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
               activeTab === "support"
                 ? "bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
@@ -469,7 +469,7 @@ export default function ProfilePage() {
 
               <button
                 onClick={() => {
-                  router.push("/inbox");
+                  router.push("/profile/inbox");
                   setMobileSidebarOpen(false);
                 }}
                 className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
@@ -486,7 +486,7 @@ export default function ProfilePage() {
 
               <button
                 onClick={() => {
-                  router.push("/support");
+                  router.push("/profile/support");
                   setMobileSidebarOpen(false);
                 }}
                 className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"

@@ -1,0 +1,152 @@
+import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
+import dbConnect from "@/lib/config/database";
+import Booking, { BookingStatus, PaymentStatus } from "@/models/Booking";
+import Settlement from "@/models/Settlement";
+import { auth } from "@/lib/middlewares/auth";
+
+const ensureObjectId = (value: string) => mongoose.Types.ObjectId.isValid(value);
+
+export const GET = auth(async (
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
+  try {
+    await dbConnect();
+    const user = (req as any).user;
+    const { id } = await context.params;
+
+    if (!ensureObjectId(id)) {
+      return NextResponse.json({ success: false, message: "Invalid booking id" }, { status: 400 });
+    }
+
+    const bookingDoc = await Booking.findById(id)
+      .populate("stayId", "name category location vendorId")
+      .lean();
+
+    if (!bookingDoc) {
+      return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
+    }
+
+    const booking = bookingDoc as any;
+    const vendorId = booking.stayId?.vendorId?.toString() ?? booking.vendorId?.toString();
+
+    if (user.accountType === "admin") {
+      return NextResponse.json({ success: true, booking });
+    }
+
+    if (user.accountType === "vendor") {
+      if (vendorId !== user.id) {
+        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+      }
+      return NextResponse.json({ success: true, booking });
+    }
+
+    if (booking.customerId?.toString() === user.id || booking.customer?.email === user.email) {
+      return NextResponse.json({ success: true, booking });
+    }
+
+    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+  } catch (error: any) {
+    console.error("Booking detail error", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to fetch booking" },
+      { status: 500 }
+    );
+  }
+});
+
+export const PATCH = auth(async (
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
+  try {
+    await dbConnect();
+    const user = (req as any).user;
+    const { id } = await context.params;
+
+    if (!ensureObjectId(id)) {
+      return NextResponse.json({ success: false, message: "Invalid booking id" }, { status: 400 });
+    }
+
+    const bookingDoc = await Booking.findById(id);
+    if (!bookingDoc) {
+      return NextResponse.json({ success: false, message: "Booking not found" }, { status: 404 });
+    }
+
+    const body = await req.json();
+
+    const booking = bookingDoc as any;
+    const vendorId = booking.vendorId?.toString();
+    const isCustomer =
+      booking.customerId?.toString() === user.id || booking.customer?.email === user.email;
+    const isVendor = vendorId === user.id;
+    const isAdmin = user.accountType === "admin";
+
+    if (!isAdmin && !isVendor && !(isCustomer && body?.status === "cancelled")) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+    }
+    const updates: Record<string, any> = {};
+
+    if (body.status) {
+      const nextStatus = body.status as BookingStatus;
+      if (!["pending", "confirmed", "completed", "cancelled"].includes(nextStatus)) {
+        return NextResponse.json({ success: false, message: "Invalid status" }, { status: 400 });
+      }
+      if (!isAdmin && !isVendor && nextStatus !== "cancelled") {
+        return NextResponse.json(
+          { success: false, message: "Customers can only cancel their booking." },
+          { status: 403 }
+        );
+      }
+      updates.status = nextStatus;
+      if (nextStatus === "cancelled") {
+        updates.cancelledAt = new Date();
+      }
+    }
+
+    if (body.paymentStatus) {
+      const nextPaymentStatus = body.paymentStatus as PaymentStatus;
+      if (!["unpaid", "pending", "paid", "refunded"].includes(nextPaymentStatus)) {
+        return NextResponse.json({ success: false, message: "Invalid payment status" }, { status: 400 });
+      }
+      updates.paymentStatus = nextPaymentStatus;
+    }
+
+    if ((isAdmin || isVendor) && body.metadata && typeof body.metadata === "object") {
+      updates.metadata = { ...booking.metadata, ...body.metadata };
+    }
+
+    if (isCustomer && body.reason && typeof body.reason === "string") {
+      updates.metadata = {
+        ...booking.metadata,
+        userCancellationReason: body.reason,
+      };
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ success: false, message: "No valid fields to update" }, { status: 400 });
+    }
+
+    const updatedBooking = await Booking.findByIdAndUpdate(id, { $set: updates }, { new: true });
+
+    if (body.paymentStatus === "paid") {
+      await Settlement.findOneAndUpdate(
+        { bookingId: booking._id },
+        {
+          status: "paid",
+          amountPaid: booking.totalAmount,
+          paidAt: new Date(),
+        }
+      );
+    }
+
+    return NextResponse.json({ success: true, booking: updatedBooking });
+  } catch (error: any) {
+    console.error("Booking update error", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to update booking" },
+      { status: 500 }
+    );
+  }
+});

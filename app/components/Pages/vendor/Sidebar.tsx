@@ -32,14 +32,21 @@ export default function Sidebar() {
   }, [pathname]);
 
   // Load vendor selected services from localStorage (kept updated by /vendor page)
-  useEffect(() => {
+  const loadAllowedServices = () => {
     try {
       const stored = JSON.parse(localStorage.getItem("user") || "{}");
+
+      // If vendor is locked, hide all services from submenu
+      if (stored?.isVendorLocked) {
+        setAllowedServices([]);
+        return;
+      }
+
       const rawServices: string[] = stored?.vendorServices || [];
 
       // normalize ids to match routes/keys
       const normalized = rawServices.map((s) => {
-        if (s === "vehicle") return "vehicle-rental";
+        if (s === "vehicle" || s === "vehicle-rentals") return "vehicle-rental";
         return s;
       });
 
@@ -47,6 +54,24 @@ export default function Sidebar() {
     } catch {
       setAllowedServices([]);
     }
+  };
+
+  useEffect(() => {
+    loadAllowedServices();
+    
+    // Listen for localStorage changes (when vendor updates services)
+    const handleStorageChange = () => {
+      loadAllowedServices();
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    // Also listen to custom events that might update user data
+    window.addEventListener("auth:changed", handleStorageChange);
+    
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("auth:changed", handleStorageChange);
+    };
   }, []);
 
   // ✅ Logout Method
@@ -86,6 +111,7 @@ export default function Sidebar() {
     },
 
     { name: "Booking", icon: <CalendarCheck size={18} />, href: "/vendor/bookings" },
+    { name: "Cancellations", icon: <CalendarCheck size={18} />, href: "/vendor/cancellations" },
 
     { name: "Payment", icon: <CreditCard size={18} />, href: "/vendor/payments" },
 

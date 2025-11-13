@@ -16,6 +16,16 @@ export interface IStay extends Document {
     };
   };
   heroHighlights: string[];
+  curatedHighlights: Array<{
+    title: string;
+    description?: string;
+    icon?: string;
+  }>;
+  tags: string[];
+  rating: {
+    average: number;
+    count: number;
+  };
   images: string[]; // Minimum 5 required
   gallery: string[];
   videos: {
@@ -25,16 +35,25 @@ export interface IStay extends Document {
   popularFacilities: string[]; // Quick badges with icons
   amenities: Record<string, string[]>; // Grouped facilities (e.g. Bathroom, Activities…)
   rooms: Array<{
+    _id?: mongoose.Types.ObjectId;
     name: string;
     description?: string;
     bedType: string;
     beds: number;
     capacity: number;
     price: number;
+    taxes?: number;
+    currency?: string;
     size?: string;
     features: string[];
+    amenities: string[];
+    available: number;
     images: string[]; // Minimum 3 per room
+    isRefundable?: boolean;
+    refundableUntilHours?: number;
   }>;
+  defaultCancellationPolicy?: string;
+  defaultHouseRules?: string[];
   about: {
     heading: string;
     description: string;
@@ -49,6 +68,15 @@ export interface IStay extends Document {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+const highlightSchema = new Schema(
+  {
+    title: { type: String, required: true },
+    description: String,
+    icon: String,
+  },
+  { _id: false }
+);
 
 const staySchema = new Schema<IStay>(
   {
@@ -76,6 +104,12 @@ const staySchema = new Schema<IStay>(
       },
     },
     heroHighlights: { type: [String], default: [] },
+    curatedHighlights: { type: [highlightSchema], default: [] },
+    tags: { type: [String], default: [] },
+    rating: {
+      average: { type: Number, default: 0, min: 0, max: 5 },
+      count: { type: Number, default: 0, min: 0 },
+    },
     images: {
       type: [String],
       required: true,
@@ -101,8 +135,12 @@ const staySchema = new Schema<IStay>(
         beds: { type: Number, required: true, min: 1 },
         capacity: { type: Number, required: true, min: 1 },
         price: { type: Number, required: true, min: 0 },
+        taxes: { type: Number, default: 0, min: 0 },
+        currency: { type: String, default: "INR" },
         size: String,
         features: { type: [String], default: [] },
+        amenities: { type: [String], default: [] },
+        available: { type: Number, required: true, min: 0 },
         images: {
           type: [String],
           required: true,
@@ -113,8 +151,12 @@ const staySchema = new Schema<IStay>(
             message: "Each room needs at least 3 images",
           },
         },
+        isRefundable: { type: Boolean, default: true },
+        refundableUntilHours: { type: Number, default: 48 },
       },
     ],
+    defaultCancellationPolicy: String,
+    defaultHouseRules: { type: [String], default: [] },
     about: {
       heading: { type: String, required: true },
       description: { type: String, required: true },
@@ -133,6 +175,7 @@ const staySchema = new Schema<IStay>(
 // Index for efficient queries
 staySchema.index({ vendorId: 1, category: 1 });
 staySchema.index({ category: 1, isActive: 1 });
+staySchema.index({ tags: 1 });
 
 export default mongoose.models.Stay || mongoose.model<IStay>("Stay", staySchema);
 

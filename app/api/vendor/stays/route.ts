@@ -3,6 +3,8 @@ import dbConnect from "@/lib/config/database";
 import Stay from "@/models/Stay";
 import { auth } from "@/lib/middlewares/auth";
 import mongoose from "mongoose";
+import User from "@/models/User";
+import jwt from "jsonwebtoken";
 
 // GET - Fetch stays (vendor-specific or all for admin)
 export async function GET(req: NextRequest) {
@@ -11,13 +13,43 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const vendorId = searchParams.get("vendorId");
     const category = searchParams.get("category");
-    const all = searchParams.get("all") === "true"; // For admin to see all
+    const all = searchParams.get("all") === "true"; // For admin/public to see all
+
+    // Decode token to determine admin or vendor
+    let accountType: string | null = null;
+    try {
+      const token = req.cookies.get("token")?.value;
+      if (token && process.env.JWT_SECRET) {
+        const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
+        accountType = decoded?.accountType || null;
+      }
+    } catch {}
+
+    // If this is a vendor self-request (vendorId present and not all=true), block when vendor is locked
+    if (vendorId && !all) {
+      try {
+        const token = req.cookies.get("token")?.value;
+        if (token && process.env.JWT_SECRET) {
+          const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
+          if (decoded?.accountType === "vendor" && (decoded?.id === vendorId || decoded?._id === vendorId)) {
+            const vendorUser = await User.findById(vendorId).select("isVendorLocked");
+            if (vendorUser?.isVendorLocked) {
+              return NextResponse.json(
+                { success: false, message: "Vendor account is locked" },
+                { status: 403 }
+              );
+            }
+          }
+        }
+      } catch {
+        // ignore token errors; treat as public request
+      }
+    }
 
     let query: any = {};
 
-    // If vendorId provided, filter by vendor
-    if (vendorId && !all) {
-      // Convert string to ObjectId if valid
+    // If vendorId provided, always filter by that vendor (admin/public or vendor self)
+    if (vendorId) {
       if (mongoose.Types.ObjectId.isValid(vendorId)) {
         query.vendorId = new mongoose.Types.ObjectId(vendorId);
       } else {
@@ -33,6 +65,13 @@ export async function GET(req: NextRequest) {
     // If not admin viewing all, only show active stays
     if (!all) {
       query.isActive = true;
+    }
+
+    // Public all=true without a specific vendor: exclude locked or unapproved vendors (admins can see all)
+    if (all && accountType !== "admin" && !vendorId) {
+      const allowedVendors = await User.find({ accountType: "vendor", isVendorApproved: true, isVendorLocked: false }).select("_id");
+      const allowedIds = allowedVendors.map((v) => v._id);
+      query.vendorId = { $in: allowedIds };
     }
 
     const stays = await Stay.find(query)
@@ -72,15 +111,19 @@ export const POST = auth(async (req: NextRequest) => {
       category,
       location,
       heroHighlights = [],
+      curatedHighlights = [],
       images,
       gallery = [],
       videos = {},
       popularFacilities = [],
       amenities = {},
+      tags = [],
       rooms,
       about,
       checkInOutRules,
       vendorMessage = "",
+      defaultCancellationPolicy = "",
+      defaultHouseRules = [],
     } = body;
 
     if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
@@ -105,19 +148,22 @@ export const POST = auth(async (req: NextRequest) => {
     }
 
     for (const room of rooms) {
+      const availabilityValue = room?.available ?? room?.inventory ?? 1;
       if (
         !room?.name ||
         !room?.bedType ||
         typeof room?.beds !== "number" ||
         typeof room?.capacity !== "number" ||
         typeof room?.price !== "number" ||
+        !Number.isFinite(Number(availabilityValue)) ||
         !Array.isArray(room?.images) ||
         room.images.length < 3
       ) {
         return NextResponse.json(
           {
             success: false,
-            message: "Every room must include name, bed type, beds, capacity, price and at least 3 images",
+            message:
+              "Every room must include name, bed type, beds, capacity, price, availability and at least 3 images",
           },
           { status: 400 }
         );
@@ -131,8 +177,15 @@ export const POST = auth(async (req: NextRequest) => {
       beds: Number(room.beds),
       capacity: Number(room.capacity),
       price: Number(room.price),
+      taxes: room.taxes != null ? Number(room.taxes) : 0,
+      currency: typeof room.currency === "string" && room.currency.trim().length ? room.currency : "INR",
       size: room.size ?? "",
       features: Array.isArray(room.features) ? room.features : [],
+      amenities: Array.isArray(room.amenities) ? room.amenities : [],
+      available: Number(room.available ?? room.inventory ?? 1),
+      isRefundable: room.isRefundable !== undefined ? Boolean(room.isRefundable) : true,
+      refundableUntilHours:
+        room.refundableUntilHours !== undefined ? Number(room.refundableUntilHours) : 48,
       images: room.images,
     }));
 
@@ -150,6 +203,28 @@ export const POST = auth(async (req: NextRequest) => {
       });
     }
 
+    const normalizedTags = Array.isArray(tags)
+      ? tags
+          .filter((tag: any) => typeof tag === "string" && tag.trim().length)
+          .map((tag: string) => tag.trim())
+      : [];
+
+    const normalizedCuratedHighlights = Array.isArray(curatedHighlights)
+      ? curatedHighlights
+          .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
+          .map((item: any) => ({
+            title: item.title.trim(),
+            description:
+              typeof item.description === "string" && item.description.trim().length
+                ? item.description.trim()
+                : undefined,
+            icon:
+              typeof item.icon === "string" && item.icon.trim().length
+                ? item.icon.trim()
+                : undefined,
+          }))
+      : [];
+
     // Create stay
     const stay = await Stay.create({
       vendorId,
@@ -159,6 +234,8 @@ export const POST = auth(async (req: NextRequest) => {
       images,
       gallery,
       heroHighlights,
+      curatedHighlights: normalizedCuratedHighlights,
+      tags: normalizedTags,
       videos: normalizedVideos,
       popularFacilities,
       amenities: normalizedAmenities,
@@ -166,6 +243,8 @@ export const POST = auth(async (req: NextRequest) => {
       about,
       checkInOutRules,
       vendorMessage,
+      defaultCancellationPolicy,
+      defaultHouseRules,
       isActive: true,
     });
 

@@ -298,6 +298,18 @@ const Sidebar: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Customer Support */}
+        <button
+          onClick={() => router.push("/admin/support")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/support")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaComments size={14} /> Customer Support
+        </button>
          {/* Blogs */}
         <button
           onClick={() => router.push("/admin/blogs")}
