@@ -205,10 +205,10 @@ const Navbar: React.FC = () => {
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
+    { label: "Services", href: "#" },
     { label: "About", href: "/about-us" },
     { label: "Blogs", href: "/blogs" },
-    { label: "Contact", href: "/contact" },
+    { label: "Contact", href: "/contact-us" },
   ];
 
   const isActive = (path: string) => {

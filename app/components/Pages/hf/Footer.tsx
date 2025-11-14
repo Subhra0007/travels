@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import Image from "next/image";
+import Link from "next/link";
+import footerlogo from "@/public/logo.png";
 import { MdEmail, MdLocationOn, MdPhone } from "react-icons/md";
 
 const CurrentYear = () => {
@@ -69,10 +72,16 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10 border-b border-gray-700 pb-10 sm:place-items-center md:place-items-center z-50">
         {/* Column 1 */}
         <div className="lg:text-left text-center">
-          <h2 className="text-white text-xl font-semibold mb-4">About Us</h2>
+          <Image
+              src="/logo.png"
+              alt="Logo"
+              width={180}
+              height={70}
+              className="h-15 w-auto mb-3"
+              priority
+            />
           <p className="text-sm leading-relaxed mb-4">
-            We bring innovative solutions that help businesses achieve their goals with 
-            digital transformation and modern strategies.
+          <strong className="">SafarHub</strong> offers cozy stays, curated tours, thrilling adventures, and flexible vehicle rentals — everything you need for a seamless and memorable journey.
           </p>
           <div className="flex space-x-4 text-xl justify-center lg:justify-start">
             <a href="#" className="hover:text-cyan-400"><FaFacebookF /></a>
@@ -86,10 +95,10 @@ const Footer: React.FC = () => {
         <div className="lg:text-left text-center">
           <h2 className="text-white text-xl font-semibold mb-4">Quick Links</h2>
           <ul className="space-y-2 text-sm">
-            <li><a href="#" className="hover:text-cyan-400 transition">About Us</a></li>
-            <li><a href="#" className="hover:text-cyan-400 transition">Our Services</a></li>
-            <li><a href="#" className="hover:text-cyan-400 transition">Blog</a></li>
-            <li><a href="#" className="hover:text-cyan-400 transition">Contact</a></li>
+            <li><Link href="/privacy-policy" className="hover:text-cyan-400 transition">Privacy Policy</Link></li>
+            <li><Link href="/terms-conditions" className="hover:text-cyan-400 transition">Terms & Conditions</Link></li>
+            <li><Link href="/refund-policy" className="hover:text-cyan-400 transition">Refund Policy</Link></li>
+            <li><Link href="/blogs" className="hover:text-cyan-400 transition">Blogs</Link></li>
           </ul>
         </div>
 
@@ -98,8 +107,8 @@ const Footer: React.FC = () => {
           <h2 className="text-white text-xl font-semibold mb-4">Contact Info</h2>
           <ul className="space-y-3">
             <li className="flex items-center gap-2 justify-center lg:justify-start"><MdLocationOn className="text-cyan-400" /> Kolkata, India</li>
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdPhone className="text-cyan-400" /> +91 12345 98760</li>
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdEmail className="text-cyan-400" /> info@company.com</li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdPhone className="text-cyan-400" />+91 7980715765</li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdEmail className="text-cyan-400" />cyberspaceworksofficial@gmail.com</li>
           </ul>
         </div>
 
@@ -152,13 +161,8 @@ const Footer: React.FC = () => {
       </div>
 
       {/* BOTTOM SECTION */}
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center mt-6 text-sm text-gray-400 text-center md:text-left">
-        <p>© <CurrentYear /> Safarhub. All Rights Reserved.</p>
-        <div className="flex space-x-4 mt-3 md:mt-0">
-          <img src="/footer/visa.png" alt="Visa" className="h-6" />
-          <img src="/footer/mastercard.png" alt="Mastercard" className="h-6" />
-          <img src="/footer/paypal.png" alt="Paypal" className="h-6" />
-        </div>
+      <div className="max-w-7xl mx-auto px-6 flex flex-col  justify-center items-center mt-6 text-sm text-gray-400 text-center md:text-left">
+        <p>© <CurrentYear /> SafarHub. All Rights Reserved.</p>
       </div>
     </motion.div>
   </footer>

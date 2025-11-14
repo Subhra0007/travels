@@ -129,15 +129,17 @@ export default function HomePage() {
                 </span>
 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#0d1b44] lg:text-left text-center">
-                  It’s a Big World Out<br className="lg:block hidden"/>There, Go Explore
-                </h1>
+  Discover Your Perfect Journey With SafarHub
+</h1>
 
-                <p className="text-gray-800 max-w-md lg:text-left text-center">
-                  We always make our customer happy by providing as many choices as possible.
-                </p>
-                <p className="text-gray-800 max-w-md lg:text-left text-center">
-                  We always make our customer happy by providing as many choices as possible.
-                </p>
+               <p className="text-gray-800 max-w-md lg:text-left text-center">
+  SafarHub is your trusted travel companion, offering cozy stays, curated tours, thrilling adventure activities, and flexible vehicle rentals across top destinations.
+</p>
+
+<p className="text-gray-800 max-w-md lg:text-left text-center">
+  Our mission is to make travel simple, seamless, and memorable by providing diverse choices, transparent service, and exceptional customer support every step of the way.
+</p>
+
               </div>
 
               <div className="flex justify-center">

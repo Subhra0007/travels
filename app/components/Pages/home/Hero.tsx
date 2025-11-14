@@ -214,8 +214,8 @@ export default function HeroSection() {
 >
   <div className="flex items-center justify-center w-full">
     <h1 className="text-center text-5xl font-bold text-black leading-snug">
-     SafarHub, Crafted by Local Experts. <br />Find {" "}
-      <span className="role text-lime-300 bg-green-950 p-2"></span><br/>Deals for Your Next Journey.
+     SafarHub,The North Knows the Way. {" "} <br /> Find {" "}
+      <span className="role text-lime-300 bg-green-950 p-2"></span>{" "}Deals 
     </h1>
   </div>
 </motion.div>
@@ -303,6 +303,58 @@ const StaysForm: React.FC<StaysFormProps> = ({
     c.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Prevent body scroll when dropdowns are open
+  useEffect(() => {
+    if (showLocationMenu || showGuests) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      // Prevent scroll with event listeners
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      const preventWheel = (e: WheelEvent) => {
+        if (e.target && (e.target as HTMLElement).closest('[role="menu"]')) {
+          return; // Allow scrolling inside dropdown
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      window.addEventListener('wheel', preventWheel, { passive: false, capture: true });
+      window.addEventListener('touchmove', preventScroll, { passive: false, capture: true });
+      window.addEventListener('scroll', preventScroll, { passive: false, capture: true });
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        window.removeEventListener('wheel', preventWheel, { capture: true });
+        window.removeEventListener('touchmove', preventScroll, { capture: true });
+        window.removeEventListener('scroll', preventScroll, { capture: true });
+      };
+    }
+  }, [showLocationMenu, showGuests]);
+
+  // Prevent scroll propagation
+  const handleDropdownWheel = (e: React.WheelEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleDropdownTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
+
   const locationLabel = location || "Where are you going?";
   const locationTextClass = location ? "text-gray-900" : "text-gray-400";
 
@@ -323,7 +375,9 @@ const StaysForm: React.FC<StaysFormProps> = ({
           {showLocationMenu && (
             <Menu.Items
               static
-              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y"
+              onWheel={handleDropdownWheel}
+              onTouchMove={handleDropdownTouchMove}
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
             >
               {/* Search input */}
               <div className="p-2 border-b sticky top-0 bg-white">
@@ -432,7 +486,9 @@ const StaysForm: React.FC<StaysFormProps> = ({
           {showGuests && (
             <Menu.Items
               static
-              className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y"
+              onWheel={handleDropdownWheel}
+              onTouchMove={handleDropdownTouchMove}
+              className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-[50vh] overflow-y-auto overscroll-none"
             >
             {/* Rooms */}
             <div className="flex items-center justify-between mb-3">
@@ -529,6 +585,58 @@ const ToursForm: React.FC<{
     c.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Prevent body scroll when dropdown is open
+  useEffect(() => {
+    if (show) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      // Prevent scroll with event listeners
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      const preventWheel = (e: WheelEvent) => {
+        if (e.target && (e.target as HTMLElement).closest('[role="menu"]')) {
+          return; // Allow scrolling inside dropdown
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      window.addEventListener('wheel', preventWheel, { passive: false, capture: true });
+      window.addEventListener('touchmove', preventScroll, { passive: false, capture: true });
+      window.addEventListener('scroll', preventScroll, { passive: false, capture: true });
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        window.removeEventListener('wheel', preventWheel, { capture: true });
+        window.removeEventListener('touchmove', preventScroll, { capture: true });
+        window.removeEventListener('scroll', preventScroll, { capture: true });
+      };
+    }
+  }, [show]);
+
+  // Prevent scroll propagation
+  const handleDropdownWheel = (e: React.WheelEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleDropdownTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="relative">
@@ -544,7 +652,12 @@ const ToursForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {show && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
+            <Menu.Items 
+              static 
+              onWheel={handleDropdownWheel}
+              onTouchMove={handleDropdownTouchMove}
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+            >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={search}
@@ -648,6 +761,58 @@ const AdventuresForm: React.FC<{
     c.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Prevent body scroll when dropdowns are open
+  useEffect(() => {
+    if (showActivity || show) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      // Prevent scroll with event listeners
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      const preventWheel = (e: WheelEvent) => {
+        if (e.target && (e.target as HTMLElement).closest('[role="menu"]')) {
+          return; // Allow scrolling inside dropdown
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      window.addEventListener('wheel', preventWheel, { passive: false, capture: true });
+      window.addEventListener('touchmove', preventScroll, { passive: false, capture: true });
+      window.addEventListener('scroll', preventScroll, { passive: false, capture: true });
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        window.removeEventListener('wheel', preventWheel, { capture: true });
+        window.removeEventListener('touchmove', preventScroll, { capture: true });
+        window.removeEventListener('scroll', preventScroll, { capture: true });
+      };
+    }
+  }, [showActivity, show]);
+
+  // Prevent scroll propagation
+  const handleDropdownWheel = (e: React.WheelEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleDropdownTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div>
@@ -663,7 +828,11 @@ const AdventuresForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showActivity && (
-            <Menu.Items className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
+            <Menu.Items 
+              onWheel={handleDropdownWheel}
+              onTouchMove={handleDropdownTouchMove}
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+            >
               {["Trekking", "Rafting", "Camping", "Paragliding", "Hiking"].map((a) => (
                 <Menu.Item key={a}>
                   {({ active }) => (
@@ -697,7 +866,12 @@ const AdventuresForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {show && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
+            <Menu.Items 
+              static 
+              onWheel={handleDropdownWheel}
+              onTouchMove={handleDropdownTouchMove}
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+            >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={search}
@@ -791,6 +965,58 @@ const VehicleRentalForm: React.FC<{
   const filter = (list: string[], q: string) =>
     list.filter((c) => c.toLowerCase().includes(q.toLowerCase()));
 
+  // Prevent body scroll when dropdowns are open
+  useEffect(() => {
+    if (showPickup || showDropoff) {
+      // Store current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      // Prevent scroll with event listeners
+      const preventScroll = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      const preventWheel = (e: WheelEvent) => {
+        if (e.target && (e.target as HTMLElement).closest('[role="menu"]')) {
+          return; // Allow scrolling inside dropdown
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      };
+      
+      window.addEventListener('wheel', preventWheel, { passive: false, capture: true });
+      window.addEventListener('touchmove', preventScroll, { passive: false, capture: true });
+      window.addEventListener('scroll', preventScroll, { passive: false, capture: true });
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        window.removeEventListener('wheel', preventWheel, { capture: true });
+        window.removeEventListener('touchmove', preventScroll, { capture: true });
+        window.removeEventListener('scroll', preventScroll, { capture: true });
+      };
+    }
+  }, [showPickup, showDropoff]);
+
+  // Prevent scroll propagation
+  const handleDropdownWheel = (e: React.WheelEvent) => {
+    e.stopPropagation();
+  };
+
+  const handleDropdownTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
       {/* Pick-up */}
@@ -807,7 +1033,12 @@ const VehicleRentalForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showPickup && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
+            <Menu.Items 
+              static 
+              onWheel={handleDropdownWheel}
+              onTouchMove={handleDropdownTouchMove}
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+            >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={searchPickup}
@@ -873,7 +1104,12 @@ const VehicleRentalForm: React.FC<{
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showDropoff && (
-            <Menu.Items static className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-contain touch-pan-y">
+            <Menu.Items 
+              static 
+              onWheel={handleDropdownWheel}
+              onTouchMove={handleDropdownTouchMove}
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+            >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
                   value={searchDropoff}
