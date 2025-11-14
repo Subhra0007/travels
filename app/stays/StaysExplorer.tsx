@@ -215,7 +215,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const { wishlistEntries, wishlistIds, wishlistLoaded, toggleWishlist, error: wishlistError } =
+  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {

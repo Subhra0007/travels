@@ -211,7 +211,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { wishlistEntries, wishlistIds, wishlistLoaded, toggleWishlist, error: wishlistError } =
+  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
@@ -425,7 +425,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
               <RentalCard
                 key={rental._id}
                 rental={rental}
-                isWishlisted={wishlistIds.has(rental._id)}
+                isWishlisted={isInWishlist(rental._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={(id, state) => toggleWishlist(id, state, "vehicle-rental")}
                 onSelectTag={(tag) => setSelectedTags((p) => (p.includes(tag) ? p : [...p, tag]))}

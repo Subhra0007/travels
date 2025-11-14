@@ -221,7 +221,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [difficultyFilter, setDifficultyFilter] = useState<string>("");
 
-  const { wishlistEntries, wishlistIds, wishlistLoaded, toggleWishlist, error: wishlistError } =
+  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
@@ -542,7 +542,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <AdventureCard
                 key={adv._id}
                 adventure={adv}
-                isWishlisted={wishlistIds.has(adv._id)}
+                isWishlisted={isInWishlist(adv._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={(id, state) => toggleWishlist(id, state, "adventure")}
                 onSelectTag={(tag) =>

@@ -144,8 +144,8 @@ interface AdventureDetailClientProps {
 
 const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure }) => {
   const router = useRouter();
-  const { wishlistIds, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
-  const isWishlisted = wishlistIds.has(adventure._id);
+  const { wishlistIds, isInWishlist, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
+  const isWishlisted = isInWishlist(adventure._id);
 
   const images = useMemo(() => {
     const gallery = Array.isArray(adventure.gallery) ? adventure.gallery : [];

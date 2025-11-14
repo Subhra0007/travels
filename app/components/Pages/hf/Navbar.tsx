@@ -190,19 +190,24 @@ const Navbar: React.FC = () => {
       ],
     },
     {
-      id: "shop",
-      name: "Shop",
+      id: "products",
+      name: "Products",
       subtext: "Travel essentials",
-      href: "/services/shop",
+      href: "/services/products",
       icon: <MdShoppingCart  />,
-      subServices: [],
+      subServices: [
+        { name: "Pahar", href: "/services/products?category=pahar", icon: <MdShoppingCart />, image: "/nav/pahar.webp" },
+        { name: "Jacket", href: "/services/products?category=jacket", icon: <MdShoppingCart />, image: "/nav/jacket.webp" },
+        { name: "T-Shirt", href: "/services/products?category=t-shirt", icon: <MdShoppingCart />, image: "/nav/t-shirt.webp" },
+      ],
     },
   ];
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "About", href: "/about-us" },
     { label: "Services", href: "/services" },
+    { label: "About", href: "/about-us" },
+    { label: "Blogs", href: "/blogs" },
     { label: "Contact", href: "/contact" },
   ];
 
@@ -377,23 +382,65 @@ const Navbar: React.FC = () => {
                                       </p>
                                     </div>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-6">
-                                    {category.subServices.map((sub) => (
+                                  {category.id === "products" ? (
+                                    <div className="space-y-6">
+                                      <div className="grid grid-cols-3 gap-4">
+                                        {category.subServices.map((sub: any) => (
+                                          <Link
+                                            key={sub.href}
+                                            href={sub.href}
+                                            onClick={() => setIsServicesOpen(false)}
+                                            className="group flex flex-col items-center p-4 rounded-xl bg-white/60 backdrop-blur-sm border border-white/30 hover:border-green-200/50 hover:bg-white/80 transition-all duration-300 shadow-sm hover:shadow-lg"
+                                          >
+                                            {sub.image ? (
+                                              <div className="shrink-0 w-20 h-20 rounded-xl overflow-hidden mb-4 shadow-lg">
+                                                <Image
+                                                  src={sub.image}
+                                                  alt={sub.name}
+                                                  width={80}
+                                                  height={80}
+                                                  className="w-full h-full object-cover"
+                                                />
+                                              </div>
+                                            ) : (
+                                              <div className="shrink-0 w-16 h-16 rounded-xl bg-linear-to-br from-green-500 to-lime-500 flex items-center justify-center text-white text-xl mb-6 shadow-lg">
+                                                {sub.icon}
+                                              </div>
+                                            )}
+                                            <p className="font-bold text-sm leading-5 text-gray-900 group-hover:text-green-600 text-center">
+                                              {sub.name}
+                                            </p>
+                                          </Link>
+                                        ))}
+                                      </div>
                                       <Link
-                                        key={sub.href}
-                                        href={sub.href}
+                                        href="/services/products"
                                         onClick={() => setIsServicesOpen(false)}
-                                        className="group flex flex-col items-center p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-white/30 hover:border-green-200/50 hover:bg-white/80 transition-all duration-300 shadow-sm hover:shadow-lg"
+                                        className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl bg-linear-to-r from-green-500 to-lime-500 text-white font-bold hover:from-green-600 hover:to-lime-600 transition-all duration-300 shadow-lg hover:shadow-xl"
                                       >
-                                        <div className="shrink-0 w-16 h-16 rounded-xl bg-linear-to-br from-green-500 to-lime-500 flex items-center justify-center text-white text-xl mb-6 shadow-lg">
-                                          {sub.icon}
-                                        </div>
-                                        <p className="font-bold text-sm leading-5 text-gray-900 group-hover:text-green-600 text-center">
-                                          {sub.name}
-                                        </p>
+                                        <span>See More Products</span>
+                                        <FaArrowRight />
                                       </Link>
-                                    ))}
-                                  </div>
+                                    </div>
+                                  ) : (
+                                    <div className="grid grid-cols-2 gap-6">
+                                      {category.subServices.map((sub) => (
+                                        <Link
+                                          key={sub.href}
+                                          href={sub.href}
+                                          onClick={() => setIsServicesOpen(false)}
+                                          className="group flex flex-col items-center p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-white/30 hover:border-green-200/50 hover:bg-white/80 transition-all duration-300 shadow-sm hover:shadow-lg"
+                                        >
+                                          <div className="shrink-0 w-16 h-16 rounded-xl bg-linear-to-br from-green-500 to-lime-500 flex items-center justify-center text-white text-xl mb-6 shadow-lg">
+                                            {sub.icon}
+                                          </div>
+                                          <p className="font-bold text-sm leading-5 text-gray-900 group-hover:text-green-600 text-center">
+                                            {sub.name}
+                                          </p>
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })()

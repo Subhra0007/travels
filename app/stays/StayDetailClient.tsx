@@ -159,8 +159,8 @@ interface StayDetailClientProps {
 
 const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
   const router = useRouter();
-  const { wishlistIds, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
-  const isWishlisted = wishlistIds.has(stay._id);
+  const { wishlistIds, isInWishlist, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
+  const isWishlisted = isInWishlist(stay._id);
 
   const images = useMemo(() => {
     const galleryImages = Array.isArray(stay.gallery) ? stay.gallery : [];

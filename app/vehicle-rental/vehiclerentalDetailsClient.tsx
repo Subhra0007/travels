@@ -111,8 +111,8 @@ interface Props {
 
 const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
   const router = useRouter();
-  const { wishlistIds, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
-  const isWishlisted = wishlistIds.has(rental._id);
+  const { wishlistIds, isInWishlist, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
+  const isWishlisted = isInWishlist(rental._id);
 
   const images = useMemo(() => [...rental.images, ...(rental.gallery || [])].filter(Boolean), [rental.images, rental.gallery]);
   const [galleryOpen, setGalleryOpen] = useState(false);

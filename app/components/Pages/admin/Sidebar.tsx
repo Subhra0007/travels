@@ -119,6 +119,30 @@ const Sidebar: React.FC = () => {
           <FaUsers size={14} /> Products
         </button>
 
+        {/* Categories */}
+        <button
+          onClick={() => router.push("/admin/categories")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/categories")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaUsers size={14} /> Categories
+        </button>
+
+        {/* Blogs */}
+        <button
+          onClick={() => router.push("/admin/blogs")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/blogs")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaUsers size={14} /> Blogs
+        </button>
+
         {/* Coupons */}
         <button
           onClick={() => router.push("/admin/coupons")}

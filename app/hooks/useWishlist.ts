@@ -20,7 +20,14 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
   const [error, setError] = useState<string | null>(null);
   const [loadedOnce, setLoadedOnce] = useState<boolean>(false);
 
-  const wishlistIds = useMemo(() => new Set(entries.map((entry) => (entry.stay as any)?._id || entry.id)), [entries]);
+  const wishlistIds = useMemo(() => {
+    const ids = entries.map((entry) => {
+      // Try multiple ways to extract the service ID
+      const serviceId = (entry.stay as any)?._id || (entry.stay as any)?.id || entry.id;
+      return serviceId ? String(serviceId) : null;
+    }).filter(Boolean) as string[];
+    return new Set(ids);
+  }, [entries]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -37,12 +44,16 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
       }
       const data = await res.json();
       const mapped: WishlistEntry<TStay>[] = Array.isArray(data?.wishlist)
-        ? data.wishlist.map((item: any) => ({
-            id: item.stay?._id || item._id,
-            stay: item.stay ?? item,
-            addedAt: item.addedAt,
-            type: item.type, // Preserve type information
-          }))
+        ? data.wishlist.map((item: any) => {
+            // Extract service ID from the stay object (which could be stay, tour, adventure, or vehicle)
+            const serviceId = item.stay?._id || item.stay?.id || item._id;
+            return {
+              id: serviceId ? String(serviceId) : String(item._id || ""),
+              stay: item.stay ?? item,
+              addedAt: item.addedAt,
+              type: item.type, // Preserve type information
+            };
+          })
         : [];
       setEntries(mapped);
     } catch (err: any) {
@@ -55,10 +66,21 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
 
   const addToWishlist = useCallback(async (serviceId: string, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => {
     setError(null);
-    const optimistic = new Set(wishlistIds);
-    if (optimistic.has(serviceId)) return;
-    optimistic.add(serviceId);
-    setEntries((prev) => [...prev, { id: serviceId, stay: { _id: serviceId } as any }]);
+    const normalizedId = String(serviceId);
+    
+    // Check if already in wishlist by checking current entries
+    setEntries((prev) => {
+      const existingIds = prev.map((entry) => {
+        const entryId = (entry.stay as any)?._id || entry.id;
+        return String(entryId);
+      });
+      if (existingIds.includes(normalizedId)) {
+        return prev; // Already in wishlist
+      }
+      // Optimistically add to wishlist
+      return [...prev, { id: normalizedId, stay: { _id: normalizedId } as any }];
+    });
+    
     try {
       // Determine which service type to send based on parameter or try to infer
       let body: any = {};
@@ -83,21 +105,37 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
         throw new Error("Please log in to add favourites.");
       }
       if (!res.ok) {
-        throw new Error((await res.json())?.message || "Failed to add to wishlist");
+        const errorData = await res.json();
+        throw new Error(errorData?.message || "Failed to add to wishlist");
       }
+      // Refresh to get the actual data from server
       await refresh();
     } catch (err: any) {
-      setEntries((prev) => prev.filter((entry) => ((entry.stay as any)?._id || entry.id) !== serviceId));
+      // Rollback optimistic update on error
+      setEntries((prev) => prev.filter((entry) => {
+        const entryId = (entry.stay as any)?._id || entry.id;
+        return String(entryId) !== normalizedId;
+      }));
       setError(err?.message || "Failed to add to wishlist");
     }
-  }, [refresh, wishlistIds]);
+  }, [refresh]);
 
-  const removeFromWishlist = useCallback(async (stayId: string) => {
+  const removeFromWishlist = useCallback(async (serviceId: string) => {
     setError(null);
-    const previous = entries;
-    setEntries((prev) => prev.filter((entry) => ((entry.stay as any)?._id || entry.id) !== stayId));
+    const normalizedId = String(serviceId);
+    
+    // Store previous state for rollback
+    let previousEntries: WishlistEntry<TStay>[] = [];
+    setEntries((prev) => {
+      previousEntries = [...prev];
+      return prev.filter((entry) => {
+        const entryId = (entry.stay as any)?._id || entry.id;
+        return String(entryId) !== normalizedId;
+      });
+    });
+    
     try {
-      const res = await fetch(`/api/wishlist/${stayId}`, {
+      const res = await fetch(`/api/wishlist/${serviceId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -105,26 +143,44 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
         throw new Error("Please log in to manage favourites.");
       }
       if (!res.ok) {
-        throw new Error((await res.json())?.message || "Failed to remove from wishlist");
+        const errorData = await res.json();
+        throw new Error(errorData?.message || "Failed to remove from wishlist");
       }
+      // Refresh to get the actual data from server
       await refresh();
     } catch (err: any) {
-      setEntries(previous);
+      // Rollback optimistic update on error
+      setEntries(previousEntries);
       setError(err?.message || "Failed to update wishlist");
     }
-  }, [entries, refresh]);
+  }, [refresh]);
+
+  // Helper function to check if an ID is in the wishlist (normalizes the ID)
+  const isInWishlist = useCallback((id: string | any) => {
+    if (!id) return false;
+    const normalizedId = String(id);
+    // Check both the Set and also directly in entries as a fallback
+    if (wishlistIds.has(normalizedId)) return true;
+    // Fallback: check entries directly
+    return entries.some((entry) => {
+      const entryId = (entry.stay as any)?._id || (entry.stay as any)?.id || entry.id;
+      return String(entryId) === normalizedId;
+    });
+  }, [wishlistIds, entries]);
 
   const toggleWishlist = useCallback(
     async (serviceId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => {
-      const currentlyWishlisted = wishlistIds.has(serviceId);
+      const normalizedId = String(serviceId);
+      // Use isInWishlist for more robust checking (includes fallback)
+      const currentlyWishlisted = isInWishlist(normalizedId);
       const shouldAdd = nextState !== undefined ? nextState : !currentlyWishlisted;
       if (shouldAdd) {
-        await addToWishlist(serviceId, serviceType);
+        await addToWishlist(normalizedId, serviceType);
       } else {
-        await removeFromWishlist(serviceId);
+        await removeFromWishlist(normalizedId);
       }
     },
-    [addToWishlist, removeFromWishlist, wishlistIds]
+    [addToWishlist, removeFromWishlist, isInWishlist]
   );
 
   useEffect(() => {
@@ -134,6 +190,7 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
   return {
     wishlistEntries: entries,
     wishlistIds,
+    isInWishlist,
     wishlistLoaded: loadedOnce,
     loading,
     error,

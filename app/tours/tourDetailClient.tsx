@@ -151,8 +151,8 @@ interface TourDetailClientProps {
 
 const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
   const router = useRouter();
-  const { wishlistIds, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
-  const isWishlisted = wishlistIds.has(tour._id);
+  const { wishlistIds, isInWishlist, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
+  const isWishlisted = isInWishlist(tour._id);
 
   const images = useMemo(() => {
     const galleryImages = Array.isArray(tour.gallery) ? tour.gallery : [];
