@@ -12,7 +12,52 @@ const CurrentYear = () => {
   return <span>{year}</span>;
 };
 
-const Footer: React.FC = () => (
+const Footer: React.FC = () => {
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<{ type: "idle" | "success" | "error"; message: string }>({
+    type: "idle",
+    message: "",
+  });
+
+  const handleNewsletterSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!newsletterEmail.trim()) {
+      setStatus({ type: "error", message: "Please enter your email." });
+      return;
+    }
+    if (!consent) {
+      setStatus({ type: "error", message: "Please agree to receive emails." });
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setStatus({ type: "idle", message: "" });
+
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newsletterEmail.trim(), consent: true }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to subscribe");
+      }
+
+      setStatus({ type: "success", message: "Thank you for subscribing!" });
+      setNewsletterEmail("");
+      setConsent(false);
+    } catch (error: any) {
+      setStatus({ type: "error", message: error?.message || "Failed to subscribe. Please try again." });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
   <footer className="bg-[#061a23] text-gray-300 pt-12 pb-6 z-100">
     <motion.div
       initial={{ opacity: 0, y: 60 }}
@@ -59,18 +104,49 @@ const Footer: React.FC = () => (
         </div>
 
         {/* Column 4 */}
-        <div className="lg:text-left text-center">
+        <div className="lg:text-left text-center w-full">
           <h2 className="text-white text-xl font-semibold mb-4">Newsletter</h2>
           <p className="text-sm mb-3">Subscribe to our latest updates and offers.</p>
-          <form className="flex bg-white rounded-lg overflow-hidden w-full max-w-md mx-auto lg:mx-0">
-            <input type="email" placeholder="Enter your email" className="w-2/3 py-2 px-3 text-gray-700 focus:outline-none" />
-            <button type="submit" className="w-1/3 bg-cyan-500 py-2 text-white font-semibold hover:bg-cyan-600 transition">Subscribe</button>
+          <form
+            onSubmit={handleNewsletterSubmit}
+            className="flex bg-white rounded-lg overflow-hidden w-full max-w-md mx-auto lg:mx-0 focus-within:ring-2 focus-within:ring-cyan-500"
+          >
+            <input
+              type="email"
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-2/3 py-2 px-3 text-gray-700 focus:outline-none"
+              aria-label="Email address"
+              required
+            />
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-1/3 bg-cyan-500 py-2 text-white font-semibold hover:bg-cyan-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {submitting ? "Sending..." : "Subscribe"}
+            </button>
           </form>
           <div className="mt-3">
             <label className="flex items-center text-xs text-gray-400 space-x-2 justify-center lg:justify-start">
-              <input type="checkbox" className="accent-cyan-500" />
+              <input
+                type="checkbox"
+                className="accent-cyan-500"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+              />
               <span>I agree to receive emails</span>
             </label>
+            {status.message && (
+              <p
+                className={`text-xs mt-2 ${
+                  status.type === "success" ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {status.message}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -87,5 +163,6 @@ const Footer: React.FC = () => (
     </motion.div>
   </footer>
 );
+};
 
 export default Footer;

@@ -5,20 +5,23 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  FaBus,
+  FaCamera,
+  FaCheckCircle,
+  FaClock,
+  FaGlobe,
   FaHeart,
+  FaHotel,
   FaMapMarkerAlt,
+  FaRoute,
   FaSearch,
   FaStar,
   FaUsers,
+  FaUtensils,
+  FaHiking,
 } from "react-icons/fa";
 import { useWishlist } from "../hooks/useWishlist";
-  const TOUR_CATEGORIES = [
-  { label: "All", value: "all" },
-  { label: "Group Tours", value: "group-tours" },
-  { label: "Tour Packages", value: "tour-packages" },
-] as const;
-
-export type TourCategoryValue = (typeof TOUR_CATEGORIES)[number]["value"];
+import { TOUR_CATEGORIES, type TourCategoryValue } from "./categories";
 
 export type TourOption = {
   _id?: string;
@@ -66,6 +69,24 @@ type TourCardProps = {
   onSelectTag?: (tag: string) => void;
 };
 
+const tourFacilityIcons = [
+  { keywords: ["guide", "host"], icon: <FaHiking className="text-emerald-500" /> },
+  { keywords: ["meal", "food", "dining", "lunch"], icon: <FaUtensils className="text-amber-500" /> },
+  { keywords: ["transport", "bus", "transfer"], icon: <FaBus className="text-indigo-500" /> },
+  { keywords: ["hotel", "stay", "accommodation"], icon: <FaHotel className="text-rose-500" /> },
+  { keywords: ["photo", "photography"], icon: <FaCamera className="text-purple-500" /> },
+  { keywords: ["global", "international"], icon: <FaGlobe className="text-blue-500" /> },
+  { keywords: ["route", "itinerary"], icon: <FaRoute className="text-teal-500" /> },
+];
+
+const getTourFacilityIcon = (label: string) => {
+  const lower = label?.toLowerCase() || "";
+  const match = tourFacilityIcons.find((item) =>
+    item.keywords.some((keyword) => lower.includes(keyword))
+  );
+  return match?.icon ?? <FaCheckCircle className="text-emerald-500" />;
+};
+
 export const TourCard = ({
   tour,
   isWishlisted,
@@ -85,7 +106,7 @@ export const TourCard = ({
   return (
     <Link
       href={`/tours/${tour._id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+      className="group flex flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-xl backdrop-blur-sm transition hover:-translate-y-2 hover:shadow-2xl"
     >
       <div className="relative h-56 w-full">
         <button
@@ -119,17 +140,18 @@ export const TourCard = ({
             No image
           </div>
         )}
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
+        <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/60 via-transparent to-transparent" />
+        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-emerald-700 shadow">
           {tour.category}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5 text-gray-900">
+      <div className="flex flex-1 flex-col gap-4 p-6 text-gray-900">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{tour.name}</h3>
             <p className="mt-1 flex items-center text-sm text-gray-600">
-              <FaMapMarkerAlt className="mr-2 text-green-600" />
+              <FaMapMarkerAlt className="mr-2 text-emerald-600" />
               {tour.location.city}, {tour.location.state}
             </p>
           </div>
@@ -145,7 +167,7 @@ export const TourCard = ({
             {heroHighlights.map((highlight) => (
               <span
                 key={highlight}
-                className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
+                className="rounded-full bg-emerald-50/80 px-3 py-1 text-xs font-medium text-emerald-700"
               >
                 {highlight}
               </span>
@@ -154,11 +176,25 @@ export const TourCard = ({
         )}
 
         {!!primaryFeatures.length && (
-          <div className="text-xs text-gray-600">
-            <span className="font-semibold text-gray-800">Option features:</span>{" "}
+          <div className="rounded-2xl border border-emerald-50 bg-emerald-50/60 px-4 py-3 text-xs text-gray-700 shadow-inner">
+            <span className="font-semibold text-gray-900">Option features:</span>{" "}
             {primaryFeatures.join(", ")}
           </div>
         )}
+
+        {tour.popularFacilities?.length ? (
+          <div className="flex flex-wrap gap-2">
+            {tour.popularFacilities.slice(0, 4).map((facility) => (
+              <span
+                key={facility}
+                className="inline-flex items-center gap-2 rounded-2xl border border-emerald-100 bg-white/80 px-3 py-2 text-xs text-gray-700 shadow-sm"
+              >
+                {getTourFacilityIcon(facility)}
+                <span className="font-medium capitalize">{facility}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 text-xs">
@@ -171,7 +207,7 @@ export const TourCard = ({
                   event.stopPropagation();
                   onSelectTag?.(tag);
                 }}
-                className="rounded-full border border-green-200 px-3 py-1 text-green-700 transition hover:border-green-400 hover:bg-green-50"
+                className="rounded-full border border-emerald-200/70 bg-white px-3 py-1 text-emerald-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-50"
               >
                 {tag}
               </button>
@@ -179,20 +215,48 @@ export const TourCard = ({
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3 text-sm">
-          <div className="text-gray-700">
-            <span className="block font-semibold text-gray-900">
-              {optionCount} option{optionCount === 1 ? "" : "s"}
-            </span>
-            {startingPrice ? (
-              <span className="text-xs text-gray-500">From ₹{startingPrice} </span>
-            ) : (
-              <span className="text-xs text-gray-500">Pricing on request</span>
-            )}
+        <div className="mt-auto flex flex-col gap-3 border-t border-gray-100 pt-4 text-sm text-gray-600">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2 rounded-2xl bg-emerald-50/80 px-3 py-2">
+              <FaClock className="text-emerald-600" />
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-emerald-700">Duration</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {tour.options?.[0]?.duration ?? tour.duration}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 rounded-2xl bg-emerald-50/80 px-3 py-2">
+              <FaRoute className="text-emerald-600" />
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-emerald-700">Highlights</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {tour.heroHighlights?.length ?? optionCount}
+                </p>
+              </div>
+            </div>
           </div>
-          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-semibold text-green-700">
-            View details
-          </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 rounded-2xl border border-emerald-100 bg-white px-3 py-2 text-xs">
+              <FaUsers className="text-emerald-600" />
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-emerald-700">Group size</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {tour.options?.[0]?.capacity ?? tour.capacity}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              {startingPrice ? (
+                <>
+                  <p className="text-[11px] uppercase tracking-wide text-gray-500">From</p>
+                  <p className="text-lg font-semibold text-emerald-700">₹{startingPrice}</p>
+                </>
+              ) : (
+                <p className="text-xs text-gray-500">Pricing on request</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </Link>

@@ -14,16 +14,7 @@ import {
   FaMountain,
 } from "react-icons/fa";
 import { useWishlist } from "../hooks/useWishlist";
-
-const ADVENTURE_CATEGORIES = [
-  { label: "All", value: "all" },
-  { label: "Trekking", value: "trekking" },
-  { label: "Hiking", value: "hiking" },
-  { label: "Camping", value: "camping" },
-  { label: "Water Rafting", value: "water-rafting" },
-] as const;
-
-export type AdventureCategoryValue = (typeof ADVENTURE_CATEGORIES)[number]["value"];
+import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
 
 export type AdventureOption = {
   _id?: string;

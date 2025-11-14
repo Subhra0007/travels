@@ -62,6 +62,7 @@ export interface IBooking extends Document {
   paymentReference?: string;
   metadata?: Record<string, any>;
   cancelledAt?: Date;
+  completedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -144,6 +145,7 @@ const bookingSchema = new Schema<IBooking>(
     paymentReference: String,
     metadata: Schema.Types.Mixed,
     cancelledAt: Date,
+    completedAt: Date,
   },
   { timestamps: true }
 );
@@ -153,6 +155,7 @@ bookingSchema.index({ tourId: 1, startDate: 1 });
 bookingSchema.index({ adventureId: 1, startDate: 1 });
 bookingSchema.index({ vehicleRentalId: 1, pickupDate: 1 });
 bookingSchema.index({ vendorId: 1, status: 1 });
+bookingSchema.index({ vendorId: 1, status: 1, completedAt: 1 });
 bookingSchema.index({ "customer.email": 1 });
 
 export default mongoose.models.Booking || mongoose.model<IBooking>("Booking", bookingSchema);

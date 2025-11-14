@@ -13,14 +13,10 @@ import {
   FaMotorcycle,
 } from "react-icons/fa";
 import { useWishlist } from "@/app/hooks/useWishlist";
-
-const RENTAL_CATEGORIES = [
-  { label: "All", value: "all" },
-  { label: "Cars", value: "cars-rental" },
-  { label: "Bikes", value: "bikes-rentals" },
-] as const;
-
-export type RentalCategoryValue = (typeof RENTAL_CATEGORIES)[number]["value"];
+import {
+  VEHICLE_RENTAL_CATEGORIES,
+  type VehicleRentalCategoryValue,
+} from "./categories";
 
 export type VehicleOption = {
   _id?: string;
@@ -49,7 +45,7 @@ export type VehicleRental = {
   rating?: { average: number; count: number };
 };
 
-type CategoryValue = RentalCategoryValue;
+type CategoryValue = VehicleRentalCategoryValue;
 
 type VehicleRentalExplorerProps = {
   initialCategory?: string;
@@ -195,7 +191,7 @@ export const RentalCard = ({
 };
 
 export default function VehicleRentalExplorer({ initialCategory = "all" }: VehicleRentalExplorerProps) {
-  const normalizedInitialCategory: CategoryValue = RENTAL_CATEGORIES.some(
+  const normalizedInitialCategory: CategoryValue = VEHICLE_RENTAL_CATEGORIES.some(
     (tab) => tab.value === initialCategory
   )
     ? (initialCategory as CategoryValue)
@@ -237,6 +233,10 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
     };
     load();
   }, []);
+
+  useEffect(() => {
+    setActiveCategory(normalizedInitialCategory);
+  }, [normalizedInitialCategory]);
 
   const priceBounds = useMemo(() => {
     if (!rentals.length) return { min: 0, max: 0 };
@@ -316,7 +316,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
             <p className="text-sm text-gray-600">Filter by category, price, or tags.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {RENTAL_CATEGORIES.map((tab) => (
+            {VEHICLE_RENTAL_CATEGORIES.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setActiveCategory(tab.value)}

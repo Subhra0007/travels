@@ -1,0 +1,19 @@
+export const VEHICLE_RENTAL_CATEGORIES = [
+  { label: "All", value: "all", slug: "all" },
+  { label: "Cars", value: "cars-rental", slug: "cars" },
+  { label: "Bikes", value: "bikes-rentals", slug: "bikes" },
+] as const;
+
+export type VehicleRentalCategoryValue = (typeof VEHICLE_RENTAL_CATEGORIES)[number]["value"];
+export type VehicleRentalCategorySlug = (typeof VEHICLE_RENTAL_CATEGORIES)[number]["slug"];
+
+export const VEHICLE_RENTAL_SLUG_TO_VALUE: Record<string, VehicleRentalCategoryValue> =
+  VEHICLE_RENTAL_CATEGORIES.reduce(
+    (acc, item) => {
+      acc[item.slug] = item.value;
+      return acc;
+    },
+    {} as Record<string, VehicleRentalCategoryValue>
+  );
+
+

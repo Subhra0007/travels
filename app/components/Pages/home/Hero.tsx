@@ -214,8 +214,8 @@ export default function HeroSection() {
 >
   <div className="flex items-center justify-center w-full">
     <h1 className="text-center text-5xl font-bold text-black leading-snug">
-     Explore Our Vast Options of <br />
-      <span className="role text-lime-300 bg-green-950 p-2"></span>
+     SafarHub, Crafted by Local Experts. <br />Find {" "}
+      <span className="role text-lime-300 bg-green-950 p-2"></span><br/>Deals for Your Next Journey.
     </h1>
   </div>
 </motion.div>

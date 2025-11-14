@@ -5,11 +5,22 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  FaBath,
+  FaBolt,
+  FaCoffee,
+  FaDumbbell,
   FaHeart,
   FaMapMarkerAlt,
+  FaParking,
   FaSearch,
+  FaSnowflake,
   FaStar,
+  FaSwimmingPool,
   FaUsers,
+  FaWifi,
+  FaUtensils,
+  FaCheckCircle,
+  FaBed,
 } from "react-icons/fa";
 import { STAY_CATEGORIES, type StayCategoryValue } from "./categories";
 import { useWishlist } from "../hooks/useWishlist";
@@ -62,6 +73,26 @@ type StayCardProps = {
   onSelectTag?: (tag: string) => void;
 };
 
+const facilityIconLookup = [
+  { keywords: ["wifi", "internet"], icon: <FaWifi className="text-green-600" /> },
+  { keywords: ["breakfast", "dining", "restaurant"], icon: <FaCoffee className="text-amber-500" /> },
+  { keywords: ["parking", "garage"], icon: <FaParking className="text-blue-500" /> },
+  { keywords: ["pool", "swim"], icon: <FaSwimmingPool className="text-cyan-500" /> },
+  { keywords: ["ac", "air", "climate"], icon: <FaSnowflake className="text-sky-500" /> },
+  { keywords: ["gym", "fitness"], icon: <FaDumbbell className="text-purple-500" /> },
+  { keywords: ["spa", "bath"], icon: <FaBath className="text-rose-500" /> },
+  { keywords: ["power", "generator"], icon: <FaBolt className="text-yellow-500" /> },
+  { keywords: ["dining", "food"], icon: <FaUtensils className="text-orange-500" /> },
+];
+
+const getFacilityIcon = (label: string) => {
+  const normalized = label?.toLowerCase() || "";
+  const match = facilityIconLookup.find((item) =>
+    item.keywords.some((keyword) => normalized.includes(keyword))
+  );
+  return match?.icon ?? <FaCheckCircle className="text-green-500" />;
+};
+
 export const StayCard = ({
   stay,
   isWishlisted,
@@ -81,7 +112,7 @@ export const StayCard = ({
   return (
     <Link
       href={`/stays/${stay._id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+      className="group flex flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-xl backdrop-blur-sm transition hover:-translate-y-2 hover:shadow-2xl"
     >
       <div className="relative h-56 w-full">
         <button
@@ -115,12 +146,13 @@ export const StayCard = ({
             No image
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-green-900/60 via-transparent to-transparent" />
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
           {stay.category}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5 text-gray-900">
+      <div className="flex flex-1 flex-col gap-3 p-6 text-gray-900">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{stay.name}</h3>
@@ -141,7 +173,7 @@ export const StayCard = ({
             {heroHighlights.map((highlight) => (
               <span
                 key={highlight}
-                className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
+                className="rounded-full bg-green-50/80 px-3 py-1 text-xs font-medium text-green-700"
               >
                 {highlight}
               </span>
@@ -150,8 +182,8 @@ export const StayCard = ({
         )}
 
         {!!primaryFeatures.length && (
-          <div className="text-xs text-gray-600">
-            <span className="font-semibold text-gray-800">Room features:</span>{" "}
+          <div className="rounded-2xl border border-green-50 bg-green-50/60 px-4 py-3 text-xs text-gray-700 shadow-inner">
+            <span className="font-semibold text-gray-900">Room features:</span>{" "}
             {primaryFeatures.join(", ")}
           </div>
         )}
@@ -167,7 +199,7 @@ export const StayCard = ({
                   event.stopPropagation();
                   onSelectTag?.(tag);
                 }}
-                className="rounded-full border border-green-200 px-3 py-1 text-green-700 transition hover:border-green-400 hover:bg-green-50"
+                className="rounded-full border border-green-200/70 bg-white px-3 py-1 text-green-700 shadow-sm transition hover:border-green-400 hover:bg-green-50"
               >
                 {tag}
               </button>
@@ -175,25 +207,57 @@ export const StayCard = ({
           </div>
         )}
 
+        {stay.popularFacilities?.length ? (
+          <div className="flex flex-wrap gap-2">
+            {stay.popularFacilities.slice(0, 4).map((facility) => (
+              <span
+                key={facility}
+                className="inline-flex items-center gap-2 rounded-2xl border border-green-100 bg-white/80 px-3 py-2 text-xs text-gray-700 shadow-sm"
+              >
+                {getFacilityIcon(facility)}
+                <span className="font-medium capitalize">{facility}</span>
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3 text-sm">
-          <div className="text-gray-700">
-            <span className="block font-semibold text-gray-900">
-              {roomCount} room{roomCount === 1 ? "" : "s"}
-            </span>
+          <div className="flex flex-1 flex-wrap gap-3 text-xs text-gray-600">
+            <div className="flex flex-1 min-w-[120px] items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
+              <FaBed className="text-green-600" />
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-green-700">Rooms</p>
+                <p className="text-sm font-semibold text-gray-900">{roomCount}</p>
+              </div>
+            </div>
+            <div className="flex flex-1 min-w-[120px] items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
+              <FaUsers className="text-green-600" />
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-green-700">Max guests</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {stay.rooms?.[0]?.capacity ?? guestsFallback(stay)}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="text-right">
             {startingPrice ? (
-              <span className="text-xs text-gray-500">From ₹{startingPrice} / night</span>
+              <>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">Starting at</p>
+                <p className="text-lg font-semibold text-green-700">₹{startingPrice}</p>
+                <p className="text-[11px] text-gray-400">per night</p>
+              </>
             ) : (
-              <span className="text-xs text-gray-500">Pricing on request</span>
+              <p className="text-xs text-gray-500">Pricing on request</p>
             )}
           </div>
-          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-semibold text-green-700">
-            View details
-          </span>
         </div>
       </div>
     </Link>
   );
 };
+
+const guestsFallback = (stay: Stay) => stay.rooms?.reduce((max, room) => Math.max(max, room.capacity), 0) ?? 2;
 
 export default function StaysExplorer({ initialCategory = "all" }: StaysExplorerProps) {
   const normalizedInitialCategory: CategoryValue = STAY_CATEGORIES.some(

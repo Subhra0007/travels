@@ -109,6 +109,18 @@ export const PATCH = auth(async (
       if (nextStatus === "cancelled") {
         updates.cancelledAt = new Date();
       }
+      // Set completedAt when status is "completed"
+      // Always set it if status is completed (even if already completed, to ensure it's set)
+      if (nextStatus === "completed") {
+        // Only set if not already set or if status was changed to completed
+        if (!booking.completedAt || booking.status !== "completed") {
+          updates.completedAt = new Date();
+        }
+      }
+      // Clear completedAt if status is changed away from "completed"
+      if (nextStatus !== "completed" && booking.status === "completed") {
+        updates.completedAt = null;
+      }
     }
 
     if (body.paymentStatus) {
@@ -136,11 +148,16 @@ export const PATCH = auth(async (
 
     const updatedBooking = await Booking.findByIdAndUpdate(id, { $set: updates }, { new: true });
 
-    if (body.paymentStatus === "paid") {
+    // Log when a booking is marked as completed for debugging
+    if (body.status === "completed" && updatedBooking) {
+      console.log(`Booking ${id} marked as completed. Amount: ${updatedBooking.totalAmount}, completedAt: ${updatedBooking.completedAt}`);
+    }
+
+    if (body.paymentStatus === "unpaid") {
       await Settlement.findOneAndUpdate(
         { bookingId: booking._id },
         {
-          status: "paid",
+          status: "unpaid",
           amountPaid: booking.totalAmount,
           paidAt: new Date(),
         }
