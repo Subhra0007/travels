@@ -213,7 +213,7 @@ export default function HeroSection() {
   className="flex flex-col md:flex-row justify-between items-center gap-6 mt-6 mb-8"
 >
   <div className="flex items-center justify-center w-full">
-    <h1 className="text-center text-5xl font-bold text-black leading-snug">
+    <h1 className="text-center lg:text-5xl text-4xl font-bold text-black leading-snug">
      SafarHub,The North Knows the Way. {" "} <br /> Find {" "}
       <span className="role text-lime-300 bg-green-950 p-2"></span>{" "}Deals 
     </h1>
