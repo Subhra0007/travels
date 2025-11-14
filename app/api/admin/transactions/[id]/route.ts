@@ -4,7 +4,11 @@ import dbConnect from "@/lib/config/database";
 import Transaction from "@/models/Transaction";
 import { auth } from "@/lib/middlewares/auth";
 
-export const PATCH = auth(async (req: NextRequest, { params }: { params: { id: string } }) => {
+type TransactionRouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export const PATCH = auth(async (req: NextRequest, context?: TransactionRouteContext) => {
   try {
     await dbConnect();
     const user = (req as any).user;
@@ -13,7 +17,7 @@ export const PATCH = auth(async (req: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = (context?.params ? await context.params : { id: undefined });
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, message: "Invalid transaction ID" }, { status: 400 });
     }

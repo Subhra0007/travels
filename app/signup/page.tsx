@@ -167,7 +167,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             </button>
           </div>
           {otpSent && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 lg:flex-row flex-col">
               <input
                 name="otp"
                 placeholder="OTP"

@@ -39,6 +39,8 @@ export type Tour = {
   _id: string;
   name: string;
   category: "group-tours" | "tour-packages";
+  duration?: string;
+  capacity?: number;
   location: {
     address: string;
     city: string;
