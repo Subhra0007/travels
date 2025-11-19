@@ -28,9 +28,9 @@ export default function SalesChart({ refreshKey = 0 }: { refreshKey?: number }) 
           credentials: "include",
           cache: "no-store"
         });
-        const payload = await res.json();
-        if (payload.success && payload.salesData) {
-          const salesData = payload.salesData[timeRange] || [];
+        const result = await res.json();
+        if (result.success && result.salesData) {
+          const salesData = result.salesData[timeRange] || [];
           setData(salesData);
         }
       } catch (error) {

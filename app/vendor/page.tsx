@@ -25,7 +25,11 @@ export default function VendorPage() {
           return;
         }
 
-        const data = await res.json();
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.user) {
+          router.replace("/login");
+          return;
+        }
 
         // ✅ only vendor allowed
         if (data.user.accountType !== "vendor") {

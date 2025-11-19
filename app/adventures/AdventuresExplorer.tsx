@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,7 +15,6 @@ import {
   FaMountain,
 } from "react-icons/fa";
 import { useWishlist } from "../hooks/useWishlist";
-import { useAvailability } from "../hooks/useAvailability";
 import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
 
 export type AdventureOption = {
@@ -61,8 +61,6 @@ type AdventureCardProps = {
   wishlistDisabled: boolean;
   onToggleWishlist: (advId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
-  startDate?: string;
-  endDate?: string;
 };
 
 export const AdventureCard = ({
@@ -71,8 +69,6 @@ export const AdventureCard = ({
   wishlistDisabled,
   onToggleWishlist,
   onSelectTag,
-  startDate,
-  endDate,
 }: AdventureCardProps) => {
   const optionCount = adventure.options?.length ?? 0;
   const startingPrice = optionCount
@@ -82,10 +78,6 @@ export const AdventureCard = ({
   const primaryFeatures = adventure.options?.[0]?.features?.slice(0, 4) ?? [];
   const ratingValue = adventure.rating?.count ? adventure.rating.average : null;
   const tags = adventure.tags ?? [];
-  const hasDates = Boolean(startDate && endDate);
-  const availability = useAvailability("adventure", adventure._id, startDate, endDate);
-  const availableOptionKeys = availability.availableOptionKeys ?? [];
-  const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
 
   return (
     <Link
@@ -125,15 +117,6 @@ export const AdventureCard = ({
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-orange-700 shadow">
           {adventure.category}
         </span>
-        {hasDates && (
-          <span
-            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
-              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-orange-100 text-orange-700"
-            }`}
-          >
-            {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
-          </span>
-        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5 text-gray-900">
@@ -212,10 +195,12 @@ export const AdventureCard = ({
 };
 
 export default function AdventuresExplorer({ initialCategory = "all" }: AdventuresExplorerProps) {
+  const params = useSearchParams();
+  const categoryParam = params.get("category") || initialCategory;
   const normalizedInitialCategory: CategoryValue = ADVENTURE_CATEGORIES.some(
-    (tab) => tab.value === initialCategory
+    (tab) => tab.value === categoryParam
   )
-    ? (initialCategory as CategoryValue)
+    ? (categoryParam as CategoryValue)
     : "all";
 
   const [adventures, setAdventures] = useState<Adventure[]>([]);
@@ -223,8 +208,6 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const [activeCategory, setActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
   const [searchTerm, setSearchTerm] = useState("");
   const [guests, setGuests] = useState(2);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [priceMin, setPriceMin] = useState<number | "">("");
   const [priceMax, setPriceMax] = useState<number | "">("");
@@ -250,9 +233,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data?.message || "Failed");
         setAdventures(data.adventures || []);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Unable to load adventures";
-        setError(message);
+      } catch (err: any) {
+        setError(err?.message || "Unable to load adventures");
       } finally {
         setLoading(false);
       }
@@ -364,26 +346,6 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                     className="w-full bg-transparent outline-none"
                   />
                 </div>
-              </div>
-
-              <div className="col-span-1">
-                <label className="mb-1 block text-sm font-semibold text-gray-700">Start date</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-orange-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="col-span-1">
-                <label className="mb-1 block text-sm font-semibold text-gray-700">End date</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-orange-500 focus:outline-none"
-                />
               </div>
 
               <div className="col-span-1">
@@ -580,8 +542,6 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }
-                startDate={startDate}
-                endDate={endDate}
               />
             ))}
           </div>

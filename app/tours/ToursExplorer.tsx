@@ -288,10 +288,11 @@ export const TourCard = ({
 export default function ToursExplorer({ initialCategory = "all" }: ToursExplorerProps) {
   const params = useSearchParams();
   const router = useRouter();
+  const categoryParam = params.get("category") || initialCategory;
   const normalizedInitialCategory: CategoryValue = TOUR_CATEGORIES.some(
-    (tab) => tab.value === initialCategory
+    (tab) => tab.value === categoryParam
   )
-    ? (initialCategory as CategoryValue)
+    ? (categoryParam as CategoryValue)
     : "all";
 
   const [tours, setTours] = useState<Tour[]>([]);

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import dbConnect from "@/lib/config/database";
 import User from "@/models/User";
+import "@/models/Profile";
 
 export async function GET(req: NextRequest) {
   try {
@@ -26,8 +28,12 @@ export async function GET(req: NextRequest) {
     }
 
     // ✅ Handle fixed admin
-    const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
-    if (decoded.accountType === "admin" && decoded.email === ADMIN_EMAIL) {
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+    if (
+      ADMIN_EMAIL &&
+      decoded.accountType === "admin" &&
+      decoded.email === ADMIN_EMAIL
+    ) {
       return NextResponse.json({
         success: true,
         user: {
@@ -39,8 +45,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    const userId = decoded.id || decoded._id;
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid token payload" },
+        { status: 401 }
+      );
+    }
+
     // ✅ Otherwise find user in DB
-    const user = await User.findById(decoded.id).populate("additionalDetails");
+    const user = await User.findById(userId).populate("additionalDetails");
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },

@@ -25,14 +25,19 @@ export default function VendorPaymentsPage() {
           return;
         }
 
-        const data = await res.json();
-
-        if (data.user.accountType !== "vendor") {
+        const data = await res.json().catch(() => null);
+        const verifiedUser = data?.user;
+        if (!res.ok || !verifiedUser) {
           router.replace("/login");
           return;
         }
 
-        setUser(data.user);
+        if (verifiedUser.accountType !== "vendor") {
+          router.replace("/login");
+          return;
+        }
+
+        setUser(verifiedUser);
         setAuthorized(true);
         loadTransactions();
       } catch (err) {

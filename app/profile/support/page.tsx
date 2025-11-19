@@ -27,12 +27,17 @@ export default function SupportPage() {
           router.replace("/login");
           return;
         }
-        const data = await res.json();
-        if (data.user.accountType === "vendor") {
+        const data = await res.json().catch(() => null);
+        const verifiedUser = data?.user;
+        if (!res.ok || !verifiedUser) {
+          router.replace("/login");
+          return;
+        }
+        if (verifiedUser.accountType === "vendor") {
           router.replace("/vendor");
           return;
         }
-        setUser(data.user);
+        setUser(verifiedUser);
         loadMessages();
       } catch (err) {
         console.error("Verify failed:", err);

@@ -17,8 +17,10 @@ export default function AdminPage() {
         const res = await fetch("/api/auth/verify", { credentials: "include" });
         if (res.status !== 200) return router.replace("/login");
 
-        const data = await res.json();
-        if (data.user.accountType !== "admin") return router.replace("/login");
+        const data = await res.json().catch(() => null);
+        const verifiedUser = data?.user;
+        if (!res.ok || !verifiedUser) return router.replace("/login");
+        if (verifiedUser.accountType !== "admin") return router.replace("/login");
 
         setAuthorized(true);
       } catch {

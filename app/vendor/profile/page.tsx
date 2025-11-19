@@ -42,13 +42,18 @@ export default function VendorProfilePage() {
           router.replace("/login");
           return;
         }
-        const data = await res.json();
-        if (data.user.accountType !== "vendor") {
+        const data = await res.json().catch(() => null);
+        const verifiedUser = data?.user;
+        if (!res.ok || !verifiedUser) {
+          router.replace("/login");
+          return;
+        }
+        if (verifiedUser.accountType !== "vendor") {
           router.replace("/login");
           return;
         }
 
-        let base: VendorUser = data.user;
+        let base: VendorUser = verifiedUser;
 
         // Merge vendor services/approval from admin vendor endpoint (if available)
         const vendorId = base._id || base.id;

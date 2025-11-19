@@ -149,8 +149,8 @@ export default function EditProfilePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4 md:p-8 bg-sky-50 shadow-xl rounded-3xl mt-20 mb-10">
-      <div className="mb-4 md:mb-6 flex items-center justify-between">
+    <div className="max-w-3xl mx-auto p-4 md:p-8 bg-sky-50 shadow-xl rounded-3xl  mb-10">
+      <div className="mb-4 md:mb-6 flex items-center justify-between mt-20">
         <h1 className="text-2xl md:text-3xl font-bold text-black">Edit Profile</h1>
         <button
           onClick={() => router.push("/profile")}

@@ -118,13 +118,15 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
       try {
         const res = await fetch("/api/auth/verify", { credentials: "include" });
         if (!res.ok) return;
-        const data = await res.json();
-        setCurrentUser(data.user);
+        const data = await res.json().catch(() => null);
+        const verifiedUser = data?.user;
+        if (!verifiedUser) return;
+        setCurrentUser(verifiedUser);
         setFormData((prev) => ({
           ...prev,
-          fullName: prev.fullName || data.user.fullName || "",
-          email: prev.email || data.user.email || "",
-          phone: prev.phone || data.user.contactNumber || "",
+          fullName: prev.fullName || verifiedUser.fullName || "",
+          email: prev.email || verifiedUser.email || "",
+          phone: prev.phone || verifiedUser.contactNumber || "",
         }));
       } catch (error) {
         console.warn("Unable to preload user details", error);

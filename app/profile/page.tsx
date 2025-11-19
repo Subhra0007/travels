@@ -25,15 +25,20 @@ export default function ProfilePage() {
           return;
         }
 
-        const data = await res.json();
+        const data = await res.json().catch(() => null);
+        const verifiedUser = data?.user;
+        if (!res.ok || !verifiedUser) {
+          router.replace("/login");
+          return;
+        }
 
         // Redirect vendor to vendor dashboard
-        if (data.user.accountType === "vendor") {
+        if (verifiedUser.accountType === "vendor") {
           router.replace("/vendor");
           return;
         }
 
-        setUser(data.user);
+        setUser(verifiedUser);
       } catch (err) {
         console.error("Verify failed:", err);
         router.replace("/login");

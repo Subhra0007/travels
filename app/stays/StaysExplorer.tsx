@@ -282,10 +282,11 @@ const guestsFallback = (stay: Stay) => stay.rooms?.reduce((max, room) => Math.ma
 export default function StaysExplorer({ initialCategory = "all" }: StaysExplorerProps) {
   const params = useSearchParams();
   const router = useRouter();
+  const categoryParam = params.get("category") || initialCategory;
   const normalizedInitialCategory: CategoryValue = STAY_CATEGORIES.some(
-    (tab) => tab.value === initialCategory
+    (tab) => tab.value === categoryParam
   )
-    ? (initialCategory as CategoryValue)
+    ? (categoryParam as CategoryValue)
     : "all";
 
   const [stays, setStays] = useState<Stay[]>([]);
@@ -590,27 +591,29 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
           <div className="flex flex-col">
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price</label>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              {[
-                { key: "under-1000", label: "Under 1000", min: "", max: 1000 },
-                { key: "1000-plus", label: "1000+", min: 1000, max: "" },
-                { key: "1500-plus", label: "1500+", min: 1500, max: "" },
-                { key: "2000-plus", label: "2000+", min: 2000, max: "" },
-              ].map((p) => {
+              {(
+                [
+                  { key: "under-1000", label: "Under 1000", min: "", max: 1000 },
+                  { key: "1000-plus", label: "1000+", min: 1000, max: "" },
+                  { key: "1500-plus", label: "1500+", min: 1500, max: "" },
+                  { key: "2000-plus", label: "2000+", min: 2000, max: "" },
+                ] as { key: string; label: string; min: number | ""; max: number | "" }[]
+              ).map((p) => {
                 const active = (priceMin === p.min || (p.min === "" && priceMin === "")) && (priceMax === p.max || (p.max === "" && priceMax === ""));
                 return (
               <button
                 key={p.key}
                 type="button"
                 onClick={() => {
-                      setPriceMin(p.min === "" ? "" : Number(p.min));
-                      setPriceMax(p.max === "" ? "" : Number(p.max));
+                      setPriceMin(p.min);
+                      setPriceMax(p.max);
                 }}
                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
                   active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
                 }`}
               >
-                    <FaRupeeSign className="text-green-600" /> {p.label}
-                  </button>
+                  <FaRupeeSign className="text-green-600" /> {p.label}
+                </button>
                 );
               })}
             </div>

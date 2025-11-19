@@ -18,12 +18,13 @@ export default function AdminProfilePage() {
           router.push("/login");
           return;
         }
-        const verifyData = await verifyRes.json();
-        if (!verifyData.success || verifyData.user?.accountType !== "admin") {
+        const verifyData = await verifyRes.json().catch(() => null);
+        const verifiedUser = verifyData?.user;
+        if (!verifiedUser || verifiedUser.accountType !== "admin") {
           router.push("/login");
           return;
         }
-        setAdmin({ email: verifyData.user.email });
+        setAdmin({ email: verifiedUser.email });
 
         // Fetch metrics
         const res = await fetch("/api/admin/meta", { credentials: "include" });

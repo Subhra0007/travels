@@ -40,8 +40,13 @@ const AdminBookingsCategoryPage = () => {
         return;
       }
 
-      const data = await res.json();
-      if (data.user?.accountType !== "admin") {
+      const data = await res.json().catch(() => null);
+      const verifiedUser = data?.user;
+      if (!res.ok || !verifiedUser) {
+        router.replace("/login");
+        return;
+      }
+      if (verifiedUser.accountType !== "admin") {
         router.replace("/login");
         return;
       }

@@ -19,6 +19,7 @@ import { useAvailability } from "@/app/hooks/useAvailability";
 import {
   VEHICLE_RENTAL_CATEGORIES,
   type VehicleRentalCategoryValue,
+  VEHICLE_RENTAL_SLUG_TO_VALUE,
 } from "./categories";
 
 export type VehicleOption = {
@@ -213,10 +214,12 @@ export const RentalCard = ({
 export default function VehicleRentalExplorer({ initialCategory = "all" }: VehicleRentalExplorerProps) {
   const params = useSearchParams();
   const router = useRouter();
+  const slugOrValue = params.get("category") || initialCategory;
+  const valueFromSlug = VEHICLE_RENTAL_SLUG_TO_VALUE[slugOrValue as string] || slugOrValue;
   const normalizedInitialCategory: CategoryValue = VEHICLE_RENTAL_CATEGORIES.some(
-    (tab) => tab.value === initialCategory
+    (tab) => tab.value === valueFromSlug
   )
-    ? (initialCategory as CategoryValue)
+    ? (valueFromSlug as CategoryValue)
     : "all";
 
   const [rentals, setRentals] = useState<VehicleRental[]>([]);

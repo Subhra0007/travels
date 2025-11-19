@@ -46,8 +46,13 @@ export default function VendorProfileEditPage() {
           router.replace("/login");
           return;
         }
-        const auth = await authRes.json();
-        if (auth.user.accountType !== "vendor") {
+        const auth = await authRes.json().catch(() => null);
+        const verifiedUser = auth?.user;
+        if (!authRes.ok || !verifiedUser) {
+          router.replace("/login");
+          return;
+        }
+        if (verifiedUser.accountType !== "vendor") {
           router.replace("/login");
           return;
         }

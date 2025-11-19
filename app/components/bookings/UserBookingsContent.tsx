@@ -24,16 +24,21 @@ const UserBookingsContent: React.FC = () => {
         router.replace("/login");
         return;
       }
-      const data = await res.json();
-      if (data.user.accountType === "vendor") {
+      const data = await res.json().catch(() => null);
+      const verifiedUser = data?.user;
+      if (!res.ok || !verifiedUser) {
+        router.replace("/login");
+        return;
+      }
+      if (verifiedUser.accountType === "vendor") {
         router.replace("/vendor");
         return;
       }
-      if (data.user.accountType === "admin") {
+      if (verifiedUser.accountType === "admin") {
         router.replace("/admin");
         return;
       }
-      setUser(data.user);
+      setUser(verifiedUser);
     } catch (error) {
       console.error("Failed to verify user", error);
       router.replace("/login");

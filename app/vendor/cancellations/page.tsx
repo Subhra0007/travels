@@ -21,8 +21,13 @@ const VendorCancellationsPage = () => {
         return;
       }
 
-      const data = await res.json();
-      if (data.user?.accountType !== "vendor") {
+      const data = await res.json().catch(() => null);
+      const verifiedUser = data?.user;
+      if (!res.ok || !verifiedUser) {
+        router.replace("/login");
+        return;
+      }
+      if (verifiedUser.accountType !== "vendor") {
         router.replace("/profile");
         return;
       }
@@ -45,10 +50,9 @@ const VendorCancellationsPage = () => {
         throw new Error(data?.message || "Unable to load cancellations");
       }
       setBookings(data.bookings ?? []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Vendor cancellations fetch failed", err);
-      const message = err instanceof Error ? err.message : "Failed to load cancellations.";
-      setError(message);
+      setError(err?.message || "Failed to load cancellations.");
     }
   };
 
