@@ -234,6 +234,11 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const city = params.get("city") || "";
+    setSearchTerm(city);
+  }, [params]);
+
   const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 

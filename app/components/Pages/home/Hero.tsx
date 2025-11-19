@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Typed from "typed.js";
+import { useRouter } from "next/navigation";
 import {
   
   FaCar,
@@ -294,6 +295,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
   showLocationMenu,
   setShowLocationMenu,
 }) => {
+  const router = useRouter();
   const [showGuests, setShowGuests] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const filteredWB = wbLocations.filter((c) =>
@@ -501,7 +503,17 @@ const StaysForm: React.FC<StaysFormProps> = ({
 
       {/* SEARCH */}
       <div className="flex items-end">
-        <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
+        <button
+          onClick={() => {
+            const url = new URL("/stays", window.location.origin);
+            if (location) url.searchParams.set("city", location);
+            if (totalGuests) url.searchParams.set("guests", String(totalGuests));
+            if (checkIn) url.searchParams.set("checkIn", checkIn.toISOString().slice(0, 10));
+            if (checkOut) url.searchParams.set("checkOut", checkOut.toISOString().slice(0, 10));
+            router.push(`${url.pathname}?${url.searchParams.toString()}`);
+          }}
+          className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition"
+        >
           Search Stays
         </button>
       </div>
@@ -518,6 +530,7 @@ const ToursForm: React.FC<{
   wbLocations: string[];
   indiaLocations: string[];
 }> = ({ defaultLocation, wbLocations, indiaLocations }) => {
+  const router = useRouter();
   const [destination, setDestination] = useState<string>(defaultLocation || "");
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState("");
@@ -628,7 +641,16 @@ const ToursForm: React.FC<{
       </div>
 
       <div className="flex items-end">
-        <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
+        <button
+          onClick={() => {
+            const url = new URL("/tours", window.location.origin);
+            if (destination) url.searchParams.set("city", destination);
+            if (startDate) url.searchParams.set("startDate", startDate.toISOString().slice(0, 10));
+            if (endDate) url.searchParams.set("endDate", endDate.toISOString().slice(0, 10));
+            router.push(`${url.pathname}?${url.searchParams.toString()}`);
+          }}
+          className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition"
+        >
           Find Tours
         </button>
       </div>
@@ -641,6 +663,7 @@ const AdventuresForm: React.FC<{
   wbLocations: string[];
   indiaLocations: string[];
 }> = ({ defaultLocation, wbLocations, indiaLocations }) => {
+  const router = useRouter();
   const [activity, setActivity] = useState<string>("");
   const [showActivity, setShowActivity] = useState<boolean>(false);
   const [destination, setDestination] = useState<string>(defaultLocation || "");
@@ -781,7 +804,22 @@ const AdventuresForm: React.FC<{
       </div>
 
       <div className="flex items-end">
-        <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
+        <button
+          onClick={() => {
+            const url = new URL("/adventures", window.location.origin);
+            if (destination) url.searchParams.set("city", destination);
+            const map: Record<string, string> = {
+              Trekking: "trekking",
+              Hiking: "hiking",
+              Camping: "camping",
+              Rafting: "water-rafting",
+            };
+            const cat = map[activity];
+            if (cat) url.searchParams.set("category", cat);
+            router.push(`${url.pathname}?${url.searchParams.toString()}`);
+          }}
+          className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition"
+        >
           Book Adventure
         </button>
       </div>
@@ -793,6 +831,7 @@ const VehicleRentalForm: React.FC<{
   wbLocations: string[];
   indiaLocations: string[];
 }> = ({ wbLocations, indiaLocations }) => {
+  const router = useRouter();
   const [pickup, setPickup] = useState<string>("");
   const [dropoff, setDropoff] = useState<string>("");
   const [showPickup, setShowPickup] = useState(false);
@@ -971,7 +1010,14 @@ const VehicleRentalForm: React.FC<{
       </div>
 
       <div className="flex items-end">
-        <button className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition">
+        <button
+          onClick={() => {
+            const url = new URL("/vehicle-rental", window.location.origin);
+            if (pickup) url.searchParams.set("city", pickup);
+            router.push(`${url.pathname}?${url.searchParams.toString()}`);
+          }}
+          className="w-full bg-linear-to-r from-lime-600 via-green-500 to-lime-300 text-black font-semibold py-2 rounded-full hover:scale-105 transition"
+        >
           Rent Vehicle
         </button>
       </div>

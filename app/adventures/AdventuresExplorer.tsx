@@ -218,6 +218,11 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 
+  useEffect(() => {
+    const city = params.get("city") || "";
+    setSearchTerm(city);
+  }, [params]);
+
   const availableTags = useMemo(() => {
     const set = new Set<string>();
     adventures.forEach((adv) => (adv.tags || []).forEach((t) => set.add(t)));
