@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/config/database";
 import Booking from "@/models/Booking";
 import jwt from "jsonwebtoken";
+import { Types } from "mongoose";
 
 const getTokenVendorId = (req: NextRequest): string | null => {
   try {
@@ -51,6 +52,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
+    let vendorObjectId: Types.ObjectId;
+    try {
+      vendorObjectId = new Types.ObjectId(vendorId);
+    } catch {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
+
+    const vendorMatch = { vendorId: vendorObjectId };
+    const activeBookingMatch = { status: { $ne: "cancelled" } };
+    const earningsStatusMatch = { status: { $in: ["confirmed", "completed"] }, paymentStatus: { $ne: "refunded" } };
+
     const now = new Date();
     const todayStart = startOfDay(now);
     const todayEnd = endOfDay(now);
@@ -58,18 +70,18 @@ export async function GET(req: NextRequest) {
     const yesterdayEnd = endOfDay(addDays(now, -1));
 
     const [todayBookings, totalBookings, todayEarningsAgg, yesterdayEarningsAgg, totalEarningsAgg] = await Promise.all([
-      Booking.countDocuments({ vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: todayStart, $lte: todayEnd } }),
-      Booking.countDocuments({ vendorId, status: { $ne: "cancelled" } }),
+      Booking.countDocuments({ ...vendorMatch, ...activeBookingMatch, createdAt: { $gte: todayStart, $lte: todayEnd } }),
+      Booking.countDocuments({ ...vendorMatch, ...activeBookingMatch }),
       Booking.aggregate([
-        { $match: { vendorId, status: "confirmed", paymentStatus: "paid", updatedAt: { $gte: todayStart, $lte: todayEnd } } },
+        { $match: { ...vendorMatch, ...earningsStatusMatch, updatedAt: { $gte: todayStart, $lte: todayEnd } } },
         { $group: { _id: null, total: { $sum: "$totalAmount" } } },
       ]),
       Booking.aggregate([
-        { $match: { vendorId, status: "confirmed", paymentStatus: "paid", updatedAt: { $gte: yesterdayStart, $lte: yesterdayEnd } } },
+        { $match: { ...vendorMatch, ...earningsStatusMatch, updatedAt: { $gte: yesterdayStart, $lte: yesterdayEnd } } },
         { $group: { _id: null, total: { $sum: "$totalAmount" } } },
       ]),
       Booking.aggregate([
-        { $match: { vendorId, status: { $in: ["confirmed", "completed"] }, paymentStatus: "paid" } },
+        { $match: { ...vendorMatch, ...earningsStatusMatch } },
         { $group: { _id: null, total: { $sum: "$totalAmount" } } },
       ]),
     ]);
@@ -84,17 +96,17 @@ export async function GET(req: NextRequest) {
     const yearStart = startOfDay(addYears(now, -2));
 
     const weekAgg = await Booking.aggregate([
-      { $match: { vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: weekStart, $lte: todayEnd } } },
+      { $match: { ...vendorMatch, ...activeBookingMatch, createdAt: { $gte: weekStart, $lte: todayEnd } } },
       { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ]);
     const monthAgg = await Booking.aggregate([
-      { $match: { vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: monthStart, $lte: todayEnd } } },
+      { $match: { ...vendorMatch, ...activeBookingMatch, createdAt: { $gte: monthStart, $lte: todayEnd } } },
       { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, count: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ]);
     const yearAgg = await Booking.aggregate([
-      { $match: { vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: yearStart, $lte: todayEnd } } },
+      { $match: { ...vendorMatch, ...activeBookingMatch, createdAt: { $gte: yearStart, $lte: todayEnd } } },
       { $group: { _id: { $dateToString: { format: "%Y", date: "$createdAt" } }, count: { $sum: 1 } } },
       { $sort: { _id: 1 } },
     ]);
@@ -108,7 +120,7 @@ export async function GET(req: NextRequest) {
 
     // Recent bookings with service names
     const recentAgg = await Booking.aggregate([
-      { $match: { vendorId } },
+      { $match: vendorMatch },
       { $sort: { createdAt: -1 } },
       { $limit: 5 },
       { $lookup: { from: "stays", localField: "stayId", foreignField: "_id", as: "stay" } },
