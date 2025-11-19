@@ -6,12 +6,142 @@ import mongoose from "mongoose";
 import User from "@/models/User";
 import jwt from "jsonwebtoken";
 
+const normalizeStayPayload = (body: any) => {
+  const {
+    name,
+    category,
+    location,
+    heroHighlights = [],
+    curatedHighlights = [],
+    images,
+    gallery = [],
+    videos = {},
+    popularFacilities = [],
+    amenities = {},
+    tags = [],
+    rooms,
+    about,
+    checkInOutRules,
+    vendorMessage = "",
+    defaultCancellationPolicy = "",
+    defaultHouseRules = [],
+  } = body;
+
+  if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
+    return { error: "Missing required fields or insufficient images" };
+  }
+
+  if (!["rooms", "hotels", "homestays", "bnbs"].includes(category)) {
+    return { error: "Invalid category" };
+  }
+
+  if (!Array.isArray(rooms) || rooms.length === 0) {
+    return { error: "Please add at least one room" };
+  }
+
+  for (const room of rooms) {
+    const availabilityValue = room?.available ?? room?.inventory ?? 1;
+    if (
+      !room?.name ||
+      !room?.bedType ||
+      typeof room?.beds !== "number" ||
+      typeof room?.capacity !== "number" ||
+      typeof room?.price !== "number" ||
+      !Number.isFinite(Number(availabilityValue)) ||
+      !Array.isArray(room?.images) ||
+      room.images.length < 3
+    ) {
+      return {
+        error:
+          "Every room must include name, bed type, beds, capacity, price, availability and at least 3 images",
+      };
+    }
+  }
+
+  const normalizedRooms = rooms.map((room: any) => ({
+    name: room.name,
+    description: room.description ?? "",
+    bedType: room.bedType,
+    beds: Number(room.beds),
+    capacity: Number(room.capacity),
+    price: Number(room.price),
+    taxes: room.taxes != null ? Number(room.taxes) : 0,
+    currency: typeof room.currency === "string" && room.currency.trim().length ? room.currency : "INR",
+    size: room.size ?? "",
+    features: Array.isArray(room.features) ? room.features : [],
+    amenities: Array.isArray(room.amenities) ? room.amenities : [],
+    available: Number(room.available ?? room.inventory ?? 1),
+    isRefundable: room.isRefundable !== undefined ? Boolean(room.isRefundable) : true,
+    refundableUntilHours:
+      room.refundableUntilHours !== undefined ? Number(room.refundableUntilHours) : 48,
+    images: room.images,
+  }));
+
+  const normalizedVideos = {
+    inside: Array.isArray(videos?.inside) ? videos.inside : [],
+    outside: Array.isArray(videos?.outside) ? videos.outside : [],
+  };
+
+  const normalizedAmenities: Record<string, string[]> = {};
+  if (amenities && typeof amenities === "object") {
+    Object.entries(amenities).forEach(([key, value]) => {
+      if (Array.isArray(value) && value.length) {
+        normalizedAmenities[key] = value;
+      }
+    });
+  }
+
+  const normalizedTags = Array.isArray(tags)
+    ? tags
+        .filter((tag: any) => typeof tag === "string" && tag.trim().length)
+        .map((tag: string) => tag.trim())
+    : [];
+
+  const normalizedCuratedHighlights = Array.isArray(curatedHighlights)
+    ? curatedHighlights
+        .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
+        .map((item: any) => ({
+          title: item.title.trim(),
+          description:
+            typeof item.description === "string" && item.description.trim().length
+              ? item.description.trim()
+              : undefined,
+          icon:
+            typeof item.icon === "string" && item.icon.trim().length
+              ? item.icon.trim()
+              : undefined,
+        }))
+    : [];
+
+  return {
+    payload: {
+      name,
+      category,
+      location,
+      heroHighlights,
+      images,
+      gallery,
+      curatedHighlights: normalizedCuratedHighlights,
+      tags: normalizedTags,
+      videos: normalizedVideos,
+      popularFacilities,
+      amenities: normalizedAmenities,
+      rooms: normalizedRooms,
+      about,
+      checkInOutRules,
+      vendorMessage,
+      defaultCancellationPolicy,
+      defaultHouseRules,
+    },
+  };
+};
 // GET - Fetch stays (vendor-specific or all for admin)
 export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const vendorId = searchParams.get("vendorId");
+    const id = searchParams.get("id");
     const category = searchParams.get("category");
     const all = searchParams.get("all") === "true"; // For admin/public to see all
 
@@ -44,6 +174,28 @@ export async function GET(req: NextRequest) {
       } catch {
         // ignore token errors; treat as public request
       }
+    }
+
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, message: "Valid stay ID is required" },
+          { status: 400 }
+        );
+      }
+
+      const stay = await Stay.findById(id)
+        .populate("vendorId", "fullName email contactNumber")
+        .lean();
+
+      if (!stay) {
+        return NextResponse.json(
+          { success: false, message: "Stay not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ success: true, stay });
     }
 
     let query: any = {};
@@ -105,146 +257,14 @@ export const POST = auth(async (req: NextRequest) => {
 
     const vendorId = user.id;
 
-    // Validate required fields
-    const {
-      name,
-      category,
-      location,
-      heroHighlights = [],
-      curatedHighlights = [],
-      images,
-      gallery = [],
-      videos = {},
-      popularFacilities = [],
-      amenities = {},
-      tags = [],
-      rooms,
-      about,
-      checkInOutRules,
-      vendorMessage = "",
-      defaultCancellationPolicy = "",
-      defaultHouseRules = [],
-    } = body;
-
-    if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields or insufficient images" },
-        { status: 400 }
-      );
+    const { payload, error } = normalizeStayPayload(body);
+    if (error) {
+      return NextResponse.json({ success: false, message: error }, { status: 400 });
     }
 
-    if (!["rooms", "hotels", "homestays", "bnbs"].includes(category)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid category" },
-        { status: 400 }
-      );
-    }
-
-    if (!Array.isArray(rooms) || rooms.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "Please add at least one room" },
-        { status: 400 }
-      );
-    }
-
-    for (const room of rooms) {
-      const availabilityValue = room?.available ?? room?.inventory ?? 1;
-      if (
-        !room?.name ||
-        !room?.bedType ||
-        typeof room?.beds !== "number" ||
-        typeof room?.capacity !== "number" ||
-        typeof room?.price !== "number" ||
-        !Number.isFinite(Number(availabilityValue)) ||
-        !Array.isArray(room?.images) ||
-        room.images.length < 3
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Every room must include name, bed type, beds, capacity, price, availability and at least 3 images",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    const normalizedRooms = rooms.map((room: any) => ({
-      name: room.name,
-      description: room.description ?? "",
-      bedType: room.bedType,
-      beds: Number(room.beds),
-      capacity: Number(room.capacity),
-      price: Number(room.price),
-      taxes: room.taxes != null ? Number(room.taxes) : 0,
-      currency: typeof room.currency === "string" && room.currency.trim().length ? room.currency : "INR",
-      size: room.size ?? "",
-      features: Array.isArray(room.features) ? room.features : [],
-      amenities: Array.isArray(room.amenities) ? room.amenities : [],
-      available: Number(room.available ?? room.inventory ?? 1),
-      isRefundable: room.isRefundable !== undefined ? Boolean(room.isRefundable) : true,
-      refundableUntilHours:
-        room.refundableUntilHours !== undefined ? Number(room.refundableUntilHours) : 48,
-      images: room.images,
-    }));
-
-    const normalizedVideos = {
-      inside: Array.isArray(videos?.inside) ? videos.inside : [],
-      outside: Array.isArray(videos?.outside) ? videos.outside : [],
-    };
-
-    const normalizedAmenities: Record<string, string[]> = {};
-    if (amenities && typeof amenities === "object") {
-      Object.entries(amenities).forEach(([key, value]) => {
-        if (Array.isArray(value) && value.length) {
-          normalizedAmenities[key] = value;
-        }
-      });
-    }
-
-    const normalizedTags = Array.isArray(tags)
-      ? tags
-          .filter((tag: any) => typeof tag === "string" && tag.trim().length)
-          .map((tag: string) => tag.trim())
-      : [];
-
-    const normalizedCuratedHighlights = Array.isArray(curatedHighlights)
-      ? curatedHighlights
-          .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
-          .map((item: any) => ({
-            title: item.title.trim(),
-            description:
-              typeof item.description === "string" && item.description.trim().length
-                ? item.description.trim()
-                : undefined,
-            icon:
-              typeof item.icon === "string" && item.icon.trim().length
-                ? item.icon.trim()
-                : undefined,
-          }))
-      : [];
-
-    // Create stay
     const stay = await Stay.create({
       vendorId,
-      name,
-      category,
-      location,
-      images,
-      gallery,
-      heroHighlights,
-      curatedHighlights: normalizedCuratedHighlights,
-      tags: normalizedTags,
-      videos: normalizedVideos,
-      popularFacilities,
-      amenities: normalizedAmenities,
-      rooms: normalizedRooms,
-      about,
-      checkInOutRules,
-      vendorMessage,
-      defaultCancellationPolicy,
-      defaultHouseRules,
+      ...payload,
       isActive: true,
     });
 
@@ -261,6 +281,102 @@ export const POST = auth(async (req: NextRequest) => {
     console.error("Error creating stay:", error);
     return NextResponse.json(
       { success: false, message: error.message || "Failed to create stay" },
+      { status: 500 }
+    );
+  }
+});
+
+// PUT - Update an existing stay
+export const PUT = auth(async (req: NextRequest) => {
+  try {
+    await dbConnect();
+    const body = await req.json();
+    const user = (req as any).user;
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Valid stay ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const stay = await Stay.findById(id);
+    if (!stay) {
+      return NextResponse.json(
+        { success: false, message: "Stay not found" },
+        { status: 404 }
+      );
+    }
+
+    if (user.accountType !== "admin" && stay.vendorId.toString() !== user.id) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized to update this stay" },
+        { status: 403 }
+      );
+    }
+
+    const { payload, error } = normalizeStayPayload(body);
+    if (error) {
+      return NextResponse.json({ success: false, message: error }, { status: 400 });
+    }
+
+    Object.assign(stay, payload);
+    await stay.save();
+
+    const updatedStay = await Stay.findById(id).populate(
+      "vendorId",
+      "fullName email contactNumber"
+    );
+
+    return NextResponse.json({ success: true, stay: updatedStay });
+  } catch (error: any) {
+    console.error("Error updating stay:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to update stay" },
+      { status: 500 }
+    );
+  }
+});
+
+// DELETE - Remove a stay by ID
+export const DELETE = auth(async (req: NextRequest) => {
+  try {
+    await dbConnect();
+    const user = (req as any).user;
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Valid stay ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const stay = await Stay.findById(id);
+    if (!stay) {
+      return NextResponse.json(
+        { success: false, message: "Stay not found" },
+        { status: 404 }
+      );
+    }
+
+    if (user.accountType !== "admin" && stay.vendorId.toString() !== user.id) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized to delete this stay" },
+        { status: 403 }
+      );
+    }
+
+    await Stay.findByIdAndDelete(id);
+
+    return NextResponse.json({ success: true, message: "Stay deleted successfully" });
+  } catch (error: any) {
+    console.error("Error deleting stay:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to delete stay" },
       { status: 500 }
     );
   }

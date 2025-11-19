@@ -91,7 +91,7 @@ export default function VendorStaysPage() {
     if (!confirm("Are you sure you want to delete this stay?")) return;
 
     try {
-      const res = await fetch(`/api/vendor/stays/${stayId}`, {
+      const res = await fetch(`/api/vendor/stays?id=${stayId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -216,9 +216,7 @@ export default function VendorStaysPage() {
               View
             </button>
             <button
-              onClick={() => {
-                alert(`Edit functionality coming soon for ${stay.name}`);
-              }}
+              onClick={() => router.push(`/vendor/properties/stays/add?editId=${stay._id}`)}
               className="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-yellow-600"
             >
               <FaEdit />
@@ -246,7 +244,7 @@ export default function VendorStaysPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 

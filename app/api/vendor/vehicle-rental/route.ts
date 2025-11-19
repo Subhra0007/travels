@@ -7,12 +7,152 @@ import mongoose from "mongoose";
 import User from "@/models/User";
 import jwt from "jsonwebtoken";
 
+const normalizeRentalPayload = (body: any) => {
+  const {
+    name,
+    category,
+    location,
+    heroHighlights = [],
+    curatedHighlights = [],
+    images,
+    gallery = [],
+    videos = {},
+    popularFacilities = [],
+    amenities = {},
+    tags = [],
+    options,
+    about,
+    checkInOutRules,
+    vendorMessage = "",
+    defaultCancellationPolicy = "",
+    defaultHouseRules = [],
+  } = body;
+
+  if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
+    return { error: "Missing required fields or insufficient images" };
+  }
+
+  if (!["cars-rental", "bikes-rentals"].includes(category)) {
+    return { error: "Invalid category" };
+  }
+
+  if (!Array.isArray(options) || options.length === 0) {
+    return { error: "Please add at least one vehicle option" };
+  }
+
+  for (const option of options) {
+    const availabilityValue = option?.available ?? option?.inventory ?? 1;
+    if (
+      !option?.model ||
+      !option?.type ||
+      typeof option?.pricePerDay !== "number" ||
+      !Number.isFinite(option.pricePerDay) ||
+      !Number.isFinite(Number(availabilityValue)) ||
+      !Array.isArray(option?.images) ||
+      option.images.length < 3
+    ) {
+      return {
+        error:
+          "Every vehicle option must include model, type, pricePerDay, availability and at least 3 images",
+      };
+    }
+  }
+
+  const normalizedOptions = options.map((option: any) => ({
+    model: option.model.trim(),
+    description: option.description ?? "",
+    type: option.type.trim(),
+    pricePerDay: Number(option.pricePerDay),
+    taxes: option.taxes != null ? Number(option.taxes) : 0,
+    currency: typeof option.currency === "string" && option.currency.trim().length ? option.currency : "INR",
+    features: Array.isArray(option.features) ? option.features : [],
+    amenities: Array.isArray(option.amenities) ? option.amenities : [],
+    available: Number(option.available ?? option.inventory ?? 1),
+    isRefundable: option.isRefundable !== undefined ? Boolean(option.isRefundable) : true,
+    refundableUntilHours:
+      option.refundableUntilHours !== undefined ? Number(option.refundableUntilHours) : 48,
+    images: option.images,
+  }));
+
+  const normalizedVideos = {
+    inside: Array.isArray(videos?.inside) ? videos.inside : [],
+    outside: Array.isArray(videos?.outside) ? videos.outside : [],
+  };
+
+  const normalizedAmenities: Record<string, string[]> = {};
+  if (amenities && typeof amenities === "object") {
+    Object.entries(amenities).forEach(([key, value]) => {
+      if (Array.isArray(value) && value.length) {
+        normalizedAmenities[key] = value;
+      }
+    });
+  }
+
+  const normalizedTags = Array.isArray(tags)
+    ? tags
+        .filter((tag: any) => typeof tag === "string" && tag.trim().length)
+        .map((tag: string) => tag.trim())
+    : [];
+
+  const normalizedCuratedHighlights = Array.isArray(curatedHighlights)
+    ? curatedHighlights
+        .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
+        .map((item: any) => ({
+          title: item.title.trim(),
+          description:
+            typeof item.description === "string" && item.description.trim().length
+              ? item.description.trim()
+              : undefined,
+          icon:
+            typeof item.icon === "string" && item.icon.trim().length
+              ? item.icon.trim()
+              : undefined,
+        }))
+    : [];
+
+  const normalizedCheckInOutRules = {
+    pickup: checkInOutRules?.pickup?.trim() || "",
+    dropoff: checkInOutRules?.dropoff?.trim() || "",
+    rules: Array.isArray(checkInOutRules?.rules)
+      ? checkInOutRules.rules.filter((r: any) => typeof r === "string" && r.trim().length)
+      : [],
+  };
+
+  if (!normalizedCheckInOutRules.pickup || !normalizedCheckInOutRules.dropoff) {
+    return { error: "Pickup and dropoff times are required" };
+  }
+
+  return {
+    payload: {
+      name: name.trim(),
+      category,
+      location,
+      heroHighlights,
+      images,
+      gallery,
+      curatedHighlights: normalizedCuratedHighlights,
+      tags: normalizedTags,
+      videos: normalizedVideos,
+      popularFacilities,
+      amenities: normalizedAmenities,
+      options: normalizedOptions,
+      about,
+      checkInOutRules: normalizedCheckInOutRules,
+      vendorMessage: vendorMessage.trim(),
+      defaultCancellationPolicy: defaultCancellationPolicy.trim(),
+      defaultHouseRules: Array.isArray(defaultHouseRules)
+        ? defaultHouseRules.filter((r: any) => typeof r === "string" && r.trim().length)
+        : [],
+    },
+  };
+};
 // GET - Fetch vehicle rentals (vendor-specific or all for admin)
 export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const vendorId = searchParams.get("vendorId");
+    const id = searchParams.get("id");
     const category = searchParams.get("category");
     const all = searchParams.get("all") === "true"; // For admin/public
 
@@ -43,6 +183,28 @@ export async function GET(req: NextRequest) {
           }
         }
       } catch {}
+    }
+
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, message: "Valid rental ID is required" },
+          { status: 400 }
+        );
+      }
+
+      const rental = await VehicleRental.findById(id)
+        .populate("vendorId", "fullName email contactNumber")
+        .lean();
+
+      if (!rental) {
+        return NextResponse.json(
+          { success: false, message: "Vehicle rental not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ success: true, rental });
     }
 
     let query: any = {};
@@ -105,166 +267,14 @@ export const POST = auth(async (req: NextRequest) => {
 
     const vendorId = user.id;
 
-    const {
-      name,
-      category,
-      location,
-      heroHighlights = [],
-      curatedHighlights = [],
-      images,
-      gallery = [],
-      videos = {},
-      popularFacilities = [],
-      amenities = {},
-      tags = [],
-      options,
-      about,
-      checkInOutRules,
-      vendorMessage = "",
-      defaultCancellationPolicy = "",
-      defaultHouseRules = [],
-    } = body;
-
-    // Required fields
-    if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields or insufficient images" },
-        { status: 400 }
-      );
+    const { payload, error } = normalizeRentalPayload(body);
+    if (error) {
+      return NextResponse.json({ success: false, message: error }, { status: 400 });
     }
 
-    if (!["cars-rental", "bikes-rentals"].includes(category)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid category" },
-        { status: 400 }
-      );
-    }
-
-    if (!Array.isArray(options) || options.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "Please add at least one vehicle option" },
-        { status: 400 }
-      );
-    }
-
-    // Validate each option
-    for (const option of options) {
-      const availabilityValue = option?.available ?? option?.inventory ?? 1;
-      if (
-        !option?.model ||
-        !option?.type ||
-        typeof option?.pricePerDay !== "number" ||
-        !Number.isFinite(option.pricePerDay) ||
-        !Number.isFinite(Number(availabilityValue)) ||
-        !Array.isArray(option?.images) ||
-        option.images.length < 3
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Every vehicle option must include model, type, pricePerDay, availability and at least 3 images",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Normalize options
-    const normalizedOptions = options.map((option: any) => ({
-      model: option.model.trim(),
-      description: option.description ?? "",
-      type: option.type.trim(),
-      pricePerDay: Number(option.pricePerDay),
-      taxes: option.taxes != null ? Number(option.taxes) : 0,
-      currency: typeof option.currency === "string" && option.currency.trim().length ? option.currency : "INR",
-      features: Array.isArray(option.features) ? option.features : [],
-      amenities: Array.isArray(option.amenities) ? option.amenities : [],
-      available: Number(option.available ?? option.inventory ?? 1),
-      isRefundable: option.isRefundable !== undefined ? Boolean(option.isRefundable) : true,
-      refundableUntilHours:
-        option.refundableUntilHours !== undefined ? Number(option.refundableUntilHours) : 48,
-      images: option.images,
-    }));
-
-    // Normalize videos
-    const normalizedVideos = {
-      inside: Array.isArray(videos?.inside) ? videos.inside : [],
-      outside: Array.isArray(videos?.outside) ? videos.outside : [],
-    };
-
-    // Normalize amenities
-    const normalizedAmenities: Record<string, string[]> = {};
-    if (amenities && typeof amenities === "object") {
-      Object.entries(amenities).forEach(([key, value]) => {
-        if (Array.isArray(value) && value.length) {
-          normalizedAmenities[key] = value;
-        }
-      });
-    }
-
-    // Normalize tags
-    const normalizedTags = Array.isArray(tags)
-      ? tags
-          .filter((tag: any) => typeof tag === "string" && tag.trim().length)
-          .map((tag: string) => tag.trim())
-      : [];
-
-    // Normalize curated highlights
-    const normalizedCuratedHighlights = Array.isArray(curatedHighlights)
-      ? curatedHighlights
-          .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
-          .map((item: any) => ({
-            title: item.title.trim(),
-            description:
-              typeof item.description === "string" && item.description.trim().length
-                ? item.description.trim()
-                : undefined,
-            icon:
-              typeof item.icon === "string" && item.icon.trim().length
-                ? item.icon.trim()
-                : undefined,
-          }))
-      : [];
-
-    // Normalize check-in/out rules
-    const normalizedCheckInOutRules = {
-      pickup: checkInOutRules?.pickup?.trim() || "",
-      dropoff: checkInOutRules?.dropoff?.trim() || "",
-      rules: Array.isArray(checkInOutRules?.rules)
-        ? checkInOutRules.rules.filter((r: any) => typeof r === "string" && r.trim().length)
-        : [],
-    };
-
-    if (!normalizedCheckInOutRules.pickup || !normalizedCheckInOutRules.dropoff) {
-      return NextResponse.json(
-        { success: false, message: "Pickup and dropoff times are required" },
-        { status: 400 }
-      );
-    }
-
-    // Create rental
     const rental = await VehicleRental.create({
       vendorId,
-      name: name.trim(),
-      category,
-      location,
-      images,
-      gallery,
-      heroHighlights,
-      curatedHighlights: normalizedCuratedHighlights,
-      tags: normalizedTags,
-      videos: normalizedVideos,
-      popularFacilities,
-      amenities: normalizedAmenities,
-      options: normalizedOptions,
-      about,
-      checkInOutRules: normalizedCheckInOutRules,
-      vendorMessage: vendorMessage.trim(),
-      defaultCancellationPolicy: defaultCancellationPolicy.trim(),
-      defaultHouseRules: Array.isArray(defaultHouseRules)
-        ? defaultHouseRules.filter((r: any) => typeof r === "string" && r.trim().length)
-        : [],
+      ...payload,
       isActive: true,
     });
 
@@ -280,6 +290,59 @@ export const POST = auth(async (req: NextRequest) => {
     console.error("Error creating vehicle rental:", error);
     return NextResponse.json(
       { success: false, message: error.message || "Failed to create vehicle rental" },
+      { status: 500 }
+    );
+  }
+});
+
+// PUT - Update a vehicle rental
+export const PUT = auth(async (req: NextRequest) => {
+  try {
+    await dbConnect();
+    const body = await req.json();
+    const user = (req as any).user;
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Valid rental ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const rental = await VehicleRental.findById(id);
+    if (!rental) {
+      return NextResponse.json(
+        { success: false, message: "Vehicle rental not found" },
+        { status: 404 }
+      );
+    }
+
+    if (user.accountType !== "admin" && rental.vendorId.toString() !== user.id) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized to update this vehicle rental" },
+        { status: 403 }
+      );
+    }
+
+    const { payload, error } = normalizeRentalPayload(body);
+    if (error) {
+      return NextResponse.json({ success: false, message: error }, { status: 400 });
+    }
+
+    Object.assign(rental, payload);
+    await rental.save();
+
+    const updatedRental = await VehicleRental.findById(id)
+      .populate("vendorId", "fullName email contactNumber")
+      .lean();
+
+    return NextResponse.json({ success: true, rental: updatedRental });
+  } catch (error: any) {
+    console.error("Error updating vehicle rental:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to update vehicle rental" },
       { status: 500 }
     );
   }

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaMapMarkerAlt, FaPhoneAlt, FaTag, FaUsers } from "react-icons/fa";
 import type { StayDetailPayload } from "./StayDetailClient";
+import { useAvailability } from "../hooks/useAvailability";
 
 const getDefaultDates = () => {
   const today = new Date();
@@ -120,6 +121,19 @@ const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchPar
     };
   }, [parsedRoomParams, stay.rooms, nights]);
 
+  const availability = useAvailability("stay", stay._id, checkIn, checkOut);
+  const availableRoomKeys = availability.availableOptionKeys ?? [];
+  const soldOutForDates =
+    !availability.loading && stay.rooms.length > 0 && availableRoomKeys.length === 0;
+  const unavailableSelections = selection.items.filter(({ room }) => {
+    if (availability.loading) return false;
+    const key = room._id?.toString() || room.name;
+    if (soldOutForDates) return true;
+    if (!availableRoomKeys.length) return false;
+    return !availableRoomKeys.includes(key);
+  });
+  const hasUnavailableSelections = unavailableSelections.length > 0;
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -176,6 +190,15 @@ const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchPar
 
     if (!selection.totalRooms) {
       setSubmitError("Please select at least one room from the stay details page before completing the booking.");
+      return;
+    }
+
+    if (soldOutForDates || hasUnavailableSelections) {
+      setSubmitError(
+        hasUnavailableSelections
+          ? "One or more selected rooms are no longer available for these dates."
+          : "These dates are sold out. Please choose different dates to continue."
+      );
       return;
     }
 
@@ -472,6 +495,31 @@ const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchPar
               />
             </label>
 
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                soldOutForDates
+                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
+              }`}
+            >
+              {availability.loading && "Checking availability…"}
+              {!availability.loading && !availability.error && (
+                <span>
+                  {soldOutForDates
+                    ? "These dates are sold out. Please adjust your dates."
+                    : "These dates are available."}
+                </span>
+              )}
+              {availability.error && (
+                <span className="text-rose-600">Unable to check availability. Please refresh.</span>
+              )}
+              {!availability.loading && hasUnavailableSelections && (
+                <span className="mt-2 block text-xs text-rose-600">
+                  Unavailable: {unavailableSelections.map(({ room }) => room.name).join(", ")}
+                </span>
+              )}
+            </div>
+
             {submitError && (
               <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                 {submitError}
@@ -480,10 +528,16 @@ const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchPar
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || soldOutForDates || hasUnavailableSelections}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "Processing booking…" : "Confirm booking"}
+              {soldOutForDates
+                ? "Unavailable for these dates"
+                : hasUnavailableSelections
+                ? "Selected room unavailable"
+                : submitting
+                ? "Processing booking…"
+                : "Confirm booking"}
             </button>
           </form>
 

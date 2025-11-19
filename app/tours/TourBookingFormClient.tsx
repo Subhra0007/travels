@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaArrowLeft, FaCalendarAlt, FaCheckCircle, FaMapMarkerAlt, FaPhoneAlt, FaTag, FaUsers } from "react-icons/fa";
 import type { TourDetailPayload } from "./tourDetailClient";
+import { useAvailability } from "../hooks/useAvailability";
 
 const PLATFORM_FEE = 15;
 
@@ -97,6 +98,19 @@ const TourBookingFormClient: React.FC<TourBookingFormProps> = ({ tour, searchPar
     };
   }, [parsedOptions, tour.options, start, end]);
 
+  const availability = useAvailability("tour", tour._id, start, end);
+  const availableOptionKeys = availability.availableOptionKeys ?? [];
+  const soldOutForDates =
+    !availability.loading && tour.options.length > 0 && availableOptionKeys.length === 0;
+  const unavailableSelections = selection.items.filter(({ option }) => {
+    if (availability.loading) return false;
+    const key = option._id?.toString() || option.name;
+    if (soldOutForDates) return true;
+    if (!availableOptionKeys.length) return false;
+    return !availableOptionKeys.includes(key);
+  });
+  const hasUnavailableSelections = unavailableSelections.length > 0;
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -155,6 +169,15 @@ const TourBookingFormClient: React.FC<TourBookingFormProps> = ({ tour, searchPar
 
     if (!selection.totalOptions) {
       setSubmitError("Please select at least one tour option on the previous page.");
+      return;
+    }
+
+    if (soldOutForDates || hasUnavailableSelections) {
+      setSubmitError(
+        hasUnavailableSelections
+          ? "One or more selected tour options are no longer available for these dates."
+          : "These dates are sold out. Please choose different travel dates."
+      );
       return;
     }
 
@@ -449,6 +472,34 @@ const TourBookingFormClient: React.FC<TourBookingFormProps> = ({ tour, searchPar
               />
             </label>
 
+            <div
+              className={`rounded-xl border px-4 py-3 text-sm ${
+                soldOutForDates
+                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
+              }`}
+            >
+              {availability.loading && "Checking availability…"}
+              {!availability.loading && !availability.error && (
+                <span>
+                  {soldOutForDates
+                    ? "These dates are sold out. Please pick another range before submitting."
+                    : "These dates are available."}
+                </span>
+              )}
+              {availability.error && (
+                <span className="text-rose-600">Unable to check availability. Please refresh.</span>
+              )}
+              {!availability.loading && hasUnavailableSelections && (
+                <span className="mt-2 block text-xs text-rose-600">
+                  Unavailable:{" "}
+                  {unavailableSelections
+                    .map(({ option }) => option.name)
+                    .join(", ")}
+                </span>
+              )}
+            </div>
+
             {submitError && (
               <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                 {submitError}
@@ -457,10 +508,16 @@ const TourBookingFormClient: React.FC<TourBookingFormProps> = ({ tour, searchPar
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || soldOutForDates || hasUnavailableSelections}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "Processing booking…" : "Confirm booking"}
+              {soldOutForDates
+                ? "Sold out for these dates"
+                : hasUnavailableSelections
+                ? "Selected option unavailable"
+                : submitting
+                ? "Processing booking…"
+                : "Confirm booking"}
             </button>
           </form>
 
@@ -552,4 +609,3 @@ const TourBookingFormClient: React.FC<TourBookingFormProps> = ({ tour, searchPar
 };
 
 export default TourBookingFormClient;
-

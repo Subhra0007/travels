@@ -96,7 +96,7 @@ const VendorBookingsPage = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 
@@ -131,13 +131,15 @@ const VendorBookingsPage = () => {
               </button>
             </div>
           ) : (
-            <BookingTable
-              bookings={bookings}
-              variant="vendor"
-              loadingBookingId={actionBookingId}
-              onUpdateStatus={handleStatusChange}
-              emptyMessage="Bookings made for your properties will show here. Once a guest completes the checkout form, the reservation is logged instantly."
-            />
+            <div className="overflow-x-auto">
+              <BookingTable
+                bookings={bookings}
+                variant="vendor"
+                loadingBookingId={actionBookingId}
+                onUpdateStatus={handleStatusChange}
+                emptyMessage="Bookings made for your properties will show here. Once a guest completes the checkout form, the reservation is logged instantly."
+              />
+            </div>
           )}
         </main>
       </div>

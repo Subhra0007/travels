@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FaSearch, FaShoppingCart } from "react-icons/fa";
+import PageLoader from "../components/common/PageLoader";
 
 export type ProductVariant = {
   _id?: string;
@@ -205,9 +206,7 @@ export default function ProductsExplorer() {
 
         {/* Products Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-lg text-gray-600">Loading products...</div>
-          </div>
+          <PageLoader fullscreen={false} className="py-20" />
         ) : products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <FaShoppingCart className="mb-4 text-6xl text-gray-300" />

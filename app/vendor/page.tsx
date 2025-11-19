@@ -131,10 +131,10 @@ export default function VendorPage() {
 
   return (
     <main className="flex h-screen bg-gray-50">
-      <div className="hidden lg:block ">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
-      <main className="flex-1 overflow-y-auto ">
+      <main className="flex-1 overflow-y-auto">
         <Dashboard locked={false} />
       </main>
     </main>

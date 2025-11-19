@@ -73,7 +73,7 @@ const VendorCancellationsPage = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 
@@ -108,11 +108,13 @@ const VendorCancellationsPage = () => {
               </button>
             </div>
           ) : (
-            <BookingTable
-              bookings={bookings}
-              variant="vendor"
-              emptyMessage="Cancelled bookings will appear here instantly, so you can keep an eye on your calendar."
-            />
+            <div className="overflow-x-auto">
+              <BookingTable
+                bookings={bookings}
+                variant="vendor"
+                emptyMessage="Cancelled bookings will appear here instantly, so you can keep an eye on your calendar."
+              />
+            </div>
           )}
         </main>
       </div>

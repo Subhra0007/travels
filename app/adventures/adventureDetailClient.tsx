@@ -39,6 +39,7 @@ import {
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useWishlist } from "../hooks/useWishlist";
+import { useAvailability } from "../hooks/useAvailability";
 
 export type AdventureDetailPayload = {
   _id: string;
@@ -124,6 +125,17 @@ const formatDateInput = (date: Date) => {
   return `${y}-${m}-${d}`;
 };
 
+const formatDateDisplay = (value: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 const calculateDays = (start: string, end: string) => {
   if (!start || !end) return 1;
   const a = new Date(start);
@@ -178,6 +190,17 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
 
   const days = useMemo(() => calculateDays(startDate, endDate), [startDate, endDate]);
 
+  const availability = useAvailability("adventure", adventure._id, startDate, endDate);
+  const availableOptionKeys = availability.availableOptionKeys ?? [];
+  const bookedSummaries = availability.bookedRanges.slice(0, 3);
+  const soldOutForDates =
+    !availability.loading && adventure.options.length > 0 && availableOptionKeys.length === 0;
+  const isOptionUnavailable = (optionKey: string) => {
+    if (availability.loading) return false;
+    if (availableOptionKeys.length === 0) return soldOutForDates;
+    return !availableOptionKeys.includes(optionKey);
+  };
+
   const pricing = useMemo(() => {
     let subtotal = 0;
     let taxes = 0;
@@ -226,6 +249,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
   );
 
   const toggleSelection = (key: string, available: number) => {
+    if (available <= 0 || isOptionUnavailable(key)) return;
     setOptionSelections((prev) => {
       const current = prev[key] || 0;
       if (available <= 0) {
@@ -236,6 +260,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
   };
 
   const stepQuantity = (key: string, delta: number, maxAvailable: number) => {
+    if (isOptionUnavailable(key)) return;
     setOptionSelections((prev) => {
       const allowedMax = Math.max(0, maxAvailable);
       const current = prev[key] || 0;
@@ -245,7 +270,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
   };
 
   const handleBookNow = () => {
-    if (!pricing.totalOptions) return;
+    if (!pricing.totalOptions || soldOutForDates) return;
 
     const params = new URLSearchParams({
       start: startDate,
@@ -412,6 +437,33 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                 </div>
               </div>
               <p className="mt-3 text-sm text-gray-600">Days: {days}</p>
+              <div
+                className={`rounded-2xl border px-4 py-3 text-sm ${
+                  soldOutForDates
+                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {availability.loading && "Checking availability…"}
+                {!availability.loading && !availability.error && (
+                  <span>
+                    {soldOutForDates
+                      ? "These dates are sold out. Please select another range."
+                      : "These dates are available."}
+                  </span>
+                )}
+                {availability.error && (
+                  <span className="text-rose-600">Unable to check availability. Please refresh.</span>
+                )}
+                {!availability.loading && bookedSummaries.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-600">
+                    Upcoming booked dates:{" "}
+                    {bookedSummaries
+                      .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                      .join(", ")}
+                  </p>
+                )}
+              </div>
               <button
                 onClick={() => {
                   const target = document.getElementById("adventure-availability");
@@ -589,7 +641,33 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              soldOutForDates
+                ? "border-rose-200 bg-rose-50 text-rose-700"
+                : "border-emerald-200 bg-emerald-50 text-emerald-800"
+            }`}
+          >
+            {availability.loading && "Checking availability…"}
+            {!availability.loading && !availability.error && (
+              <span>
+                {soldOutForDates ? "Sold out for these dates." : "Available for these dates."}
+              </span>
+            )}
+            {availability.error && (
+              <span className="text-rose-600">Unable to load availability. Please try again.</span>
+            )}
+            {!availability.loading && bookedSummaries.length > 0 && (
+              <span className="mt-1 block text-xs text-gray-600">
+                Booked:{" "}
+                {bookedSummaries
+                  .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                  .join(", ")}
+              </span>
+            )}
+          </div>
+
+          <div className={`overflow-x-auto rounded-2xl border border-gray-200 ${soldOutForDates ? "pointer-events-none opacity-60" : ""}`}>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <tr>
@@ -607,6 +685,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                   const isExpanded = expandedOptionKey === key;
                   const available = opt.available ?? 0;
                   const taxesNote = opt.taxes ? `Taxes ₹${opt.taxes.toLocaleString()} extra` : "Taxes included";
+                  const optionUnavailable = available <= 0 || isOptionUnavailable(key);
 
                   return (
                     <Fragment key={key}>
@@ -620,7 +699,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                                   Selected
                                 </span>
                               )}
-                              {available <= 0 && (
+                              {optionUnavailable && (
                                 <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
                                   Sold out
                                 </span>
@@ -678,7 +757,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                               <button
                                 type="button"
                                 onClick={() => stepQuantity(key, -1, available)}
-                                disabled={qty <= 0}
+                                disabled={qty <= 0 || optionUnavailable}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 –
@@ -687,23 +766,27 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                               <button
                                 type="button"
                                 onClick={() => stepQuantity(key, 1, available)}
-                                disabled={available <= 0 || qty >= available}
+                                disabled={available <= 0 || qty >= available || optionUnavailable}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 +
                               </button>
                             </div>
-                            <button
+                              <button
                               type="button"
                               onClick={() => toggleSelection(key, available)}
-                              disabled={available <= 0}
+                                disabled={optionUnavailable}
                               className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
                                 isSelected
                                   ? "bg-orange-600 text-white shadow hover:bg-orange-700"
                                   : "border border-orange-600 text-orange-700 hover:bg-orange-50 disabled:border-gray-300 disabled:text-gray-400"
-                              } ${available <= 0 ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400" : ""}`}
+                                } ${
+                                  optionUnavailable
+                                    ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
+                                    : ""
+                                }`}
                             >
-                              {available <= 0 ? "Sold out" : isSelected ? "Selected" : "Select"}
+                              {optionUnavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
                             </button>
                           </div>
                         </td>
@@ -821,13 +904,22 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                 Select at least one option above to continue.
               </p>
             )}
+            {soldOutForDates && (
+              <p className="text-xs text-rose-600">
+                These dates are sold out. Choose different dates to continue.
+              </p>
+            )}
             <button
               type="button"
               onClick={handleBookNow}
-              disabled={!pricing.totalOptions}
+              disabled={!pricing.totalOptions || soldOutForDates}
               className="w-full rounded-lg bg-orange-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pricing.totalOptions ? "Book now" : "Select an option to book"}
+              {soldOutForDates
+                ? "Unavailable for these dates"
+                : pricing.totalOptions
+                ? "Book now"
+                : "Select an option to book"}
             </button>
           </div>
 

@@ -1,10 +1,11 @@
 //properties/stays/add/page.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import { FaMapMarkerAlt, FaPlus, FaTimes, FaUpload } from "react-icons/fa";
+import PageLoader from "@/app/components/common/PageLoader";
 
 const HERO_HIGHLIGHTS = [
   "Outdoor swimming pool",
@@ -254,6 +255,9 @@ const createDefaultRoom = (): RoomForm => ({
 
 export default function AddStayPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("editId");
+  const isEditing = Boolean(editId);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -262,6 +266,7 @@ export default function AddStayPage() {
   const [roomFeatureDrafts, setRoomFeatureDrafts] = useState<Record<number, string>>({});
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(isEditing);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -339,6 +344,84 @@ export default function AddStayPage() {
   const removeRoom = (index: number) => {
     setFormData((prev) => ({ ...prev, rooms: prev.rooms.filter((_, i) => i !== index) }));
   };
+
+  const hydrateForm = (stay: any) => {
+    setFormData({
+      name: stay.name ?? "",
+      category: (stay.category as "rooms" | "hotels" | "homestays" | "bnbs") ?? "hotels",
+      location: {
+        address: stay.location?.address ?? "",
+        city: stay.location?.city ?? "",
+        state: stay.location?.state ?? "",
+        country: stay.location?.country ?? "",
+        postalCode: stay.location?.postalCode ?? "",
+        coordinates: {
+          lat: stay.location?.coordinates?.lat ?? 0,
+          lng: stay.location?.coordinates?.lng ?? 0,
+        },
+      },
+      heroHighlights: stay.heroHighlights ?? [],
+      images: stay.images ?? [],
+      gallery: stay.gallery ?? [],
+      videos: {
+        inside: stay.videos?.inside ?? [],
+        outside: stay.videos?.outside ?? [],
+      },
+      popularFacilities: stay.popularFacilities ?? [],
+      amenities: stay.amenities
+        ? Object.fromEntries(Object.entries(stay.amenities))
+        : {},
+      rooms:
+        Array.isArray(stay.rooms) && stay.rooms.length
+          ? stay.rooms.map((room: any) => ({
+              name: room.name ?? "",
+              description: room.description ?? "",
+              bedType: room.bedType ?? "Queen Bed",
+              beds: room.beds ?? 1,
+              capacity: room.capacity ?? 1,
+              price: room.price ?? 0,
+              size: room.size ?? "",
+              features: room.features ?? [],
+              images: room.images ?? [],
+            }))
+          : [createDefaultRoom()],
+      about: {
+        heading: stay.about?.heading ?? "",
+        description: stay.about?.description ?? "",
+      },
+      checkInOutRules: {
+        checkIn: stay.checkInOutRules?.checkIn ?? "",
+        checkOut: stay.checkInOutRules?.checkOut ?? "",
+        rules: stay.checkInOutRules?.rules ?? [],
+      },
+      vendorMessage: stay.vendorMessage ?? "",
+    });
+  };
+
+  useEffect(() => {
+    if (!editId) return;
+
+    const loadStay = async () => {
+      setInitializing(true);
+      try {
+        const res = await fetch(`/api/vendor/stays?id=${editId}`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success || !data.stay) {
+          throw new Error(data?.message || "Failed to load stay details");
+        }
+        hydrateForm(data.stay);
+      } catch (error: any) {
+        alert(error?.message || "Unable to load stay for editing");
+        router.push("/vendor/properties/stays");
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    loadStay();
+  }, [editId, router]);
 
   const uploadMedia = async (files: File[], folder: string) => {
     if (!files.length) return [] as string[];
@@ -569,8 +652,10 @@ export default function AddStayPage() {
     setUploadError(null);
 
     try {
-      const res = await fetch("/api/vendor/stays", {
-        method: "POST",
+      const endpoint = editId ? `/api/vendor/stays?id=${editId}` : "/api/vendor/stays";
+      const method = editId ? "PUT" : "POST";
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
@@ -579,7 +664,7 @@ export default function AddStayPage() {
       if (!res.ok || !data.success) {
         throw new Error(data?.message || "Failed to create stay");
       }
-      router.push("/vendor/stays");
+      router.push("/vendor/properties/stays");
     } catch (error: any) {
       alert(error?.message || "Failed to save stay");
     } finally {
@@ -587,9 +672,13 @@ export default function AddStayPage() {
     }
   };
 
+  if (initializing) {
+    return <PageLoader />;
+  }
+
   return (
     <div className="flex h-screen bg-gray-50 text-black relative">
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 
@@ -603,7 +692,9 @@ export default function AddStayPage() {
             >
               ☰
             </button>
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Create a new stay</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+              {isEditing ? "Edit stay" : "Create a new stay"}
+            </h1>
           </div>
         </div>
 
@@ -1311,7 +1402,13 @@ export default function AddStayPage() {
                 disabled={submitting}
                 className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-60"
               >
-                {submitting ? "Saving…" : "Create stay"}
+                {submitting
+                  ? isEditing
+                    ? "Updating…"
+                    : "Saving…"
+                  : isEditing
+                  ? "Update stay"
+                  : "Create stay"}
               </button>
               <button
                 type="button"

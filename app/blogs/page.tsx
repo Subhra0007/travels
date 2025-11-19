@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaCalendar, FaArrowRight } from "react-icons/fa";
+import PageLoader from "../components/common/PageLoader";
 
 type Blog = {
   _id: string;
@@ -57,9 +58,7 @@ export default function BlogsPage() {
 
         {/* Blogs Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-lg text-gray-600">Loading blogs...</div>
-          </div>
+          <PageLoader fullscreen={false} className="py-20" />
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-lg text-red-600 mb-4">{error}</p>

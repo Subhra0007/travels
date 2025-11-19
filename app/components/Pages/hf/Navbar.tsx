@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
   }, [pathname]);
 
   /* ----------  Avatar Component ---------- */
-  const UserAvatar = ({ size = 40 }: { size?: number }) => {
+  const UserAvatar = ({ size = 44 }: { size?: number }) => {
     if (user?.avatar) {
       return (
         <Image
@@ -118,7 +118,8 @@ const Navbar: React.FC = () => {
           alt={user.fullName}
           width={size}
           height={size}
-          className="object-cover w-full h-full rounded-full"
+          className="object-cover rounded-full"
+          style={{ width: size, height: size }}
         />
       );
     }
@@ -238,7 +239,7 @@ const Navbar: React.FC = () => {
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="fixed top-0 left-0 w-full z-50 bg-transparent"
+      className="fixed top-0 left-0 w-full z-99 bg-transparent"
     >
       <div className="max-w-7xl mx-auto px-6 lg:px-2 py-3 flex items-center justify-between">
         {/* Logo */}
@@ -530,9 +531,9 @@ const Navbar: React.FC = () => {
               const accountType = user.accountType;
               router.push(accountType === "vendor" ? "/vendor" : "/profile");
             }}
-            className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
+          className="flex items-center justify-center w-11 h-11 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
           >
-            <UserAvatar size={40} />
+            <UserAvatar />
           </button>
           {/* Tooltip */}
           <div className="absolute right-0 top-full mt-2 w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">

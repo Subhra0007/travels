@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaBars } from "react-icons/fa";
+import { MdLogout } from "react-icons/md";
+import PageLoader from "../components/common/PageLoader";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -100,20 +102,15 @@ export default function ProfilePage() {
   };
 
   // ---------- Loading States ----------
-  if (loading)
-    return (
-      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
-      </div>
-    );
+  if (loading) return <PageLoader />;
   if (!user) return <p className="text-center mt-20">No user found.</p>;
 
   // ---------- Render ----------
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-sky-50 text-black">
       {/* Sidebar */}
-      <div className=" lg:block hidden ">
-      <div className="w-full md:w-64 bg-white shadow-lg p-6 flex flex-col pt-20">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+      <div className="w-full md:w-64 h-full bg-white shadow-lg p-6 flex flex-col pt-20 overflow-y-auto">
         <div className="mb-8 flex flex-col items-center space-y-2">
           {/* Responsive avatar: smaller on sm/md, larger on lg */}
           <div className="md:hidden">
@@ -235,19 +232,13 @@ export default function ProfilePage() {
             Delete Account
           </button>
 
-          <button
-            onClick={handleLogout}
-            className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L12 15.586l2.293-2.293zM9 11a1 1 0 000-2V7a1 1 0 012 0v2a1 1 0 100 2h2a1 1 0 100-2H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Logout
-          </button>
+         <button
+  onClick={handleLogout}
+  className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
+>
+  <MdLogout className="w-5 h-5" />
+  Logout
+</button>
         </div>
       </div>
 </div>
@@ -519,22 +510,13 @@ export default function ProfilePage() {
                 </svg>
                 Delete Account
               </button>
-              <button
-                onClick={() => {
-                  handleLogout();
-                  setMobileSidebarOpen(false);
-                }}
-                className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L12 15.586l2.293-2.293zM9 11a1 1 0 000-2V7a1 1 0 012 0v2a1 1 0 100 2h2a1 1 0 100-2H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Logout
-              </button>
+                <button
+  onClick={handleLogout}
+  className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
+>
+  <MdLogout className="w-5 h-5" />
+  Logout
+</button>
             </nav>
           </div>
         </>

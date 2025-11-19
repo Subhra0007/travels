@@ -1,9 +1,11 @@
+//app/components/bookings/UserBookingsContent.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaBars } from "react-icons/fa";
+import ProfileSidebar from "../Pages/profile/ProfileSidebar";
 import BookingTable, { type BookingRecord } from "./BookingTable";
 
 const UserBookingsContent: React.FC = () => {
@@ -78,7 +80,21 @@ const UserBookingsContent: React.FC = () => {
     } catch (error) {
       console.error("Logout failed", error);
     } finally {
-      window.location.href = "/login";
+      window.location.href = "/";
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!confirm("Are you sure? This cannot be undone.")) return;
+    try {
+      const res = await fetch("/api/profile", { method: "DELETE", credentials: "include" });
+      const data = await res.json();
+      if (data.success) {
+        alert("Account deleted");
+        router.push("/");
+      }
+    } catch {
+      alert("Failed to delete account");
     }
   };
 
@@ -104,7 +120,7 @@ const UserBookingsContent: React.FC = () => {
           width: size,
           height: size,
           fontSize: size * 0.45,
-          background: "linear-gradient(to bottom right, #22c55e, #0ea5e9)",
+          background: "linear-gradient(to bottom right, #a855f7, #ec4899)",
         }}
       >
         {first}
@@ -135,20 +151,10 @@ const UserBookingsContent: React.FC = () => {
     }
   };
 
-  const sidebarItems = useMemo(
-    () => [
-      { label: "My Profile", href: "/profile", key: "profile" },
-      { label: "Booking History", href: "/bookings", key: "bookings", active: true },
-      { label: "Wishlist", href: "/wishlist", key: "wishlist" },
-      { label: "Inbox", href: "/profile/inbox", key: "inbox" },
-      { label: "Contact Support", href: "/profile/support", key: "support" },
-    ],
-    []
-  );
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -159,58 +165,30 @@ const UserBookingsContent: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-sky-50 text-black">
-      <div className="hidden w-72 shrink-0 border-r border-gray-200 bg-white lg:flex lg:flex-col">
-        <div className="flex flex-col items-center gap-2 px-6 pt-16 pb-8">
-          <Avatar size={80} />
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-gray-900">{user.fullName}</h2>
-            <p className="text-xs text-gray-500">{user.email}</p>
-          </div>
+    <div className="flex flex-col md:flex-row  bg-sky-50 text-black  min-h-screen">
+        <div className="hidden lg:block lg:sticky lg:top-0 h-full overflow-y-auto">
+      <ProfileSidebar
+        user={user}
+        active="bookings"
+        onDeleteAccount={deleteAccount}
+        onLogout={handleLogout}
+      />
+</div>
+      {/* Main Content */}
+      <div className="flex-1 p-4 md:p-10 pt-20 ">
+        <div className="md:hidden mb-4">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
+          >
+            <FaBars />
+            <span className="text-sm font-medium">Menu</span>
+          </button>
         </div>
-        <nav className="flex-1 space-y-2 px-4 pb-6">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => router.push(item.href)}
-              className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition ${
-                item.active
-                  ? "bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
-                  : "text-gray-600 hover:bg-green-50 hover:text-green-600"
-              }`}
-            >
-              {item.label}
-              {item.active && (
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">Active</span>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
 
-      <div className="flex flex-1 flex-col">
-        <header className="sticky top-0 z-40 bg-sky-50 px-4 pt-16 pb-6 shadow-sm lg:hidden">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setMobileSidebarOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"
-              >
-                <FaBars />
-                Menu
-              </button>
-              <div>
-                <p className="text-xs text-gray-500">Welcome back</p>
-                <p className="text-sm font-semibold text-gray-900">{user.fullName}</p>
-              </div>
-            </div>
-            <Avatar size={48} />
-          </div>
-        </header>
-
-        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16">
+        <main className="flex-1">
           <div className="mb-6 flex flex-col gap-2">
-            <h1 className="text-3xl font-bold text-gray-900">My bookings</h1>
+            <h1 className="text-3xl font-bold text-gray-800">My bookings</h1>
             <p className="text-sm text-gray-600">
               Keep track of every stay you reserve across the Travels platform. You can view room details, totals, and cancel if plans change.
             </p>
@@ -232,47 +210,118 @@ const UserBookingsContent: React.FC = () => {
         </main>
       </div>
 
+      {/* Mobile Sidebar */}
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-90 bg-black/40 md:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto bg-white shadow-2xl lg:hidden">
-            <div className="flex flex-col items-center gap-2 px-6 pt-10 pb-6">
-              <Avatar size={64} />
-              <h2 className="text-base font-semibold text-gray-900">{user.fullName}</h2>
-              <p className="text-xs text-gray-500">{user.email}</p>
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 p-6 md:hidden overflow-y-auto">
+            <div className="mb-6 flex items-center justify-between">
+              <span className="text-lg font-semibold text-gray-800">Menu</span>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="px-3 py-1.5 rounded-md border text-gray-700"
+              >
+                Close
+              </button>
             </div>
-            <nav className="space-y-2 px-4 pb-10">
-              {sidebarItems.map((item) => (
-                <button
-                  key={item.key}
-                  onClick={() => {
-                    router.push(item.href);
-                    setMobileSidebarOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition ${
-                    item.active
-                      ? "bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
-                      : "text-gray-600 hover:bg-green-50 hover:text-green-600"
-                  }`}
-                >
-                  {item.label}
-                  {item.active && (
-                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wide">
-                      Active
-                    </span>
-                  )}
-                </button>
-              ))}
+            <div className="mb-8 flex flex-col items-center space-y-2">
+              <Avatar size={56} />
+              <h2 className="text-base font-bold text-center text-gray-800 truncate">
+                {user.fullName}
+              </h2>
+              <p className="text-xs text-gray-500 text-center truncate">{user.email}</p>
+            </div>
+            <nav className="space-y-2">
+              <button
+                onClick={() => {
+                  router.push("/profile");
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+                My Profile
+              </button>
+              <button
+                onClick={() => {
+                  router.push("/bookings");
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                </svg>
+                Booking History
+              </button>
+              <button
+                onClick={() => {
+                  router.push("/wishlist");
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                </svg>
+                Wishlist
+              </button>
+              <button
+                onClick={() => {
+                  router.push("/profile/inbox");
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M2.94 6.412A2 2 0 002 8.108V16a2 2 0 002 2h12a2 2 0 002-2V8.108a2 2 0 00-.94-1.696l-6-3.75a2 2 0 00-2.12 0l-6 3.75zm2.615 2.423a1 1 0 10-1.11 1.664l5 3.333a1 1 0 001.11 0l5-3.333a1 1 0 00-1.11-1.664L10 11.798 5.555 8.835z" clipRule="evenodd" />
+                </svg>
+                Inbox
+              </button>
+              <button
+                onClick={() => {
+                  router.push("/profile/support");
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Contact Support
+              </button>
+              <div className="my-4 border-t border-gray-100" />
+              <button
+                onClick={() => {
+                  deleteAccount();
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full bg-red-100 hover:bg-red-200 text-red-700 px-4 py-3 rounded-xl font-medium transition-all duration-200 flex items-center gap-3"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 011-1h6a1 1 0 110 2H8a1 1 0 01-1-1zm1 4a1 1 0 100 2h6a1 1 0 100-2H8z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Delete Account
+              </button>
               <button
                 onClick={() => {
                   handleLogout();
                   setMobileSidebarOpen(false);
                 }}
-                className="mt-4 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
               >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L12 15.586l2.293-2.293zM9 11a1 1 0 000-2V7a1 1 0 012 0v2a1 1 0 100 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
+                </svg>
                 Logout
               </button>
             </nav>

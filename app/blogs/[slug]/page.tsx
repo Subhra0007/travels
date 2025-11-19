@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { FaArrowLeft, FaCalendar } from "react-icons/fa";
+import PageLoader from "../../components/common/PageLoader";
 
 type Blog = {
   _id: string;
@@ -68,11 +69,7 @@ export default function BlogDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex items-center justify-center">
-        <div className="text-lg text-gray-600">Loading blog...</div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (error || !blog) {

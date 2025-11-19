@@ -88,7 +88,7 @@ export default function VendorAdventuresPage() {
     if (!confirm("Are you sure you want to delete this adventure? This cannot be undone.")) return;
 
     try {
-      const res = await fetch(`/api/vendor/adventures/${advId}`, {
+      const res = await fetch(`/api/vendor/adventures?id=${advId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -226,9 +226,7 @@ export default function VendorAdventuresPage() {
               View
             </button>
             <button
-              onClick={() => {
-                alert(`Edit functionality coming soon for "${adv.name}"`);
-              }}
+              onClick={() => router.push(`/vendor/properties/adventures/add?editId=${adv._id}`)}
               className="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-yellow-600"
             >
               <FaEdit />
@@ -256,7 +254,7 @@ export default function VendorAdventuresPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 

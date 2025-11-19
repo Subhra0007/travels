@@ -89,7 +89,7 @@ export default function VendorToursPage() {
     if (!confirm("Are you sure you want to delete this tour?")) return;
 
     try {
-      const res = await fetch(`/api/vendor/tours/${tourId}`, {
+      const res = await fetch(`/api/vendor/tours?id=${tourId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -212,9 +212,7 @@ export default function VendorToursPage() {
               View
             </button>
             <button
-              onClick={() => {
-                alert(`Edit functionality coming soon for ${tour.name}`);
-              }}
+              onClick={() => router.push(`/vendor/properties/tours/add?editId=${tour._id}`)}
               className="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-yellow-600"
             >
               <FaEdit />
@@ -242,7 +240,7 @@ export default function VendorToursPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 

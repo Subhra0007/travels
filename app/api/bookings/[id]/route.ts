@@ -4,6 +4,10 @@ import dbConnect from "@/lib/config/database";
 import Booking, { BookingStatus, PaymentStatus } from "@/models/Booking";
 import Settlement from "@/models/Settlement";
 import { auth } from "@/lib/middlewares/auth";
+import { mailSender } from "@/lib/utils/mailSender";
+import bookingStatusUpdateTemplate from "@/lib/mail/templates/bookingStatusUpdateTemplate";
+import bookingCancelledVendorTemplate from "@/lib/mail/templates/bookingCancelledVendorTemplate";
+import User from "@/models/User";
 
 const ensureObjectId = (value: string) => mongoose.Types.ObjectId.isValid(value);
 
@@ -94,7 +98,10 @@ export const PATCH = auth(async (
     }
     const updates: Record<string, any> = {};
 
+    let previousStatus: BookingStatus | undefined;
+
     if (body.status) {
+      previousStatus = booking.status as BookingStatus;
       const nextStatus = body.status as BookingStatus;
       if (!["pending", "confirmed", "completed", "cancelled"].includes(nextStatus)) {
         return NextResponse.json({ success: false, message: "Invalid status" }, { status: 400 });
@@ -108,6 +115,16 @@ export const PATCH = auth(async (
       updates.status = nextStatus;
       if (nextStatus === "cancelled") {
         updates.cancelledAt = new Date();
+
+        // Require a reason when the customer cancels
+        if (isCustomer) {
+          if (!body.reason || typeof body.reason !== "string" || !body.reason.trim()) {
+            return NextResponse.json(
+              { success: false, message: "Cancellation reason is required" },
+              { status: 400 }
+            );
+          }
+        }
       }
       // Set completedAt when status is "completed"
       // Always set it if status is completed (even if already completed, to ensure it's set)
@@ -162,6 +179,59 @@ export const PATCH = auth(async (
           paidAt: new Date(),
         }
       );
+    }
+
+    // Send email to user when vendor/admin changes booking status
+    if (updatedBooking && body.status && previousStatus && body.status !== previousStatus) {
+      // 1) Status-change email to user when vendor/admin changes it
+      if ((isVendor || isAdmin) && updatedBooking.customer?.email) {
+        try {
+          await mailSender(
+            updatedBooking.customer.email,
+            "Your SafarHub booking status was updated",
+            bookingStatusUpdateTemplate({
+              fullName: updatedBooking.customer.fullName,
+              email: updatedBooking.customer.email,
+              serviceType: updatedBooking.serviceType,
+              referenceCode: updatedBooking._id.toString(),
+              newStatus: body.status,
+            })
+          );
+        } catch (emailErr) {
+          console.error("Booking status email error:", emailErr);
+        }
+      }
+
+      // 2) Cancellation email to vendor when customer cancels with reason
+      if (isCustomer && body.status === "cancelled") {
+        try {
+          const vendor = await User.findById(updatedBooking.vendorId);
+          const vendorEmail = vendor?.email;
+          const vendorName = vendor?.fullName || "Vendor";
+
+          if (vendorEmail) {
+            const reason =
+              (updatedBooking.metadata as any)?.userCancellationReason || body.reason || "";
+
+            await mailSender(
+              vendorEmail,
+              "A SafarHub booking was cancelled",
+              bookingCancelledVendorTemplate({
+                vendorName,
+                vendorEmail,
+                serviceType: updatedBooking.serviceType,
+                referenceCode: updatedBooking._id.toString(),
+                customerName: updatedBooking.customer.fullName,
+                customerEmail: updatedBooking.customer.email,
+                customerPhone: updatedBooking.customer.phone,
+                reason,
+              })
+            );
+          }
+        } catch (emailErr) {
+          console.error("Booking cancellation vendor email error:", emailErr);
+        }
+      }
     }
 
     return NextResponse.json({ success: true, booking: updatedBooking });

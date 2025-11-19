@@ -8,6 +8,7 @@ import { TourCard, type Tour } from "../tours/ToursExplorer";
 import { AdventureCard, type Adventure } from "../adventures/AdventuresExplorer";
 import { RentalCard, type VehicleRental } from "../vehicle-rental/vehiclerentalExplorer";
 import { useWishlist } from "../hooks/useWishlist";
+import PageLoader from "../components/common/PageLoader";
 
 export default function WishlistPage() {
   const {
@@ -33,11 +34,22 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       <section className="bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
-        <div className="mx-auto max-w-5xl px-6">
-          <h1 className="text-3xl font-bold sm:text-4xl">Your wishlist</h1>
-          <p className="mt-3 max-w-2xl text-white/80">
-            Save your favourite stays, tours, adventures, and vehicle rentals and find them quickly whenever you are ready to book.
-          </p>
+        <div className="mx-auto max-w-5xl px-6 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold sm:text-4xl">Your wishlist</h1>
+            <p className="mt-3 max-w-2xl text-white/80">
+              Save your favourite stays, tours, adventures, and vehicle rentals and find them quickly whenever you are ready to book.
+            </p>
+          </div>
+          <Link
+            href="/profile"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/40 bg-white/10 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/20"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Profile
+          </Link>
         </div>
       </section>
 
@@ -49,9 +61,7 @@ export default function WishlistPage() {
         )}
 
         {loading ? (
-          <div className="flex justify-center py-16">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
-          </div>
+          <PageLoader />
         ) : wishlistEntries.length === 0 ? (
           <div className="rounded-2xl bg-white p-10 text-center shadow">
             <h2 className="text-xl font-semibold text-gray-900">Your wishlist is empty</h2>

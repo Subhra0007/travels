@@ -7,12 +7,137 @@ import mongoose from "mongoose";
 import User from "@/models/User";
 import jwt from "jsonwebtoken";
 
+const normalizeTourPayload = (body: any) => {
+  const {
+    name,
+    category,
+    location,
+    heroHighlights = [],
+    curatedHighlights = [],
+    images,
+    gallery = [],
+    videos = {},
+    popularFacilities = [],
+    amenities = {},
+    tags = [],
+    options,
+    about,
+    vendorMessage = "",
+    defaultCancellationPolicy = "",
+    defaultHouseRules = [],
+  } = body;
+
+  if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
+    return { error: "Missing required fields or insufficient images" };
+  }
+
+  if (!["group-tours", "tour-packages"].includes(category)) {
+    return { error: "Invalid category" };
+  }
+
+  if (!Array.isArray(options) || options.length === 0) {
+    return { error: "Please add at least one tour option" };
+  }
+
+  for (const option of options) {
+    const availabilityValue = option?.available ?? option?.inventory ?? 1;
+    if (
+      !option?.name ||
+      !option?.duration ||
+      typeof option?.capacity !== "number" ||
+      typeof option?.price !== "number" ||
+      !Number.isFinite(Number(availabilityValue)) ||
+      !Array.isArray(option?.images) ||
+      option.images.length < 3
+    ) {
+      return {
+        error:
+          "Every tour option must include name, duration, capacity, price, availability and at least 3 images",
+      };
+    }
+  }
+
+  const normalizedOptions = options.map((option: any) => ({
+    name: option.name,
+    description: option.description ?? "",
+    duration: option.duration,
+    capacity: Number(option.capacity),
+    price: Number(option.price),
+    taxes: option.taxes != null ? Number(option.taxes) : 0,
+    currency: typeof option.currency === "string" && option.currency.trim().length ? option.currency : "INR",
+    features: Array.isArray(option.features) ? option.features : [],
+    amenities: Array.isArray(option.amenities) ? option.amenities : [],
+    available: Number(option.available ?? option.inventory ?? 1),
+    isRefundable: option.isRefundable !== undefined ? Boolean(option.isRefundable) : true,
+    refundableUntilHours:
+      option.refundableUntilHours !== undefined ? Number(option.refundableUntilHours) : 48,
+    images: option.images,
+  }));
+
+  const normalizedVideos = {
+    inside: Array.isArray(videos?.inside) ? videos.inside : [],
+    outside: Array.isArray(videos?.outside) ? videos.outside : [],
+  };
+
+  const normalizedAmenities: Record<string, string[]> = {};
+  if (amenities && typeof amenities === "object") {
+    Object.entries(amenities).forEach(([key, value]) => {
+      if (Array.isArray(value) && value.length) {
+        normalizedAmenities[key] = value;
+      }
+    });
+  }
+
+  const normalizedTags = Array.isArray(tags)
+    ? tags
+        .filter((tag: any) => typeof tag === "string" && tag.trim().length)
+        .map((tag: string) => tag.trim())
+    : [];
+
+  const normalizedCuratedHighlights = Array.isArray(curatedHighlights)
+    ? curatedHighlights
+        .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
+        .map((item: any) => ({
+          title: item.title.trim(),
+          description:
+            typeof item.description === "string" && item.description.trim().length
+              ? item.description.trim()
+              : undefined,
+          icon:
+            typeof item.icon === "string" && item.icon.trim().length
+              ? item.icon.trim()
+              : undefined,
+        }))
+    : [];
+
+  return {
+    payload: {
+      name,
+      category,
+      location,
+      heroHighlights,
+      images,
+      gallery,
+      curatedHighlights: normalizedCuratedHighlights,
+      tags: normalizedTags,
+      videos: normalizedVideos,
+      popularFacilities,
+      amenities: normalizedAmenities,
+      options: normalizedOptions,
+      about,
+      vendorMessage,
+      defaultCancellationPolicy,
+      defaultHouseRules,
+    },
+  };
+};
 // GET - Fetch tours (vendor-specific or all for admin)
 export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const vendorId = searchParams.get("vendorId");
+    const id = searchParams.get("id");
     const category = searchParams.get("category");
     const all = searchParams.get("all") === "true"; // For admin/public to see all
 
@@ -43,6 +168,28 @@ export async function GET(req: NextRequest) {
           }
         }
       } catch {}
+    }
+
+    if (id) {
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return NextResponse.json(
+          { success: false, message: "Valid tour ID is required" },
+          { status: 400 }
+        );
+      }
+
+      const tour = await Tour.findById(id)
+        .populate("vendorId", "fullName email contactNumber")
+        .lean();
+
+      if (!tour) {
+        return NextResponse.json(
+          { success: false, message: "Tour not found" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({ success: true, tour });
     }
 
     let query: any = {};
@@ -104,141 +251,14 @@ export const POST = auth(async (req: NextRequest) => {
 
     const vendorId = user.id;
 
-    // Validate required fields
-    const {
-      name,
-      category,
-      location,
-      heroHighlights = [],
-      curatedHighlights = [],
-      images,
-      gallery = [],
-      videos = {},
-      popularFacilities = [],
-      amenities = {},
-      tags = [],
-      options,
-      about,
-      vendorMessage = "",
-      defaultCancellationPolicy = "",
-      defaultHouseRules = [],
-    } = body;
-
-    if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
-      return NextResponse.json(
-        { success: false, message: "Missing required fields or insufficient images" },
-        { status: 400 }
-      );
+    const { payload, error } = normalizeTourPayload(body);
+    if (error) {
+      return NextResponse.json({ success: false, message: error }, { status: 400 });
     }
 
-    if (!["group-tours", "tour-packages"].includes(category)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid category" },
-        { status: 400 }
-      );
-    }
-
-    if (!Array.isArray(options) || options.length === 0) {
-      return NextResponse.json(
-        { success: false, message: "Please add at least one tour option" },
-        { status: 400 }
-      );
-    }
-
-    for (const option of options) {
-      const availabilityValue = option?.available ?? option?.inventory ?? 1;
-      if (
-        !option?.name ||
-        !option?.duration ||
-        typeof option?.capacity !== "number" ||
-        typeof option?.price !== "number" ||
-        !Number.isFinite(Number(availabilityValue)) ||
-        !Array.isArray(option?.images) ||
-        option.images.length < 3
-      ) {
-        return NextResponse.json(
-          {
-            success: false,
-            message:
-              "Every tour option must include name, duration, capacity, price, availability and at least 3 images",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    const normalizedOptions = options.map((option: any) => ({
-      name: option.name,
-      description: option.description ?? "",
-      duration: option.duration,
-      capacity: Number(option.capacity),
-      price: Number(option.price),
-      taxes: option.taxes != null ? Number(option.taxes) : 0,
-      currency: typeof option.currency === "string" && option.currency.trim().length ? option.currency : "INR",
-      features: Array.isArray(option.features) ? option.features : [],
-      amenities: Array.isArray(option.amenities) ? option.amenities : [],
-      available: Number(option.available ?? option.inventory ?? 1),
-      isRefundable: option.isRefundable !== undefined ? Boolean(option.isRefundable) : true,
-      refundableUntilHours:
-        option.refundableUntilHours !== undefined ? Number(option.refundableUntilHours) : 48,
-      images: option.images,
-    }));
-
-    const normalizedVideos = {
-      inside: Array.isArray(videos?.inside) ? videos.inside : [],
-      outside: Array.isArray(videos?.outside) ? videos.outside : [],
-    };
-
-    const normalizedAmenities: Record<string, string[]> = {};
-    if (amenities && typeof amenities === "object") {
-      Object.entries(amenities).forEach(([key, value]) => {
-        if (Array.isArray(value) && value.length) {
-          normalizedAmenities[key] = value;
-        }
-      });
-    }
-
-    const normalizedTags = Array.isArray(tags)
-      ? tags
-          .filter((tag: any) => typeof tag === "string" && tag.trim().length)
-          .map((tag: string) => tag.trim())
-      : [];
-
-    const normalizedCuratedHighlights = Array.isArray(curatedHighlights)
-      ? curatedHighlights
-          .filter((item: any) => item && typeof item.title === "string" && item.title.trim().length)
-          .map((item: any) => ({
-            title: item.title.trim(),
-            description:
-              typeof item.description === "string" && item.description.trim().length
-                ? item.description.trim()
-                : undefined,
-            icon:
-              typeof item.icon === "string" && item.icon.trim().length
-                ? item.icon.trim()
-                : undefined,
-          }))
-      : [];
-
-    // Create tour
     const tour = await Tour.create({
       vendorId,
-      name,
-      category,
-      location,
-      images,
-      gallery,
-      heroHighlights,
-      curatedHighlights: normalizedCuratedHighlights,
-      tags: normalizedTags,
-      videos: normalizedVideos,
-      popularFacilities,
-      amenities: normalizedAmenities,
-      options: normalizedOptions,
-      about,
-      vendorMessage,
-      defaultCancellationPolicy,
-      defaultHouseRules,
+      ...payload,
       isActive: true,
     });
 
@@ -255,6 +275,57 @@ export const POST = auth(async (req: NextRequest) => {
     console.error("Error creating tour:", error);
     return NextResponse.json(
       { success: false, message: error.message || "Failed to create tour" },
+      { status: 500 }
+    );
+  }
+});
+
+// PUT - Update existing tour
+export const PUT = auth(async (req: NextRequest) => {
+  try {
+    await dbConnect();
+    const body = await req.json();
+    const user = (req as any).user;
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Valid tour ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const tour = await Tour.findById(id);
+    if (!tour) {
+      return NextResponse.json(
+        { success: false, message: "Tour not found" },
+        { status: 404 }
+      );
+    }
+
+    if (user.accountType !== "admin" && tour.vendorId.toString() !== user.id) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized to update this tour" },
+        { status: 403 }
+      );
+    }
+
+    const { payload, error } = normalizeTourPayload(body);
+    if (error) {
+      return NextResponse.json({ success: false, message: error }, { status: 400 });
+    }
+
+    Object.assign(tour, payload);
+    await tour.save();
+
+    const updatedTour = await Tour.findById(id).populate("vendorId", "fullName email contactNumber");
+
+    return NextResponse.json({ success: true, tour: updatedTour });
+  } catch (error: any) {
+    console.error("Error updating tour:", error);
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to update tour" },
       { status: 500 }
     );
   }

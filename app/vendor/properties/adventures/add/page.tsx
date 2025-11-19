@@ -1,8 +1,8 @@
 // app/properties/adventures/add/page.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import {
   FaMapMarkerAlt,
@@ -13,6 +13,7 @@ import {
   FaImage,
   FaTrash,
 } from "react-icons/fa";
+import PageLoader from "@/app/components/common/PageLoader";
 
 const HERO_HIGHLIGHTS = [
   "Expert guide",
@@ -138,6 +139,9 @@ const createDefaultOption = (): OptionForm => ({
 
 export default function AddAdventurePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("editId");
+  const isEditing = Boolean(editId);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -146,6 +150,7 @@ export default function AddAdventurePage() {
   const [optionFeatureDrafts, setOptionFeatureDrafts] = useState<Record<number, string>>({});
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(isEditing);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -216,6 +221,80 @@ export default function AddAdventurePage() {
   const addOption = () => setFormData((prev) => ({ ...prev, options: [...prev.options, createDefaultOption()] }));
   const removeOption = (idx: number) =>
     setFormData((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
+
+  const hydrateForm = (adventure: any) => {
+    setFormData({
+      name: adventure.name ?? "",
+      category: (adventure.category as "trekking" | "hiking" | "camping" | "water-rafting") ?? "trekking",
+      location: {
+        address: adventure.location?.address ?? "",
+        city: adventure.location?.city ?? "",
+        state: adventure.location?.state ?? "",
+        country: adventure.location?.country ?? "",
+        postalCode: adventure.location?.postalCode ?? "",
+        coordinates: {
+          lat: adventure.location?.coordinates?.lat ?? 0,
+          lng: adventure.location?.coordinates?.lng ?? 0,
+        },
+      },
+      heroHighlights: adventure.heroHighlights ?? [],
+      images: adventure.images ?? [],
+      gallery: adventure.gallery ?? [],
+      videos: {
+        inside: adventure.videos?.inside ?? [],
+        outside: adventure.videos?.outside ?? [],
+      },
+      popularFacilities: adventure.popularFacilities ?? [],
+      amenities: adventure.amenities
+        ? Object.fromEntries(Object.entries(adventure.amenities))
+        : {},
+      options:
+        Array.isArray(adventure.options) && adventure.options.length
+          ? adventure.options.map((option: any) => ({
+              name: option.name ?? "",
+              description: option.description ?? "",
+              duration: option.duration ?? "4 hours",
+              difficulty: option.difficulty ?? "Moderate",
+              capacity: option.capacity ?? 0,
+              price: option.price ?? 0,
+              features: option.features ?? [],
+              images: option.images ?? [],
+            }))
+          : [createDefaultOption()],
+      about: {
+        heading: adventure.about?.heading ?? "",
+        description: adventure.about?.description ?? "",
+      },
+      vendorMessage: adventure.vendorMessage ?? "",
+      defaultCancellationPolicy: adventure.defaultCancellationPolicy ?? "",
+      defaultHouseRules: adventure.defaultHouseRules ?? [],
+    });
+  };
+
+  useEffect(() => {
+    if (!editId) return;
+
+    const loadAdventure = async () => {
+      setInitializing(true);
+      try {
+        const res = await fetch(`/api/vendor/adventures?id=${editId}`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success || !data.adventure) {
+          throw new Error(data?.message || "Failed to load adventure details");
+        }
+        hydrateForm(data.adventure);
+      } catch (error: any) {
+        alert(error?.message || "Unable to load adventure for editing");
+        router.push("/vendor/properties/adventures");
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    loadAdventure();
+  }, [editId, router]);
 
   // ──────────────────────────────────────────────────────
   // Media upload helper
@@ -393,21 +472,27 @@ export default function AddAdventurePage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/vendor/adventures", {
-        method: "POST",
+      const endpoint = editId ? `/api/vendor/adventures?id=${editId}` : "/api/vendor/adventures";
+      const method = editId ? "PUT" : "POST";
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data?.message ?? "Failed");
-      router.push("/vendor/adventures");
+      router.push("/vendor/properties/adventures");
     } catch (err: any) {
-      alert(err?.message ?? "Failed to create adventure");
+      alert(err?.message ?? "Failed to save adventure");
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (initializing) {
+    return <PageLoader />;
+  }
 
   // ──────────────────────────────────────────────────────
   // Render
@@ -415,7 +500,7 @@ export default function AddAdventurePage() {
   return (
     <div className="flex h-screen bg-gray-50 text-black">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 
@@ -429,7 +514,9 @@ export default function AddAdventurePage() {
             >
               Menu
             </button>
-            <h1 className="text-xl sm:text-2xl font-semibold">Create Adventure</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold">
+              {isEditing ? "Edit Adventure" : "Create Adventure"}
+            </h1>
           </div>
         </div>
 
@@ -1126,7 +1213,13 @@ export default function AddAdventurePage() {
                 disabled={submitting}
                 className="flex-1 py-3 bg-green-600 text-white rounded-lg font-semibold disabled:opacity-60 hover:bg-green-700"
               >
-                {submitting ? "Saving…" : "Create Adventure"}
+                {submitting
+                  ? isEditing
+                    ? "Updating…"
+                    : "Saving…"
+                  : isEditing
+                  ? "Update Adventure"
+                  : "Create Adventure"}
               </button>
               <button
                 type="button"

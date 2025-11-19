@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { FaShoppingCart, FaArrowLeft } from "react-icons/fa";
+import PageLoader from "../../components/common/PageLoader";
 
 type ProductVariant = {
   _id?: string;
@@ -76,11 +77,7 @@ export default function ProductDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex items-center justify-center">
-        <div className="text-lg text-gray-600">Loading product...</div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!product) {

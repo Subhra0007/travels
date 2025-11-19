@@ -1,10 +1,11 @@
 // app/properties/vehicle-rental/add/page.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
-import { FaMapMarkerAlt, FaPlus, FaTimes, FaUpload, FaCar, FaMotorcycle,FaTrash } from "react-icons/fa";
+import { FaMapMarkerAlt, FaPlus, FaTimes, FaUpload, FaCar, FaMotorcycle, FaTrash } from "react-icons/fa";
+import PageLoader from "@/app/components/common/PageLoader";
 
 const HERO_HIGHLIGHTS = [
   "Free cancellation",
@@ -113,6 +114,9 @@ const createDefaultOption = (): OptionForm => ({
 
 export default function AddVehicleRentalPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("editId");
+  const isEditing = Boolean(editId);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -122,6 +126,7 @@ export default function AddVehicleRentalPage() {
   const [optionFeatureDrafts, setOptionFeatureDrafts] = useState<Record<number, string>>({});
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(isEditing);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -197,6 +202,82 @@ export default function AddVehicleRentalPage() {
   const addOption = () => setFormData((prev) => ({ ...prev, options: [...prev.options, createDefaultOption()] }));
   const removeOption = (idx: number) =>
     setFormData((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
+
+  const hydrateForm = (rental: any) => {
+    setFormData({
+      name: rental.name ?? "",
+      category: (rental.category as "cars-rental" | "bikes-rentals") ?? "cars-rental",
+      location: {
+        address: rental.location?.address ?? "",
+        city: rental.location?.city ?? "",
+        state: rental.location?.state ?? "",
+        country: rental.location?.country ?? "",
+        postalCode: rental.location?.postalCode ?? "",
+        coordinates: {
+          lat: rental.location?.coordinates?.lat ?? 0,
+          lng: rental.location?.coordinates?.lng ?? 0,
+        },
+      },
+      heroHighlights: rental.heroHighlights ?? [],
+      images: rental.images ?? [],
+      gallery: rental.gallery ?? [],
+      videos: {
+        inside: rental.videos?.inside ?? [],
+        outside: rental.videos?.outside ?? [],
+      },
+      popularFacilities: rental.popularFacilities ?? [],
+      amenities: rental.amenities ? Object.fromEntries(Object.entries(rental.amenities)) : {},
+      options:
+        Array.isArray(rental.options) && rental.options.length
+          ? rental.options.map((option: any) => ({
+              model: option.model ?? "",
+              description: option.description ?? "",
+              type: option.type ?? "Sedan",
+              pricePerDay: option.pricePerDay ?? 0,
+              features: option.features ?? [],
+              images: option.images ?? [],
+              available: option.available ?? 1,
+            }))
+          : [createDefaultOption()],
+      about: {
+        heading: rental.about?.heading ?? "",
+        description: rental.about?.description ?? "",
+      },
+      checkInOutRules: {
+        pickup: rental.checkInOutRules?.pickup ?? "",
+        dropoff: rental.checkInOutRules?.dropoff ?? "",
+        rules: rental.checkInOutRules?.rules ?? [],
+      },
+      vendorMessage: rental.vendorMessage ?? "",
+      defaultCancellationPolicy: rental.defaultCancellationPolicy ?? "",
+      defaultHouseRules: rental.defaultHouseRules ?? [],
+    });
+  };
+
+  useEffect(() => {
+    if (!editId) return;
+
+    const loadRental = async () => {
+      setInitializing(true);
+      try {
+        const res = await fetch(`/api/vendor/vehicle-rental?id=${editId}`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success || !data.rental) {
+          throw new Error(data?.message || "Failed to load rental details");
+        }
+        hydrateForm(data.rental);
+      } catch (error: any) {
+        alert(error?.message || "Unable to load rental for editing");
+        router.push("/vendor/properties/vehicle-rental");
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    loadRental();
+  }, [editId, router]);
 
   const uploadMedia = async (files: File[], folder: string) => {
     if (!files.length) return [] as string[];
@@ -346,8 +427,10 @@ export default function AddVehicleRentalPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/vendor/vehicle-rental", {
-        method: "POST",
+      const endpoint = editId ? `/api/vendor/vehicle-rental?id=${editId}` : "/api/vendor/vehicle-rental";
+      const method = editId ? "PUT" : "POST";
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
@@ -356,15 +439,19 @@ export default function AddVehicleRentalPage() {
       if (!res.ok || !data.success) throw new Error(data?.message ?? "Failed");
       router.push("/vendor/properties/vehicle-rental");
     } catch (err: any) {
-      alert(err?.message ?? "Failed to create rental");
+      alert(err?.message ?? "Failed to save rental");
     } finally {
       setSubmitting(false);
     }
   };
 
+  if (initializing) {
+    return <PageLoader />;
+  }
+
   return (
     <div className="flex h-screen bg-gray-50 text-black">
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 
@@ -379,7 +466,7 @@ export default function AddVehicleRentalPage() {
             </button>
             <h1 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
               {formData.category === "cars-rental" ? <FaCar /> : <FaMotorcycle />}
-              Create Vehicle Rental
+              {isEditing ? "Edit Vehicle Rental" : "Create Vehicle Rental"}
             </h1>
           </div>
         </div>
@@ -1112,7 +1199,13 @@ export default function AddVehicleRentalPage() {
                 disabled={submitting}
                 className="flex-1 py-3 bg-blue-600 text-white rounded-lg font-semibold disabled:opacity-60 hover:bg-blue-700"
               >
-                {submitting ? "Saving…" : "Create Rental"}
+                {submitting
+                  ? isEditing
+                    ? "Updating…"
+                    : "Saving…"
+                  : isEditing
+                  ? "Update Rental"
+                  : "Create Rental"}
               </button>
               <button
                 type="button"

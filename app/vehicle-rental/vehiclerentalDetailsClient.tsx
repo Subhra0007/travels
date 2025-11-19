@@ -28,6 +28,7 @@ import {
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useWishlist } from "@/app/hooks/useWishlist";
+import { useAvailability } from "../hooks/useAvailability";
 
 export type VehicleRentalDetailPayload = {
   _id: string;
@@ -91,6 +92,17 @@ const getIcon = (label: string) => {
 
 const formatDateInput = (date: Date) => `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}-${`${date.getDate()}`.padStart(2, "0")}`;
 
+const formatDateDisplay = (value: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 const calculateDays = (start: string, end: string) => {
   if (!start || !end) return 1;
   const pickup = new Date(start);
@@ -138,6 +150,17 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
 
   const days = useMemo(() => calculateDays(pickupDate, dropoffDate), [pickupDate, dropoffDate]);
 
+  const availability = useAvailability("vehicle", rental._id, pickupDate, dropoffDate);
+  const availableVehicleKeys = availability.availableOptionKeys ?? [];
+  const bookedSummaries = availability.bookedRanges.slice(0, 3);
+  const soldOutForDates =
+    !availability.loading && rental.options.length > 0 && availableVehicleKeys.length === 0;
+  const isVehicleUnavailable = (vehicleKey: string) => {
+    if (availability.loading) return false;
+    if (availableVehicleKeys.length === 0) return soldOutForDates;
+    return !availableVehicleKeys.includes(vehicleKey);
+  };
+
   const pricing = useMemo(() => {
     let subtotal = 0;
     let taxes = 0;
@@ -182,6 +205,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
   );
 
   const toggleVehicleSelection = (vehicleKey: string, available: number) => {
+    if (available <= 0 || isVehicleUnavailable(vehicleKey)) return;
     setVehicleSelections((prev) => {
       const current = prev[vehicleKey] || 0;
       if (available <= 0) {
@@ -192,6 +216,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
   };
 
   const stepVehicleQuantity = (vehicleKey: string, delta: number, maxAvailable: number) => {
+    if (isVehicleUnavailable(vehicleKey)) return;
     setVehicleSelections((prev) => {
       const allowedMax = Math.max(0, maxAvailable ?? 0);
       const current = prev[vehicleKey] || 0;
@@ -201,7 +226,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
   };
 
   const handleBookNow = () => {
-    if (!pricing.selectedVehicles.length) return;
+    if (!pricing.selectedVehicles.length || soldOutForDates) return;
 
     const params = new URLSearchParams({
       pickup: pickupDate,
@@ -330,6 +355,33 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                 </label>
               </div>
               <p className="mt-3 text-sm text-gray-600">Rental duration: {days} day{days === 1 ? "" : "s"}</p>
+              <div
+                className={`rounded-2xl border px-4 py-3 text-sm ${
+                  soldOutForDates
+                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {availability.loading && "Checking availability…"}
+                {!availability.loading && !availability.error && (
+                  <span>
+                    {soldOutForDates
+                      ? "These dates are sold out. Pick different dates."
+                      : "These dates are available."}
+                  </span>
+                )}
+                {availability.error && (
+                  <span className="text-rose-600">Unable to check availability. Please refresh.</span>
+                )}
+                {!availability.loading && bookedSummaries.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-600">
+                    Upcoming booked dates:{" "}
+                    {bookedSummaries
+                      .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                      .join(", ")}
+                  </p>
+                )}
+              </div>
               <button
                 onClick={() => {
                   const target = document.getElementById("vehicle-availability");
@@ -501,7 +553,33 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              soldOutForDates
+                ? "border-rose-200 bg-rose-50 text-rose-700"
+                : "border-emerald-200 bg-emerald-50 text-emerald-800"
+            }`}
+          >
+            {availability.loading && "Checking availability…"}
+            {!availability.loading && !availability.error && (
+              <span>
+                {soldOutForDates ? "Sold out for these dates." : "Available for the selected dates."}
+              </span>
+            )}
+            {availability.error && (
+              <span className="text-rose-600">Unable to load availability. Please try again.</span>
+            )}
+            {!availability.loading && bookedSummaries.length > 0 && (
+              <span className="mt-1 block text-xs text-gray-600">
+                Booked:{" "}
+                {bookedSummaries
+                  .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                  .join(", ")}
+              </span>
+            )}
+          </div>
+
+          <div className={`overflow-x-auto rounded-2xl border border-gray-200 ${soldOutForDates ? "pointer-events-none opacity-60" : ""}`}>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <tr>
@@ -519,6 +597,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                   const isExpanded = expandedVehicleKey === vehicleKey;
                   const available = vehicle.available ?? 0;
                   const taxesNote = vehicle.taxes ? `Taxes ₹${vehicle.taxes.toLocaleString()} extra` : "Taxes included";
+                  const vehicleUnavailable = available <= 0 || isVehicleUnavailable(vehicleKey);
 
                   return (
                     <Fragment key={vehicleKey}>
@@ -532,7 +611,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                                   Selected
                                 </span>
                               )}
-                              {available <= 0 && (
+                              {vehicleUnavailable && (
                                 <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
                                   Sold out
                                 </span>
@@ -592,7 +671,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                               <button
                                 type="button"
                                 onClick={() => stepVehicleQuantity(vehicleKey, -1, available)}
-                                disabled={quantity <= 0}
+                                disabled={quantity <= 0 || vehicleUnavailable}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 –
@@ -601,23 +680,27 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                               <button
                                 type="button"
                                 onClick={() => stepVehicleQuantity(vehicleKey, 1, available)}
-                                disabled={available <= 0 || quantity >= available}
+                                disabled={available <= 0 || quantity >= available || vehicleUnavailable}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 +
                               </button>
                             </div>
-                            <button
+                              <button
                               type="button"
                               onClick={() => toggleVehicleSelection(vehicleKey, available)}
-                              disabled={available <= 0}
+                                disabled={vehicleUnavailable}
                               className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
                                 isSelected
                                   ? "bg-blue-600 text-white shadow hover:bg-blue-700"
                                   : "border border-blue-600 text-blue-700 hover:bg-blue-50 disabled:border-gray-300 disabled:text-gray-400"
-                              } ${available <= 0 ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400" : ""}`}
+                                } ${
+                                  vehicleUnavailable
+                                    ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
+                                    : ""
+                                }`}
                             >
-                              {available <= 0 ? "Sold out" : isSelected ? "Selected" : "Select"}
+                              {vehicleUnavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
                             </button>
                           </div>
                         </td>
@@ -723,13 +806,22 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
             {!pricing.selectedVehicles.length && (
               <p className="text-xs text-amber-600">Select at least one vehicle to continue to the booking form.</p>
             )}
+            {soldOutForDates && (
+              <p className="text-xs text-rose-600">
+                These dates are sold out. Choose different dates to continue.
+              </p>
+            )}
             <button
               type="button"
               onClick={handleBookNow}
-              disabled={!pricing.selectedVehicles.length}
+              disabled={!pricing.selectedVehicles.length || soldOutForDates}
               className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pricing.selectedVehicles.length ? "Book now" : "Select a vehicle to book"}
+              {soldOutForDates
+                ? "Unavailable for these dates"
+                : pricing.selectedVehicles.length
+                ? "Book now"
+                : "Select a vehicle to book"}
             </button>
           </div>
 

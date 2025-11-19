@@ -1,10 +1,11 @@
 // app/properties/tours/add/page.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import { FaMapMarkerAlt, FaPlus, FaTimes, FaUpload } from "react-icons/fa";
+import PageLoader from "@/app/components/common/PageLoader";
 
 const HERO_HIGHLIGHTS = [
   "Guided tour",
@@ -136,6 +137,9 @@ const createDefaultOption = (): OptionForm => ({
 
 export default function AddTourPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("editId");
+  const isEditing = Boolean(editId);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -144,6 +148,7 @@ export default function AddTourPage() {
   const [optionFeatureDrafts, setOptionFeatureDrafts] = useState<Record<number, string>>({});
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(isEditing);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -218,6 +223,79 @@ export default function AddTourPage() {
   const removeOption = (index: number) => {
     setFormData((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== index) }));
   };
+
+  const hydrateForm = (tour: any) => {
+    setFormData({
+      name: tour.name ?? "",
+      category: (tour.category as "group-tours" | "tour-packages") ?? "group-tours",
+      location: {
+        address: tour.location?.address ?? "",
+        city: tour.location?.city ?? "",
+        state: tour.location?.state ?? "",
+        country: tour.location?.country ?? "",
+        postalCode: tour.location?.postalCode ?? "",
+        coordinates: {
+          lat: tour.location?.coordinates?.lat ?? 0,
+          lng: tour.location?.coordinates?.lng ?? 0,
+        },
+      },
+      heroHighlights: tour.heroHighlights ?? [],
+      images: tour.images ?? [],
+      gallery: tour.gallery ?? [],
+      videos: {
+        inside: tour.videos?.inside ?? [],
+        outside: tour.videos?.outside ?? [],
+      },
+      popularFacilities: tour.popularFacilities ?? [],
+      amenities: tour.amenities
+        ? Object.fromEntries(Object.entries(tour.amenities))
+        : {},
+      options:
+        Array.isArray(tour.options) && tour.options.length
+          ? tour.options.map((option: any) => ({
+              name: option.name ?? "",
+              description: option.description ?? "",
+              duration: option.duration ?? "3 hours",
+              capacity: option.capacity ?? 0,
+              price: option.price ?? 0,
+              features: option.features ?? [],
+              images: option.images ?? [],
+            }))
+          : [createDefaultOption()],
+      about: {
+        heading: tour.about?.heading ?? "",
+        description: tour.about?.description ?? "",
+      },
+      vendorMessage: tour.vendorMessage ?? "",
+      defaultCancellationPolicy: tour.defaultCancellationPolicy ?? "",
+      defaultHouseRules: tour.defaultHouseRules ?? [],
+    });
+  };
+
+  useEffect(() => {
+    if (!editId) return;
+
+    const loadTour = async () => {
+      setInitializing(true);
+      try {
+        const res = await fetch(`/api/vendor/tours?id=${editId}`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success || !data.tour) {
+          throw new Error(data?.message || "Failed to load tour details");
+        }
+        hydrateForm(data.tour);
+      } catch (error: any) {
+        alert(error?.message || "Unable to load tour for editing");
+        router.push("/vendor/properties/tours");
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    loadTour();
+  }, [editId, router]);
 
   const uploadMedia = async (files: File[], folder: string) => {
     if (!files.length) return [] as string[];
@@ -439,8 +517,10 @@ export default function AddTourPage() {
     setUploadError(null);
 
     try {
-      const res = await fetch("/api/vendor/tours", {
-        method: "POST",
+      const endpoint = editId ? `/api/vendor/tours?id=${editId}` : "/api/vendor/tours";
+      const method = editId ? "PUT" : "POST";
+      const res = await fetch(endpoint, {
+        method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
@@ -449,7 +529,7 @@ export default function AddTourPage() {
       if (!res.ok || !data.success) {
         throw new Error(data?.message || "Failed to create tour");
       }
-      router.push("/vendor/tours");
+      router.push("/vendor/properties/tours");
     } catch (error: any) {
       alert(error?.message || "Failed to save tour");
     } finally {
@@ -457,9 +537,13 @@ export default function AddTourPage() {
     }
   };
 
+  if (initializing) {
+    return <PageLoader />;
+  }
+
   return (
     <div className="flex h-screen bg-gray-50 text-black relative">
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 
@@ -473,7 +557,9 @@ export default function AddTourPage() {
             >
               Menu
             </button>
-            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Create a new tour</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
+              {isEditing ? "Edit tour" : "Create a new tour"}
+            </h1>
           </div>
         </div>
 
@@ -1102,7 +1188,13 @@ export default function AddTourPage() {
                 disabled={submitting}
                 className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:opacity-60"
               >
-                {submitting ? "Creating…" : "Create Tour"}
+                {submitting
+                  ? isEditing
+                    ? "Updating…"
+                    : "Creating…"
+                  : isEditing
+                  ? "Update Tour"
+                  : "Create Tour"}
               </button>
               <button
                 type="button"

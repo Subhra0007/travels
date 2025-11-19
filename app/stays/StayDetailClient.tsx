@@ -37,6 +37,7 @@ import {
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useWishlist } from "../hooks/useWishlist";
+import { useAvailability } from "../hooks/useAvailability";
 
 export type StayDetailPayload = {
   _id: string;
@@ -136,6 +137,17 @@ const formatDateInput = (date: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+const formatDateDisplay = (value: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 const calculateNights = (checkIn: string, checkOut: string) => {
   if (!checkIn || !checkOut) return 1;
   const inDate = new Date(checkIn);
@@ -194,6 +206,17 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
 
   const nights = useMemo(() => calculateNights(checkIn, checkOut), [checkIn, checkOut]);
 
+  const availability = useAvailability("stay", stay._id, checkIn, checkOut);
+  const availableRoomKeys = availability.availableOptionKeys ?? [];
+  const bookedSummaries = availability.bookedRanges.slice(0, 3);
+  const soldOutForDates =
+    !availability.loading && stay.rooms.length > 0 && availableRoomKeys.length === 0;
+  const isRoomUnavailable = (roomKey: string) => {
+    if (availability.loading) return false;
+    if (availableRoomKeys.length === 0) return soldOutForDates;
+    return !availableRoomKeys.includes(roomKey);
+  };
+
   const pricing = useMemo(() => {
     let subtotal = 0;
     let taxes = 0;
@@ -227,6 +250,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
   const grandTotal = pricing.total + platformFee;
 
   const toggleRoomSelection = (roomKey: string, available: number) => {
+    if (available <= 0 || isRoomUnavailable(roomKey)) return;
     setRoomSelections((prev) => {
       const current = prev[roomKey] || 0;
       if (available <= 0) {
@@ -237,6 +261,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
   };
 
   const stepRoomQuantity = (roomKey: string, delta: number, maxAvailable: number) => {
+    if (isRoomUnavailable(roomKey)) return;
     setRoomSelections((prev) => {
       const allowedMax = Math.max(0, maxAvailable);
       const current = prev[roomKey] || 0;
@@ -246,7 +271,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
   };
 
   const handleBookNow = () => {
-    if (!pricing.totalRooms) return;
+    if (!pricing.totalRooms || soldOutForDates) return;
 
     const params = new URLSearchParams({
       checkIn,
@@ -423,6 +448,33 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                   </div>
                 </div>
                 <p className="text-sm text-gray-600">Staying for {nights} night{nights === 1 ? "" : "s"}.</p>
+                <div
+                  className={`rounded-2xl border px-4 py-3 text-sm ${
+                    soldOutForDates
+                      ? "border-rose-200 bg-rose-50 text-rose-700"
+                      : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  }`}
+                >
+                  {availability.loading && "Checking availability…"}
+                  {!availability.loading && !availability.error && (
+                    <span>
+                      {soldOutForDates
+                        ? "These dates are sold out. Pick different dates to continue."
+                        : "Great news — these dates are available."}
+                    </span>
+                  )}
+                  {availability.error && (
+                    <span className="text-rose-600">Unable to check availability. Please refresh.</span>
+                  )}
+                  {!availability.loading && bookedSummaries.length > 0 && (
+                    <p className="mt-2 text-xs text-gray-600">
+                      Upcoming booked dates:{" "}
+                      {bookedSummaries
+                        .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                        .join(", ")}
+                    </p>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => {
@@ -650,7 +702,35 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-gray-200">
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              soldOutForDates
+                ? "border-rose-200 bg-rose-50 text-rose-700"
+                : "border-emerald-200 bg-emerald-50 text-emerald-800"
+            }`}
+          >
+            {availability.loading && "Checking availability…"}
+            {!availability.loading && !availability.error && (
+              <span>
+                {soldOutForDates
+                  ? "Sold out for the selected dates."
+                  : "Available for the selected dates."}
+              </span>
+            )}
+            {availability.error && (
+              <span className="text-rose-600">Unable to load availability. Please try again.</span>
+            )}
+            {!availability.loading && bookedSummaries.length > 0 && (
+              <span className="mt-1 block text-xs text-gray-600">
+                Booked:{" "}
+                {bookedSummaries
+                  .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                  .join(", ")}
+              </span>
+            )}
+          </div>
+
+          <div className={`overflow-x-auto rounded-2xl border border-gray-200 ${soldOutForDates ? "pointer-events-none opacity-60" : ""}`}>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <tr>
@@ -668,6 +748,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                   const isExpanded = expandedRoomKey === roomKey;
                   const available = room.available ?? 0;
                   const taxesNote = room.taxes ? `Taxes ₹${room.taxes.toLocaleString()} extra` : "Taxes included";
+                  const roomUnavailable = available <= 0 || isRoomUnavailable(roomKey);
 
                   return (
                     <Fragment key={roomKey}>
@@ -681,7 +762,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                                   Selected
                                 </span>
                               )}
-                              {available <= 0 && (
+                              {roomUnavailable && (
                                 <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
                                   Sold out
                                 </span>
@@ -741,7 +822,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                               <button
                                 type="button"
                                 onClick={() => stepRoomQuantity(roomKey, -1, available)}
-                                disabled={quantity <= 0}
+                                disabled={quantity <= 0 || roomUnavailable}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 –
@@ -750,23 +831,27 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                               <button
                                 type="button"
                                 onClick={() => stepRoomQuantity(roomKey, 1, available)}
-                                disabled={available <= 0 || quantity >= available}
+                                disabled={available <= 0 || quantity >= available || roomUnavailable}
                                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 +
                               </button>
                             </div>
-                            <button
+                              <button
                               type="button"
                               onClick={() => toggleRoomSelection(roomKey, available)}
-                              disabled={available <= 0}
+                                disabled={roomUnavailable}
                               className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
                                 isSelected
                                   ? "bg-green-600 text-white shadow hover:bg-green-700"
                                   : "border border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-400"
-                              } ${available <= 0 ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400" : ""}`}
+                              } ${
+                                  roomUnavailable
+                                    ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
+                                    : ""
+                                }`}
                             >
-                              {available <= 0 ? "Sold out" : isSelected ? "Selected" : "Select"}
+                              {roomUnavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
                             </button>
                           </div>
                         </td>
@@ -915,13 +1000,22 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
               </div>
             )}
 
+            {soldOutForDates && (
+              <p className="text-xs text-rose-600">
+                These dates are sold out. Choose different dates to continue.
+              </p>
+            )}
             <button
               type="button"
               onClick={handleBookNow}
               className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={!pricing.totalRooms}
+              disabled={!pricing.totalRooms || soldOutForDates}
             >
-              {pricing.totalRooms ? "Book now" : "Select a room to book"}
+              {soldOutForDates
+                ? "Unavailable for these dates"
+                : pricing.totalRooms
+                ? "Book now"
+                : "Select a room to book"}
             </button>
             {!pricing.totalRooms && (
               <p className="text-xs text-amber-600">

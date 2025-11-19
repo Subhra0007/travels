@@ -1,4 +1,4 @@
-//Stays/Explorer.tsx
+// Stays/Explorer.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -279,6 +279,11 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
+  // NEW: Sorting state
+  const [sortBy, setSortBy] = useState<
+    "rating-desc" | "price-asc" | "price-desc" | "location-asc"
+  >("rating-desc");
+
   const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 
@@ -337,47 +342,89 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
     setPriceMax(priceBounds.max);
   }, [priceBounds.min, priceBounds.max]);
 
-  const filteredStays = useMemo(() => {
-    return stays.filter((stay) => {
+  // COMBINED: Sorting + Filtering
+  const sortedAndFilteredStays = useMemo(() => {
+    let result = [...stays];
+
+    // ─── SORTING ───
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case "rating-desc": {
+          const ratingA = a.rating?.average ?? 0;
+          const ratingB = b.rating?.average ?? 0;
+          if (ratingB !== ratingA) return ratingB - ratingA;
+          return (b.rating?.count ?? 0) - (a.rating?.count ?? 0);
+        }
+        case "price-asc": {
+          const priceA = a.rooms?.length ? Math.min(...a.rooms.map(r => r.price)) : Infinity;
+          const priceB = b.rooms?.length ? Math.min(...b.rooms.map(r => r.price)) : Infinity;
+          return priceA - priceB;
+        }
+        case "price-desc": {
+          const priceA = a.rooms?.length ? Math.min(...a.rooms.map(r => r.price)) : -Infinity;
+          const priceB = b.rooms?.length ? Math.min(...b.rooms.map(r => r.price)) : -Infinity;
+          return priceB - priceA;
+        }
+        case "location-asc": {
+          const locA = `${a.location.city}, ${a.location.state}`.toLowerCase();
+          const locB = `${b.location.city}, ${b.location.state}`.toLowerCase();
+          return locA.localeCompare(locB);
+        }
+        default:
+          return 0;
+      }
+    });
+
+    // ─── FILTERING ───
+    return result.filter((stay) => {
       if (activeCategory !== "all" && stay.category !== activeCategory) return false;
+
       if (searchTerm.trim()) {
         const term = searchTerm.toLowerCase();
         const matchesName = stay.name.toLowerCase().includes(term);
         const matchesCity = stay.location.city.toLowerCase().includes(term);
-        const matchesHighlights = stay.heroHighlights?.some((highlight) =>
-          highlight.toLowerCase().includes(term)
-        );
+        const matchesHighlights = stay.heroHighlights?.some((h) => h.toLowerCase().includes(term));
         if (!matchesName && !matchesCity && !matchesHighlights) return false;
       }
+
       if (guests) {
         const hasRoom = stay.rooms?.some((room) => room.capacity >= guests);
         if (!hasRoom) return false;
       }
+
       const minStayPrice = stay.rooms?.length
         ? Math.min(...stay.rooms.map((room) => room.price))
         : null;
-      if (priceMin !== "" && typeof minStayPrice === "number" && minStayPrice < priceMin) {
-        return false;
-      }
-      if (priceMax !== "" && typeof minStayPrice === "number" && minStayPrice > priceMax) {
-        return false;
-      }
+
+      if (priceMin !== "" && typeof minStayPrice === "number" && minStayPrice < priceMin) return false;
+      if (priceMax !== "" && typeof minStayPrice === "number" && minStayPrice > priceMax) return false;
+
       if (ratingFilter !== "" && typeof stay.rating?.average === "number") {
-        if ((stay.rating?.count ?? 0) === 0 || stay.rating!.average < ratingFilter) {
-          return false;
-        }
+        if ((stay.rating?.count ?? 0) === 0 || stay.rating.average < ratingFilter) return false;
       }
+
       if (selectedTags.length) {
         const stayTags = stay.tags || [];
-        const matchesTags = selectedTags.every((tag) => stayTags.includes(tag));
-        if (!matchesTags) return false;
+        if (!selectedTags.every((tag) => stayTags.includes(tag))) return false;
       }
+
       return true;
     });
-  }, [stays, activeCategory, searchTerm, guests, priceMin, priceMax, ratingFilter, selectedTags]);
+  }, [
+    stays,
+    activeCategory,
+    searchTerm,
+    guests,
+    priceMin,
+    priceMax,
+    ratingFilter,
+    selectedTags,
+    sortBy,
+  ]);
 
   return (
     <div className="min-h-screen bg-sky-50 text-black">
+      {/* Hero Section */}
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
         <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10" aria-hidden="true" />
         <div className="relative mx-auto max-w-6xl px-6">
@@ -392,9 +439,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
           <div className="mt-8 rounded-2xl bg-white p-6 shadow-xl">
             <form
               className="grid grid-cols-1 gap-4 text-gray-900 sm:grid-cols-2 lg:grid-cols-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-              }}
+              onSubmit={(e) => e.preventDefault()}
             >
               <div className="col-span-1">
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Destination</label>
@@ -448,32 +493,54 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
         </div>
       </section>
 
+      {/* Main Content */}
       <section className="mx-auto max-w-6xl px-6 py-12">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Curated stays just for you</h2>
             <p className="text-sm text-gray-600">
               Browse by category or use filters to narrow down the perfect match for your trip.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {STAY_CATEGORIES.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setActiveCategory(tab.value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                  activeCategory === tab.value
-                    ? "bg-green-600 text-white shadow"
-                    : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
-                }`}
+
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Category Tabs */}
+            <div className="flex flex-wrap gap-2">
+              {STAY_CATEGORIES.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveCategory(tab.value)}
+                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                    activeCategory === tab.value
+                      ? "bg-green-600 text-white shadow"
+                      : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* NEW: Sort Dropdown */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-600 whitespace-nowrap">Sort by:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-green-500 focus:outline-none cursor-pointer"
               >
-                {tab.label}
-              </button>
-            ))}
+                <option value="rating-desc">Highest Rating</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="location-asc">Location (A-Z)</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-4 rounded-2xl bg-white p-4 shadow-sm">
+        {/* Filters Bar */}
+        <div className="mt-6 flex flex-wrap gap-6 rounded-2xl bg-white p-5 shadow-sm">
+          {/* Price Range */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price range (₹)</label>
             <div className="mt-2 flex items-center gap-3">
@@ -481,47 +548,40 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
                 type="number"
                 min={0}
                 value={priceMin === "" ? "" : priceMin}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPriceMin(val === "" ? "" : Math.max(0, Number(val)));
-                }}
-                placeholder={priceBounds.min ? priceBounds.min.toString() : "Min"}
-                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-green-500 focus:outline-none"
+                onChange={(e) => setPriceMin(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                placeholder={priceBounds.min.toString()}
+                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
               />
               <span className="text-gray-500">to</span>
               <input
                 type="number"
                 min={0}
                 value={priceMax === "" ? "" : priceMax}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPriceMax(val === "" ? "" : Math.max(0, Number(val)));
-                }}
-                placeholder={priceBounds.max ? priceBounds.max.toString() : "Max"}
-                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-green-500 focus:outline-none"
+                onChange={(e) => setPriceMax(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                placeholder={priceBounds.max.toString()}
+                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
               />
             </div>
           </div>
 
+          {/* Minimum Rating */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Minimum rating</label>
             <select
               value={ratingFilter === "" ? "" : ratingFilter}
-              onChange={(e) => {
-                const val = e.target.value;
-                setRatingFilter(val === "" ? "" : Number(val));
-              }}
-              className="mt-2 w-40 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-green-500 focus:outline-none"
+              onChange={(e) => setRatingFilter(e.target.value === "" ? "" : Number(e.target.value))}
+              className="mt-2 w-44 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
             >
               <option value="">All ratings</option>
-              {[9, 8, 7, 6, 5].map((option) => (
-                <option key={option} value={option}>
-                  {option}+ Very good
+              {[9, 8, 7, 6, 5].map((n) => (
+                <option key={n} value={n}>
+                  {n}+ Very good
                 </option>
               ))}
             </select>
           </div>
 
+          {/* Tags */}
           {availableTags.length > 0 && (
             <div className="flex flex-col">
               <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Popular tags</label>
@@ -534,7 +594,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
                       type="button"
                       onClick={() =>
                         setSelectedTags((prev) =>
-                          prev.includes(tag) ? prev.filter((existing) => existing !== tag) : [...prev, tag]
+                          prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
                         )
                       }
                       className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
@@ -551,18 +611,19 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
             </div>
           )}
 
+          {/* Active Tag Pills */}
           {selectedTags.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-2 rounded-full border border-green-500 px-3 py-1 text-xs font-semibold text-green-700"
+                  className="inline-flex items-center gap-2 rounded-full border border-green-500 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
                 >
                   {tag}
                   <button
                     type="button"
-                    onClick={() => setSelectedTags(selectedTags.filter((t) => t !== tag))}
-                    className="text-green-600 hover:text-green-800"
+                    onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
+                    className="ml-1 text-green-600 hover:text-green-800"
                   >
                     ×
                   </button>
@@ -572,23 +633,18 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
           )}
         </div>
 
+        {/* Errors */}
         {wishlistError && (
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
             {wishlistError}
           </div>
         )}
-
-        {error && (
-          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-600">
-            {error}
-          </div>
-        )}
-
+        {/* Results */}
         {loading ? (
           <div className="mt-12 flex justify-center">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
           </div>
-        ) : filteredStays.length === 0 ? (
+        ) : sortedAndFilteredStays.length === 0 ? (
           <div className="mt-12 rounded-2xl bg-white p-10 text-center shadow">
             <h3 className="text-lg font-semibold text-gray-900">No stays match your filters yet</h3>
             <p className="mt-2 text-sm text-gray-600">
@@ -597,7 +653,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {filteredStays.map((stay) => (
+            {sortedAndFilteredStays.map((stay) => (
               <StayCard
                 key={stay._id}
                 stay={stay}

@@ -7,7 +7,12 @@ import Adventure from "@/models/Adventure";
 import VehicleRental from "@/models/VehicleRental";
 import Booking from "@/models/Booking";
 import Settlement from "@/models/Settlement";
+import User from "@/models/User";
 import { auth } from "@/lib/middlewares/auth";
+import { mailSender } from "@/lib/utils/mailSender";
+import bookingUserTemplate from "@/lib/mail/templates/bookingUserTemplate";
+import bookingVendorTemplate from "@/lib/mail/templates/bookingVendorTemplate";
+import bookingAdminTemplate from "@/lib/mail/templates/bookingAdminTemplate";
 
 function calculateNights(checkIn: Date, checkOut: Date) {
   const diff = checkOut.getTime() - checkIn.getTime();
@@ -85,6 +90,86 @@ export async function POST(req: NextRequest) {
     let subtotal = 0;
     let taxes = 0;
 
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+
+    const makeDateRangeText = (start: Date, end: Date) =>
+      `${start.toLocaleDateString()} → ${end.toLocaleDateString()}`;
+
+    const sendBookingEmails = async (booking: any, context: { start: Date; end: Date }) => {
+      try {
+        const vendor = await User.findById(booking.vendorId);
+        const vendorName = vendor?.fullName || "Vendor";
+        const vendorEmail = vendor?.email;
+
+        const checkInOutText = makeDateRangeText(context.start, context.end);
+
+        const emailTasks: Promise<unknown>[] = [];
+
+        // User email
+        emailTasks.push(
+          mailSender(
+            booking.customer.email,
+            "Your SafarHub booking is confirmed",
+            bookingUserTemplate({
+              fullName: booking.customer.fullName,
+              email: booking.customer.email,
+              serviceType: booking.serviceType,
+              referenceCode: booking._id.toString(),
+              checkInOutText,
+              totalAmount: booking.totalAmount,
+              currency: booking.currency,
+            })
+          )
+        );
+
+        // Vendor email
+        if (vendorEmail) {
+          emailTasks.push(
+            mailSender(
+              vendorEmail,
+              "New SafarHub booking received",
+              bookingVendorTemplate({
+                vendorName,
+                vendorEmail,
+                serviceType: booking.serviceType,
+                referenceCode: booking._id.toString(),
+                customerName: booking.customer.fullName,
+                customerEmail: booking.customer.email,
+                customerPhone: booking.customer.phone,
+                checkInOutText,
+                totalAmount: booking.totalAmount,
+                currency: booking.currency,
+              })
+            )
+          );
+        }
+
+        // Admin email
+        if (ADMIN_EMAIL && vendorEmail) {
+          emailTasks.push(
+            mailSender(
+              ADMIN_EMAIL,
+              "SafarHub booking created",
+              bookingAdminTemplate({
+                serviceType: booking.serviceType,
+                referenceCode: booking._id.toString(),
+                customerName: booking.customer.fullName,
+                customerEmail: booking.customer.email,
+                vendorName,
+                vendorEmail,
+                totalAmount: booking.totalAmount,
+                currency: booking.currency,
+              })
+            )
+          );
+        }
+
+        await Promise.allSettled(emailTasks);
+      } catch (emailError) {
+        console.error("Booking email error:", emailError);
+      }
+    };
+
     if (serviceType === "stay") {
       if (!stayId || !mongoose.Types.ObjectId.isValid(stayId)) {
         return NextResponse.json({ success: false, message: "Invalid stay id" }, { status: 400 });
@@ -106,6 +191,24 @@ export async function POST(req: NextRequest) {
       }
 
       const nights = calculateNights(checkInDate, checkOutDate);
+
+      const overlappingBookings = await Booking.find(
+        {
+          status: { $ne: "cancelled" },
+          stayId: stay._id,
+          checkIn: { $lt: checkOutDate },
+          checkOut: { $gt: checkInDate },
+        },
+        "rooms.roomId rooms.roomName"
+      ).lean();
+
+      const occupiedRoomKeys = new Set<string>();
+      overlappingBookings.forEach((booking) => {
+        booking.rooms?.forEach((room: any) => {
+          const key = room.roomId ? room.roomId.toString() : room.roomName;
+          if (key) occupiedRoomKeys.add(key);
+        });
+      });
 
       const normalizedRooms = rooms.map((requested: any) => {
         const stayRoom =
@@ -154,6 +257,25 @@ export async function POST(req: NextRequest) {
         totalAmount: subtotal + taxes + bookingPayload.fees,
       };
 
+      const conflicts = normalizedRooms
+        .filter((room) => {
+          const key = room.roomId ? room.roomId.toString() : room.roomName;
+          return key ? occupiedRoomKeys.has(key) : false;
+        })
+        .map((room) => room.roomName);
+
+      if (conflicts.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `The following rooms are already booked for these dates: ${conflicts.join(
+              ", "
+            )}. Please choose different rooms or dates.`,
+          },
+          { status: 409 }
+        );
+      }
+
       const booking = await Booking.create(bookingPayload);
 
       const settlementDueDate = new Date(checkOutDate);
@@ -170,6 +292,8 @@ export async function POST(req: NextRequest) {
         status: "pending",
         notes: "Auto-generated from booking",
       });
+
+      await sendBookingEmails(booking, { start: checkInDate, end: checkOutDate });
 
       return NextResponse.json({ success: true, booking });
     }
@@ -195,6 +319,24 @@ export async function POST(req: NextRequest) {
       }
 
       const days = calculateDays(start, end);
+
+      const overlappingBookings = await Booking.find(
+        {
+          status: { $ne: "cancelled" },
+          tourId: tour._id,
+          startDate: { $lt: end },
+          endDate: { $gt: start },
+        },
+        "items.itemId items.itemName"
+      ).lean();
+
+      const occupiedOptionKeys = new Set<string>();
+      overlappingBookings.forEach((booking) => {
+        booking.items?.forEach((item: any) => {
+          const key = item.itemId ? item.itemId.toString() : item.itemName;
+          if (key) occupiedOptionKeys.add(key);
+        });
+      });
 
       const normalizedItems = items.map((requested: any) => {
         const option =
@@ -242,7 +384,29 @@ export async function POST(req: NextRequest) {
         totalAmount: subtotal + taxes + bookingPayload.fees,
       };
 
+      const conflictingItems = normalizedItems
+        .filter((item) => {
+          const key = item.itemId ? item.itemId.toString() : item.itemName;
+          return key ? occupiedOptionKeys.has(key) : false;
+        })
+        .map((item) => item.itemName);
+
+      if (conflictingItems.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `The following tour options are already booked for these dates: ${conflictingItems.join(
+              ", "
+            )}.`,
+          },
+          { status: 409 }
+        );
+      }
+
       const booking = await Booking.create(bookingPayload);
+
+      await sendBookingEmails(booking, { start, end });
+
       return NextResponse.json({ success: true, booking });
     }
 
@@ -267,6 +431,24 @@ export async function POST(req: NextRequest) {
       }
 
       const days = calculateDays(start, end);
+
+      const overlappingBookings = await Booking.find(
+        {
+          status: { $ne: "cancelled" },
+          adventureId: adventure._id,
+          startDate: { $lt: end },
+          endDate: { $gt: start },
+        },
+        "items.itemId items.itemName"
+      ).lean();
+
+      const occupiedOptionKeys = new Set<string>();
+      overlappingBookings.forEach((booking) => {
+        booking.items?.forEach((item: any) => {
+          const key = item.itemId ? item.itemId.toString() : item.itemName;
+          if (key) occupiedOptionKeys.add(key);
+        });
+      });
 
       const normalizedItems = items.map((requested: any) => {
         const option =
@@ -315,7 +497,29 @@ export async function POST(req: NextRequest) {
         totalAmount: subtotal + taxes + bookingPayload.fees,
       };
 
+      const conflictingItems = normalizedItems
+        .filter((item) => {
+          const key = item.itemId ? item.itemId.toString() : item.itemName;
+          return key ? occupiedOptionKeys.has(key) : false;
+        })
+        .map((item) => item.itemName);
+
+      if (conflictingItems.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `These adventure options are already booked for the selected dates: ${conflictingItems.join(
+              ", "
+            )}.`,
+          },
+          { status: 409 }
+        );
+      }
+
       const booking = await Booking.create(bookingPayload);
+
+      await sendBookingEmails(booking, { start, end });
+
       return NextResponse.json({ success: true, booking });
     }
 
@@ -340,6 +544,24 @@ export async function POST(req: NextRequest) {
       }
 
       const days = calculateDays(pickup, dropoff);
+
+      const overlappingBookings = await Booking.find(
+        {
+          status: { $ne: "cancelled" },
+          vehicleRentalId: rental._id,
+          pickupDate: { $lt: dropoff },
+          dropoffDate: { $gt: pickup },
+        },
+        "items.itemId items.itemName"
+      ).lean();
+
+      const occupiedVehicleKeys = new Set<string>();
+      overlappingBookings.forEach((booking) => {
+        booking.items?.forEach((item: any) => {
+          const key = item.itemId ? item.itemId.toString() : item.itemName;
+          if (key) occupiedVehicleKeys.add(key);
+        });
+      });
 
       const normalizedItems = items.map((requested: any) => {
         const option =
@@ -390,7 +612,29 @@ export async function POST(req: NextRequest) {
         totalAmount: subtotal + taxes + bookingPayload.fees,
       };
 
+      const conflictingVehicles = normalizedItems
+        .filter((item) => {
+          const key = item.itemId ? item.itemId.toString() : item.itemName;
+          return key ? occupiedVehicleKeys.has(key) : false;
+        })
+        .map((item) => item.itemName);
+
+      if (conflictingVehicles.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `These vehicles are already booked for the selected dates: ${conflictingVehicles.join(
+              ", "
+            )}.`,
+          },
+          { status: 409 }
+        );
+      }
+
       const booking = await Booking.create(bookingPayload);
+
+      await sendBookingEmails(booking, { start: pickup, end: dropoff });
+
       return NextResponse.json({ success: true, booking });
     }
 

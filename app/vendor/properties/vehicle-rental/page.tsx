@@ -217,9 +217,7 @@ export default function VendorVehicleRentalsPage() {
               View
             </button>
             <button
-              onClick={() => {
-                alert(`Edit functionality coming soon for ${rental.name}`);
-              }}
+              onClick={() => router.push(`/vendor/properties/vehicle-rental/add?editId=${rental._id}`)}
               className="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-yellow-600"
             >
               <FaEdit />
@@ -247,7 +245,7 @@ export default function VendorVehicleRentalsPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 

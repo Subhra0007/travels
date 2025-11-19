@@ -4,6 +4,11 @@ import dbConnect from "@/lib/config/database";
 import User from "@/models/User";
 import Profile from "@/models/Profile";
 import OTP from "@/models/OTP";
+import { mailSender } from "@/lib/utils/mailSender";
+import welcomeUserTemplate from "@/lib/mail/templates/welcomeUserTemplate";
+import newUserAdminNotification from "@/lib/mail/templates/newUserAdminNotification";
+import vendorPendingTemplate from "@/lib/mail/templates/vendorPendingTemplate";
+import adminVendorNotification from "@/lib/mail/templates/adminVendorNotification";
 
 export async function POST(req: NextRequest) {
   try {
@@ -59,6 +64,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const normalizedAccountType = accountType ?? "user";
+    const normalizedVendorServices =
+      normalizedAccountType === "vendor" ? vendorServices || [] : [];
+
     const profile = await Profile.create({});
 
     const userDoc = await User.create({
@@ -67,11 +76,9 @@ export async function POST(req: NextRequest) {
       age: Number(age),
       password,
       contactNumber,
-      accountType: accountType ?? "user",
+      accountType: normalizedAccountType,
       additionalDetails: profile._id,
-
-      // IMPORTANT: save vendorServices only when accountType === 'vendor'
-      vendorServices: accountType === "vendor" ? (vendorServices || []) : [],
+      vendorServices: normalizedVendorServices,
       isVendorApproved: false, // default locked until admin approves
     });
 
@@ -86,6 +93,62 @@ export async function POST(req: NextRequest) {
       isVendorApproved: userDoc.isVendorApproved,
       createdAt: userDoc.createdAt,
     };
+
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+    const emailTasks: Promise<unknown>[] = [];
+
+    if (normalizedAccountType === "vendor") {
+      emailTasks.push(
+        mailSender(
+          user.email,
+          "SafarHub vendor application received",
+          vendorPendingTemplate({ fullName: user.fullName })
+        )
+      );
+
+      if (ADMIN_EMAIL) {
+        emailTasks.push(
+          mailSender(
+            ADMIN_EMAIL,
+            "New vendor applied on SafarHub",
+            adminVendorNotification({
+              fullName: user.fullName,
+              email: user.email,
+              contactNumber: user.contactNumber,
+              age: Number(age),
+              vendorServices: normalizedVendorServices,
+            })
+          )
+        );
+      }
+    } else {
+      emailTasks.push(
+        mailSender(
+          user.email,
+          "Welcome to SafarHub",
+          welcomeUserTemplate({ fullName: user.fullName })
+        )
+      );
+
+      if (ADMIN_EMAIL) {
+        emailTasks.push(
+          mailSender(
+            ADMIN_EMAIL,
+            "New user joined SafarHub",
+            newUserAdminNotification({
+              fullName: user.fullName,
+              email: user.email,
+              contactNumber: user.contactNumber,
+              age: Number(age),
+              accountType: user.accountType,
+              vendorServices: normalizedVendorServices,
+            })
+          )
+        );
+      }
+    }
+
+    await Promise.allSettled(emailTasks);
 
     return NextResponse.json({
       success: true,
