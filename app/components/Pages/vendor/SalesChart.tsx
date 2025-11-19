@@ -23,14 +23,14 @@ export default function SalesChart({ refreshKey = 0 }: { refreshKey?: number }) 
   useEffect(() => {
     const fetchSalesData = async () => {
       try {
-        setLoading(true);
+        if (data.length === 0) setLoading(true);
         const res = await fetch(`/api/vendor/stats?t=${Date.now()}`, { 
           credentials: "include",
           cache: "no-store"
         });
-        const data = await res.json();
-        if (data.success && data.salesData) {
-          const salesData = data.salesData[timeRange] || [];
+        const payload = await res.json();
+        if (payload.success && payload.salesData) {
+          const salesData = payload.salesData[timeRange] || [];
           setData(salesData);
         }
       } catch (error) {

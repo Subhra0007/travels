@@ -183,8 +183,8 @@ export default function HeroSection() {
   };
 
   return (
-    <div className="">
-      <section className="relative z-60 w-full flex items-center justify-center overflow-visible py-20">
+    
+      <section className="relative z-60 w-full flex items-center justify-center  py-20">
 
         {/* ✅ AUTO-SWIPING BACKGROUND */}
         <div className="absolute inset-0">
@@ -248,7 +248,7 @@ export default function HeroSection() {
           </div>
         </div>
       </section>
-    </div>
+  
   );
 }
 
@@ -309,9 +309,9 @@ const StaysForm: React.FC<StaysFormProps> = ({
   const locationTextClass = location ? "text-gray-900" : "text-gray-400";
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 ">
       {/* LOCATION */}
-      <div className="relative">
+      <div className="relative ">
         <p className="text-xs text-gray-500 uppercase mb-1">Location</p>
         <Menu as="div" className="relative">
           <Menu.Button
@@ -325,7 +325,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
           {showLocationMenu && (
             <Menu.Items
               static
-              className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+              className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               {/* Search input */}
               <div className="p-2 border-b sticky top-0 bg-white">
@@ -434,7 +434,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
           {showGuests && (
             <Menu.Items
               static
-              className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-[50vh] overflow-y-auto overscroll-none"
+              className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-[50vh] overflow-y-auto"
             >
             {/* Rooms */}
             <div className="flex items-center justify-between mb-3">
@@ -550,7 +550,7 @@ const ToursForm: React.FC<{
           {show && (
             <Menu.Items 
               static 
-              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
@@ -673,7 +673,7 @@ const AdventuresForm: React.FC<{
           </Menu.Button>
           {showActivity && (
             <Menu.Items 
-              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               {["Trekking", "Rafting", "Camping", "Hiking"].map((a) => (
                 <Menu.Item key={a}>
@@ -710,7 +710,7 @@ const AdventuresForm: React.FC<{
           {show && (
             <Menu.Items 
               static 
-              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
@@ -825,7 +825,7 @@ const VehicleRentalForm: React.FC<{
           {showPickup && (
             <Menu.Items 
               static 
-              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input
@@ -894,7 +894,7 @@ const VehicleRentalForm: React.FC<{
           {showDropoff && (
             <Menu.Items 
               static 
-              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto overscroll-none"
+              className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">
                 <input

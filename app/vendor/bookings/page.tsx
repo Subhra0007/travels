@@ -46,9 +46,10 @@ const VendorBookingsPage = () => {
         throw new Error(data?.message || "Unable to load bookings");
       }
       setBookings(data.bookings ?? []);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Vendor bookings fetch failed", err);
-      setError(err?.message || "Failed to load bookings. Please try again.");
+      const message = err instanceof Error ? err.message : "Failed to load bookings. Please try again.";
+      setError(message);
     } finally {
       setActionBookingId(null);
     }
@@ -78,8 +79,9 @@ const VendorBookingsPage = () => {
         throw new Error(data?.message || "Failed to update booking status");
       }
       await loadBookings();
-    } catch (err: any) {
-      alert(err?.message || "Unable to update status. Please try again.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unable to update status. Please try again.";
+      alert(message);
       setActionBookingId(null);
     }
   };

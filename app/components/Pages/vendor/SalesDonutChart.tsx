@@ -16,20 +16,17 @@ export default function SalesDonutChart({ refreshKey = 0 }: { refreshKey?: numbe
   useEffect(() => {
     const fetchEarnings = async () => {
       try {
-        setLoading(true);
+        if (data.length === 0) setLoading(true);
         const res = await fetch(`/api/vendor/stats?t=${Date.now()}`, { 
           credentials: "include",
           cache: "no-store"
         });
-        const data = await res.json();
-        if (data.success && data.stats) {
-          const { todayEarnings, totalEarnings } = data.stats;
-          const otherEarnings = Math.max(0, totalEarnings - todayEarnings);
-          
-          // Show today's earnings and other earnings for a meaningful donut chart
+        const payload = await res.json();
+        if (payload.success && payload.stats) {
+          const { todayEarnings, yesterdayEarnings } = payload.stats;
           const chartData: EarningsData[] = [
             { name: "Today's Earnings", value: todayEarnings, color: "#4f46e5" },
-            { name: "Other Earnings", value: otherEarnings, color: "#3b82f6" },
+            { name: "Yesterday's Earnings", value: yesterdayEarnings, color: "#3b82f6" },
           ];
           setData(chartData);
         }

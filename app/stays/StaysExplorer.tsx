@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -21,9 +22,11 @@ import {
   FaUtensils,
   FaCheckCircle,
   FaBed,
+  FaRupeeSign,
 } from "react-icons/fa";
 import { STAY_CATEGORIES, type StayCategoryValue } from "./categories";
 import { useWishlist } from "../hooks/useWishlist";
+import { useAvailability } from "../hooks/useAvailability";
 
 export type Room = {
   _id?: string;
@@ -71,6 +74,8 @@ type StayCardProps = {
   wishlistDisabled: boolean;
   onToggleWishlist: (stayId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
+  checkIn?: string;
+  checkOut?: string;
 };
 
 const facilityIconLookup = [
@@ -99,6 +104,8 @@ export const StayCard = ({
   wishlistDisabled,
   onToggleWishlist,
   onSelectTag,
+  checkIn,
+  checkOut,
 }: StayCardProps) => {
   const roomCount = stay.rooms?.length ?? 0;
   const startingPrice = roomCount
@@ -108,6 +115,10 @@ export const StayCard = ({
   const primaryFeatures = stay.rooms?.[0]?.features?.slice(0, 4) ?? [];
   const ratingValue = stay.rating?.count ? stay.rating.average : null;
   const tags = stay.tags ?? [];
+  const hasDates = Boolean(checkIn && checkOut);
+  const availability = useAvailability("stay", stay._id, checkIn, checkOut);
+  const availableRoomKeys = availability.availableOptionKeys ?? [];
+  const soldOutForDates = hasDates && !availability.loading && roomCount > 0 && availableRoomKeys.length === 0;
 
   return (
     <Link
@@ -150,6 +161,15 @@ export const StayCard = ({
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
           {stay.category}
         </span>
+        {hasDates && (
+          <span
+            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
+              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
+            }`}
+          >
+            {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-6 text-gray-900">
@@ -260,6 +280,8 @@ export const StayCard = ({
 const guestsFallback = (stay: Stay) => stay.rooms?.reduce((max, room) => Math.max(max, room.capacity), 0) ?? 2;
 
 export default function StaysExplorer({ initialCategory = "all" }: StaysExplorerProps) {
+  const params = useSearchParams();
+  const router = useRouter();
   const normalizedInitialCategory: CategoryValue = STAY_CATEGORIES.some(
     (tab) => tab.value === initialCategory
   )
@@ -300,25 +322,44 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/vendor/stays?all=true", { cache: "no-store" });
+        const url = new URL("/api/stays", window.location.origin);
+        const categoryParam = normalizedInitialCategory !== "all" ? normalizedInitialCategory : undefined;
+        const cityParam = params.get("city") || undefined;
+        const guestsParam = params.get("guests") || undefined;
+        if (categoryParam) url.searchParams.set("category", categoryParam);
+        if (cityParam) url.searchParams.set("city", cityParam);
+        if (guestsParam) url.searchParams.set("guests", guestsParam);
+        const res = await fetch(url.toString(), { cache: "no-store" });
         const data = await res.json();
         if (!res.ok || !data.success) {
           throw new Error(data?.message || "Failed to load stays");
         }
         setStays(data.stays || []);
-      } catch (err: any) {
-        setError(err?.message || "Unable to load stays right now");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unable to load stays right now";
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
 
     loadStays();
-  }, []);
+  }, [normalizedInitialCategory, params]);
 
   useEffect(() => {
     setActiveCategory(normalizedInitialCategory);
   }, [normalizedInitialCategory]);
+
+  useEffect(() => {
+    const city = params.get("city") || "";
+    const g = params.get("guests");
+    const ci = params.get("checkIn") || "";
+    const co = params.get("checkOut") || "";
+    setSearchTerm(city);
+    setGuests(g ? Number(g) || 2 : 2);
+    setCheckIn(ci);
+    setCheckOut(co);
+  }, [params]);
 
   const priceBounds = useMemo(() => {
     if (!stays.length) return { min: 0, max: 0 };
@@ -344,7 +385,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
 
   // COMBINED: Sorting + Filtering
   const sortedAndFilteredStays = useMemo(() => {
-    let result = [...stays];
+    const result = [...stays];
 
     // ─── SORTING ───
     result.sort((a, b) => {
@@ -426,7 +467,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10" aria-hidden="true" />
+       
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect stay</h1>
@@ -489,6 +530,25 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
                 </div>
               </div>
             </form>
+            <div className="mt-4">
+              <button
+                className="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                type="button"
+                onClick={() => {
+                  const url = new URL("/stays", window.location.origin);
+                  if (searchTerm) url.searchParams.set("city", searchTerm);
+                  if (guests) url.searchParams.set("guests", String(guests));
+                  if (checkIn) url.searchParams.set("checkIn", checkIn);
+                  if (checkOut) url.searchParams.set("checkOut", checkOut);
+                  if (activeCategory && activeCategory !== "all") {
+                    url.searchParams.set("category", activeCategory);
+                  }
+                  router.push(`${url.pathname}?${url.searchParams.toString()}`);
+                }}
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -521,28 +581,39 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
               ))}
             </div>
 
-            {/* NEW: Sort Dropdown */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-600 whitespace-nowrap">Sort by:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-green-500 focus:outline-none cursor-pointer"
-              >
-                <option value="rating-desc">Highest Rating</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="location-asc">Location (A-Z)</option>
-              </select>
-            </div>
           </div>
         </div>
 
         {/* Filters Bar */}
-        <div className="mt-6 flex flex-wrap gap-6 rounded-2xl bg-white p-5 shadow-sm">
-          {/* Price Range */}
+        <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-green-100">
+          {/* Price */}
           <div className="flex flex-col">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price range (₹)</label>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {[
+                { key: "under-1000", label: "Under 1000", min: "", max: 1000 },
+                { key: "1000-plus", label: "1000+", min: 1000, max: "" },
+                { key: "1500-plus", label: "1500+", min: 1500, max: "" },
+                { key: "2000-plus", label: "2000+", min: 2000, max: "" },
+              ].map((p) => {
+                const active = (priceMin === p.min || (p.min === "" && priceMin === "")) && (priceMax === p.max || (p.max === "" && priceMax === ""));
+                return (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() => {
+                      setPriceMin(p.min === "" ? "" : Number(p.min));
+                      setPriceMax(p.max === "" ? "" : Number(p.max));
+                }}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                }`}
+              >
+                    <FaRupeeSign className="text-green-600" /> {p.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="mt-2 flex items-center gap-3">
               <input
                 type="number"
@@ -564,21 +635,39 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
             </div>
           </div>
 
-          {/* Minimum Rating */}
+          {/* Rating */}
           <div className="flex flex-col">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Minimum rating</label>
-            <select
-              value={ratingFilter === "" ? "" : ratingFilter}
-              onChange={(e) => setRatingFilter(e.target.value === "" ? "" : Number(e.target.value))}
-              className="mt-2 w-44 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              <option value="">All ratings</option>
-              {[9, 8, 7, 6, 5].map((n) => (
-                <option key={n} value={n}>
-                  {n}+ Very good
-                </option>
-              ))}
-            </select>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Rating</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {[
+                { key: "4-plus", label: "4.0+", value: 4 },
+                { key: "4-5-plus", label: "4.5+", value: 4.5 },
+                { key: "5-star", label: "5.0", value: 5 },
+              ].map((r) => {
+                const active = ratingFilter !== "" && ratingFilter === r.value;
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setRatingFilter(r.value)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                    }`}
+                  >
+                    <FaStar className="text-yellow-500" /> {r.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setRatingFilter("")}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                }`}
+              >
+                All
+              </button>
+            </div>
           </div>
 
           {/* Tags */}
@@ -663,6 +752,8 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }
+                checkIn={checkIn}
+                checkOut={checkOut}
               />
             ))}
           </div>

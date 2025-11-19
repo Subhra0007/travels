@@ -1,277 +1,142 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/config/database";
 import Booking from "@/models/Booking";
-import { auth } from "@/lib/middlewares/auth";
-import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 
-export const GET = auth(async (req: NextRequest) => {
+const getTokenVendorId = (req: NextRequest): string | null => {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (token && process.env.JWT_SECRET) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET) as { accountType?: string; id?: string; _id?: string };
+      if (decoded?.accountType === "vendor") {
+        return decoded?.id || decoded?._id || null;
+      }
+    }
+  } catch {}
+  return null;
+};
+
+const startOfDay = (d: Date) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+};
+const endOfDay = (d: Date) => {
+  const x = new Date(d);
+  x.setHours(23, 59, 59, 999);
+  return x;
+};
+const addDays = (d: Date, delta: number) => {
+  const x = new Date(d);
+  x.setDate(x.getDate() + delta);
+  return x;
+};
+const addMonths = (d: Date, delta: number) => {
+  const x = new Date(d);
+  x.setMonth(x.getMonth() + delta);
+  return x;
+};
+const addYears = (d: Date, delta: number) => {
+  const x = new Date(d);
+  x.setFullYear(x.getFullYear() + delta);
+  return x;
+};
+
+export async function GET(req: NextRequest) {
   try {
     await dbConnect();
-    const user = (req as any).user;
 
-    if (user.accountType !== "vendor") {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
+    const vendorId = getTokenVendorId(req);
+    if (!vendorId) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
 
-    // Ensure vendorId is a valid ObjectId for queries
-    let vendorId: any = user.id;
-    if (mongoose.Types.ObjectId.isValid(user.id)) {
-      vendorId = new mongoose.Types.ObjectId(user.id);
-    }
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
+    const yesterdayStart = startOfDay(addDays(now, -1));
+    const yesterdayEnd = endOfDay(addDays(now, -1));
 
-    // Get today's date range
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    // Today's bookings count
-    const todayBookingsCount = await Booking.countDocuments({
-      vendorId,
-      createdAt: { $gte: today, $lt: tomorrow },
-    });
-
-    // Total bookings count
-    const totalBookingsCount = await Booking.countDocuments({ vendorId });
-
-    // Today's earnings (from completed bookings that were completed today)
-    // Prioritize completedAt, fall back to updatedAt for backward compatibility
-    let todayEarnings = 0;
-    try {
-      const todayEarningsAgg = await Booking.aggregate([
-        {
-          $match: {
-            vendorId: vendorId,
-            status: "completed",
-          },
-        },
-        {
-          $addFields: {
-            // Use completedAt if it exists and is not null, otherwise use updatedAt
-            completionDate: {
-              $cond: {
-                if: { $and: [{ $ne: ["$completedAt", null] }, { $ne: ["$completedAt", undefined] }] },
-                then: "$completedAt",
-                else: "$updatedAt"
-              }
-            }
-          }
-        },
-        {
-          $match: {
-            completionDate: { $gte: today, $lt: tomorrow }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: { $ifNull: ["$totalAmount", 0] } },
-          },
-        },
-      ]);
-      
-      if (Array.isArray(todayEarningsAgg) && todayEarningsAgg.length > 0 && todayEarningsAgg[0].total !== null && todayEarningsAgg[0].total !== undefined) {
-        todayEarnings = todayEarningsAgg[0].total;
-      } else {
-        // Fallback: use find and calculate manually
-        const todayCompletedBookings = await Booking.find({
-          vendorId: vendorId,
-          status: "completed",
-          $or: [
-            { completedAt: { $gte: today, $lt: tomorrow } },
-            { 
-              completedAt: { $exists: false },
-              updatedAt: { $gte: today, $lt: tomorrow }
-            }
-          ]
-        }).select("totalAmount").lean();
-        
-        todayEarnings = todayCompletedBookings.reduce((sum, booking: any) => {
-          return sum + (booking.totalAmount || 0);
-        }, 0);
-      }
-    } catch (error) {
-      console.error("Error calculating today's earnings:", error);
-      todayEarnings = 0;
-    }
-
-    // Total earnings (from all completed bookings)
-    // Match all completed bookings for this vendor
-    let totalEarnings = 0;
-    try {
-      const totalEarningsAgg = await Booking.aggregate([
-        {
-          $match: {
-            vendorId: vendorId,
-            status: "completed",
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: { $ifNull: ["$totalAmount", 0] } },
-          },
-        },
-      ]);
-      
-      if (Array.isArray(totalEarningsAgg) && totalEarningsAgg.length > 0 && totalEarningsAgg[0].total !== null && totalEarningsAgg[0].total !== undefined) {
-        totalEarnings = totalEarningsAgg[0].total;
-      } else {
-        // Fallback: use find and calculate manually
-        const completedBookings = await Booking.find({
-          vendorId: vendorId,
-          status: "completed",
-        }).select("totalAmount").lean();
-        
-        totalEarnings = completedBookings.reduce((sum, booking: any) => {
-          return sum + (booking.totalAmount || 0);
-        }, 0);
-      }
-    } catch (error) {
-      console.error("Error calculating total earnings:", error);
-      // Fallback: use find and calculate manually
-      try {
-        const completedBookings = await Booking.find({
-          vendorId: vendorId,
-          status: "completed",
-        }).select("totalAmount").lean();
-        
-        totalEarnings = completedBookings.reduce((sum, booking: any) => {
-          return sum + (booking.totalAmount || 0);
-        }, 0);
-      } catch (fallbackError) {
-        console.error("Fallback total earnings calculation failed:", fallbackError);
-        totalEarnings = 0;
-      }
-    }
-
-    // Recent 5 bookings
-    const recentBookings = await Booking.find({ vendorId })
-      .populate("stayId", "name")
-      .populate("tourId", "name")
-      .populate("adventureId", "name")
-      .populate("vehicleRentalId", "name")
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select("serviceType stayId tourId adventureId vehicleRentalId status totalAmount createdAt")
-      .lean();
-
-    // Format recent bookings
-    const formattedBookings = recentBookings.map((booking: any) => {
-      let serviceName = "Unknown";
-      if (booking.stayId?.name) serviceName = booking.stayId.name;
-      else if (booking.tourId?.name) serviceName = booking.tourId.name;
-      else if (booking.adventureId?.name) serviceName = booking.adventureId.name;
-      else if (booking.vehicleRentalId?.name) serviceName = booking.vehicleRentalId.name;
-
-      return {
-        _id: booking._id,
-        serviceName,
-        status: booking.status,
-        price: booking.totalAmount,
-      };
-    });
-
-    // Sales data for charts
-    // Week-wise data (last 7 days)
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - 7);
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekBookings = await Booking.aggregate([
-      {
-        $match: {
-          vendorId: vendorId,
-          createdAt: { $gte: weekStart },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { _id: 1 },
-      },
+    const [todayBookings, totalBookings, todayEarningsAgg, yesterdayEarningsAgg, totalEarningsAgg] = await Promise.all([
+      Booking.countDocuments({ vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: todayStart, $lte: todayEnd } }),
+      Booking.countDocuments({ vendorId, status: { $ne: "cancelled" } }),
+      Booking.aggregate([
+        { $match: { vendorId, status: "confirmed", paymentStatus: "paid", updatedAt: { $gte: todayStart, $lte: todayEnd } } },
+        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+      ]),
+      Booking.aggregate([
+        { $match: { vendorId, status: "confirmed", paymentStatus: "paid", updatedAt: { $gte: yesterdayStart, $lte: yesterdayEnd } } },
+        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+      ]),
+      Booking.aggregate([
+        { $match: { vendorId, status: { $in: ["confirmed", "completed"] }, paymentStatus: "paid" } },
+        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+      ]),
     ]);
 
-    // Month-wise data (last 12 months)
-    const monthStart = new Date();
-    monthStart.setMonth(monthStart.getMonth() - 12);
-    monthStart.setHours(0, 0, 0, 0);
+    const todayEarnings = Array.isArray(todayEarningsAgg) && todayEarningsAgg.length ? todayEarningsAgg[0].total : 0;
+    const yesterdayEarnings = Array.isArray(yesterdayEarningsAgg) && yesterdayEarningsAgg.length ? yesterdayEarningsAgg[0].total : 0;
+    const totalEarnings = Array.isArray(totalEarningsAgg) && totalEarningsAgg.length ? totalEarningsAgg[0].total : 0;
 
-    const monthBookings = await Booking.aggregate([
-      {
-        $match: {
-          vendorId: vendorId,
-          createdAt: { $gte: monthStart },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: "%Y-%m", date: "$createdAt" },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { _id: 1 },
-      },
+    // Sales data: weekly, monthly, yearly booking counts
+    const weekStart = startOfDay(addDays(now, -6));
+    const monthStart = startOfDay(addMonths(now, -11));
+    const yearStart = startOfDay(addYears(now, -2));
+
+    const weekAgg = await Booking.aggregate([
+      { $match: { vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: weekStart, $lte: todayEnd } } },
+      { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]);
+    const monthAgg = await Booking.aggregate([
+      { $match: { vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: monthStart, $lte: todayEnd } } },
+      { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]);
+    const yearAgg = await Booking.aggregate([
+      { $match: { vendorId, status: { $ne: "cancelled" }, createdAt: { $gte: yearStart, $lte: todayEnd } } },
+      { $group: { _id: { $dateToString: { format: "%Y", date: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
     ]);
 
-    // Year-wise data (last 5 years)
-    const yearStart = new Date();
-    yearStart.setFullYear(yearStart.getFullYear() - 5);
-    yearStart.setHours(0, 0, 0, 0);
+    type CountAgg = { _id: string; count: number };
+    const salesData = {
+      week: (weekAgg as CountAgg[]).map((d) => ({ name: d._id, value: d.count })),
+      month: (monthAgg as CountAgg[]).map((d) => ({ name: d._id, value: d.count })),
+      year: (yearAgg as CountAgg[]).map((d) => ({ name: d._id, value: d.count })),
+    };
 
-    const yearBookings = await Booking.aggregate([
-      {
-        $match: {
-          vendorId: vendorId,
-          createdAt: { $gte: yearStart },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: "%Y", date: "$createdAt" },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { _id: 1 },
-      },
+    // Recent bookings with service names
+    const recentAgg = await Booking.aggregate([
+      { $match: { vendorId } },
+      { $sort: { createdAt: -1 } },
+      { $limit: 5 },
+      { $lookup: { from: "stays", localField: "stayId", foreignField: "_id", as: "stay" } },
+      { $lookup: { from: "tours", localField: "tourId", foreignField: "_id", as: "tour" } },
+      { $lookup: { from: "adventures", localField: "adventureId", foreignField: "_id", as: "adventure" } },
+      { $lookup: { from: "vehiclerentals", localField: "vehicleRentalId", foreignField: "_id", as: "vehicle" } },
+      { $addFields: { serviceName: { $ifNull: [ { $arrayElemAt: ["$stay.name", 0] }, { $ifNull: [ { $arrayElemAt: ["$tour.name", 0] }, { $ifNull: [ { $arrayElemAt: ["$adventure.name", 0] }, { $arrayElemAt: ["$vehicle.name", 0] } ] } ] } ] } } },
+      { $project: { _id: 1, status: 1, price: "$totalAmount", serviceName: 1 } },
     ]);
-
-    // Debug logging
-    console.log(`Vendor ${user.id} stats: Total Earnings: ${totalEarnings}, Today Earnings: ${todayEarnings}, Total Bookings: ${totalBookingsCount}, Today Bookings: ${todayBookingsCount}`);
 
     return NextResponse.json({
       success: true,
       stats: {
-        todayBookings: todayBookingsCount,
-        totalBookings: totalBookingsCount,
+        todayBookings,
+        totalBookings,
         todayEarnings,
+        yesterdayEarnings,
         totalEarnings,
       },
-      recentBookings: formattedBookings,
-      salesData: {
-        week: weekBookings.map((item) => ({ name: item._id, value: item.count })),
-        month: monthBookings.map((item) => ({ name: item._id, value: item.count })),
-        year: yearBookings.map((item) => ({ name: item._id, value: item.count })),
-      },
+      salesData,
+      recentBookings: recentAgg,
     });
-  } catch (error: any) {
-    console.error("Vendor stats error", error);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to compute vendor stats";
     return NextResponse.json(
-      { success: false, message: error.message || "Failed to fetch vendor stats" },
+      { success: false, message },
       { status: 500 }
     );
   }
-});
+}
 

@@ -135,8 +135,8 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 mt-10">
-      <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-lime-400">
+    <div className="min-h-screen flex items-center justify-center p-4 ">
+      <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-lime-400 mt-20">
         <h2 className="text-3xl font-bold text-center mb-6 text-black">Create Account</h2>
         {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">

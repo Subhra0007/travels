@@ -45,9 +45,10 @@ const VendorCancellationsPage = () => {
         throw new Error(data?.message || "Unable to load cancellations");
       }
       setBookings(data.bookings ?? []);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Vendor cancellations fetch failed", err);
-      setError(err?.message || "Failed to load cancellations.");
+      const message = err instanceof Error ? err.message : "Failed to load cancellations.";
+      setError(message);
     }
   };
 

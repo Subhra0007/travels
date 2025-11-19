@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -21,6 +22,8 @@ import {
   FaHiking,
 } from "react-icons/fa";
 import { useWishlist } from "../hooks/useWishlist";
+import { useAvailability } from "../hooks/useAvailability";
+import { FaRupeeSign } from "react-icons/fa";
 import { TOUR_CATEGORIES, type TourCategoryValue } from "./categories";
 
 export type TourOption = {
@@ -69,6 +72,8 @@ type TourCardProps = {
   wishlistDisabled: boolean;
   onToggleWishlist: (tourId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
+  startDate?: string;
+  endDate?: string;
 };
 
 const tourFacilityIcons = [
@@ -95,6 +100,8 @@ export const TourCard = ({
   wishlistDisabled,
   onToggleWishlist,
   onSelectTag,
+  startDate,
+  endDate,
 }: TourCardProps) => {
   const optionCount = tour.options?.length ?? 0;
   const startingPrice = optionCount
@@ -104,6 +111,10 @@ export const TourCard = ({
   const primaryFeatures = tour.options?.[0]?.features?.slice(0, 4) ?? [];
   const ratingValue = tour.rating?.count ? tour.rating.average : null;
   const tags = tour.tags ?? [];
+  const hasDates = Boolean(startDate && endDate);
+  const availability = useAvailability("tour", tour._id, startDate, endDate);
+  const availableOptionKeys = availability.availableOptionKeys ?? [];
+  const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
 
   return (
     <Link
@@ -146,6 +157,15 @@ export const TourCard = ({
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-emerald-700 shadow">
           {tour.category}
         </span>
+        {hasDates && (
+          <span
+            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
+              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"
+            }`}
+          >
+            {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-4 p-6 text-gray-900">
@@ -266,6 +286,8 @@ export const TourCard = ({
 };
 
 export default function ToursExplorer({ initialCategory = "all" }: ToursExplorerProps) {
+  const params = useSearchParams();
+  const router = useRouter();
   const normalizedInitialCategory: CategoryValue = TOUR_CATEGORIES.some(
     (tab) => tab.value === initialCategory
   )
@@ -301,25 +323,44 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/vendor/tours?all=true", { cache: "no-store" });
+        const url = new URL("/api/tours", window.location.origin);
+        const categoryParam = normalizedInitialCategory !== "all" ? normalizedInitialCategory : undefined;
+        const cityParam = params.get("city") || undefined;
+        const guestsParam = params.get("guests") || undefined;
+        if (categoryParam) url.searchParams.set("category", categoryParam);
+        if (cityParam) url.searchParams.set("city", cityParam);
+        if (guestsParam) url.searchParams.set("guests", guestsParam);
+        const res = await fetch(url.toString(), { cache: "no-store" });
         const data = await res.json();
         if (!res.ok || !data.success) {
           throw new Error(data?.message || "Failed to load tours");
         }
         setTours(data.tours || []);
-      } catch (err: any) {
-        setError(err?.message || "Unable to load tours right now");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unable to load tours right now";
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
 
     loadTours();
-  }, []);
+  }, [normalizedInitialCategory, params]);
 
   useEffect(() => {
     setActiveCategory(normalizedInitialCategory);
   }, [normalizedInitialCategory]);
+
+  useEffect(() => {
+    const city = params.get("city") || "";
+    const g = params.get("guests");
+    const sd = params.get("startDate") || "";
+    const ed = params.get("endDate") || "";
+    setSearchTerm(city);
+    setGuests(g ? Math.max(1, Number(g)) || 2 : 2);
+    setCheckIn(sd);
+    setCheckOut(ed);
+  }, [params]);
 
   const priceBounds = useMemo(() => {
     if (!tours.length) return { min: 0, max: 0 };
@@ -343,8 +384,38 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
     setPriceMax(priceBounds.max);
   }, [priceBounds.min, priceBounds.max]);
 
+  const [sortBy, setSortBy] = useState<"rating-desc" | "price-asc" | "price-desc" | "location-asc">("rating-desc");
+
   const filteredTours = useMemo(() => {
-    return tours.filter((tour) => {
+    const sorted = [...tours].sort((a, b) => {
+      switch (sortBy) {
+        case "rating-desc": {
+          const aR = a.rating?.average ?? 0;
+          const bR = b.rating?.average ?? 0;
+          if (bR !== aR) return bR - aR;
+          return (b.rating?.count ?? 0) - (a.rating?.count ?? 0);
+        }
+        case "price-asc": {
+          const aP = a.options?.length ? Math.min(...a.options.map((o) => o.price)) : Infinity;
+          const bP = b.options?.length ? Math.min(...b.options.map((o) => o.price)) : Infinity;
+          return aP - bP;
+        }
+        case "price-desc": {
+          const aP = a.options?.length ? Math.min(...a.options.map((o) => o.price)) : -Infinity;
+          const bP = b.options?.length ? Math.min(...b.options.map((o) => o.price)) : -Infinity;
+          return bP - aP;
+        }
+        case "location-asc": {
+          const aL = `${a.location.city}, ${a.location.state}`.toLowerCase();
+          const bL = `${b.location.city}, ${b.location.state}`.toLowerCase();
+          return aL.localeCompare(bL);
+        }
+        default:
+          return 0;
+      }
+    });
+
+    return sorted.filter((tour) => {
       if (activeCategory !== "all" && tour.category !== activeCategory) return false;
       if (searchTerm.trim()) {
         const term = searchTerm.toLowerCase();
@@ -380,12 +451,12 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
       }
       return true;
     });
-  }, [tours, activeCategory, searchTerm, guests, priceMin, priceMax, ratingFilter, selectedTags]);
+  }, [tours, sortBy, activeCategory, searchTerm, guests, priceMin, priceMax, ratingFilter, selectedTags]);
 
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10" aria-hidden="true" />
+       
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect tour</h1>
@@ -449,6 +520,25 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                 </div>
               </div>
             </form>
+            <div className="mt-4">
+              <button
+                className="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                type="button"
+                onClick={() => {
+                  const url = new URL("/tours", window.location.origin);
+                  if (searchTerm) url.searchParams.set("city", searchTerm);
+                  if (guests) url.searchParams.set("guests", String(guests));
+                  if (checkIn) url.searchParams.set("startDate", checkIn);
+                  if (checkOut) url.searchParams.set("endDate", checkOut);
+                  if (activeCategory && activeCategory !== "all") {
+                    url.searchParams.set("category", activeCategory);
+                  }
+                  router.push(`${url.pathname}?${url.searchParams.toString()}`);
+                }}
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -461,26 +551,64 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               Browse by category or use filters to narrow down the perfect match for your trip.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {TOUR_CATEGORIES.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setActiveCategory(tab.value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                  activeCategory === tab.value
-                    ? "bg-green-600 text-white shadow"
-                    : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+        <div className="flex flex-wrap gap-2">
+          {TOUR_CATEGORIES.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setActiveCategory(tab.value)}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                activeCategory === tab.value
+                  ? "bg-green-600 text-white shadow"
+                  : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-600">Sort:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "rating-desc" | "price-asc" | "price-desc" | "location-asc")}
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-green-500 focus:outline-none"
+            >
+              <option value="rating-desc">Highest Rating</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="location-asc">Location (A-Z)</option>
+            </select>
           </div>
         </div>
+        </div>
 
-        <div className="mt-6 flex flex-wrap gap-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-green-100">
           <div className="flex flex-col">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price range (₹)</label>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {([
+                { key: "under-1000", label: "Under 1000", min: "", max: 1000 },
+                { key: "1000-plus", label: "1000+", min: 1000, max: "" },
+                { key: "1500-plus", label: "1500+", min: 1500, max: "" },
+                { key: "2000-plus", label: "2000+", min: 2000, max: "" },
+              ] as { key: string; label: string; min: number | ""; max: number | "" }[]).map((p) => {
+                const active = (priceMin === p.min || (p.min === "" && priceMin === "")) && (priceMax === p.max || (p.max === "" && priceMax === ""));
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => {
+                      setPriceMin(p.min);
+                      setPriceMax(p.max);
+                    }}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                    }`}
+                  >
+                    <FaRupeeSign className="text-green-600" /> {p.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="mt-2 flex items-center gap-3">
               <input
                 type="number"
@@ -509,22 +637,37 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
           </div>
 
           <div className="flex flex-col">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Minimum rating</label>
-            <select
-              value={ratingFilter === "" ? "" : ratingFilter}
-              onChange={(e) => {
-                const val = e.target.value;
-                setRatingFilter(val === "" ? "" : Number(val));
-              }}
-              className="mt-2 w-40 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:border-green-500 focus:outline-none"
-            >
-              <option value="">All ratings</option>
-              {[9, 8, 7, 6, 5].map((option) => (
-                <option key={option} value={option}>
-                  {option}+ Very good
-                </option>
-              ))}
-            </select>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Rating</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {[
+                { key: "4-plus", label: "4.0+", value: 4 },
+                { key: "4-5-plus", label: "4.5+", value: 4.5 },
+                { key: "5-star", label: "5.0", value: 5 },
+              ].map((r) => {
+                const active = ratingFilter !== "" && ratingFilter === r.value;
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setRatingFilter(r.value)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                    }`}
+                  >
+                    <FaStar className="text-yellow-500" /> {r.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setRatingFilter("")}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                }`}
+              >
+                All
+              </button>
+            </div>
           </div>
 
           {availableTags.length > 0 && (
@@ -612,6 +755,8 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }
+                startDate={checkIn}
+                endDate={checkOut}
               />
             ))}
           </div>

@@ -11,7 +11,7 @@ import RecentGallerySection from "./components/Pages/home/RecentGallery";
 import TravelHeroSection from "./components/Pages/home/TravelHero";
 export default function Home() {
   return (
-    <div className="w-full bg-sky-50 overflow-x-hidden overflow-y-auto">
+    <div className="w-full bg-sky-50 overflow-x-hidden ">
      <HeroSection/>
      <TourCategories/>
      <PopularTour/>

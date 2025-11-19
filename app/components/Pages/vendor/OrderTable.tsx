@@ -16,6 +16,7 @@ export default function OrderTable({ refreshKey = 0 }: { refreshKey?: number }) 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
+        if (bookings.length === 0) setLoading(true);
         const res = await fetch(`/api/vendor/stats?t=${Date.now()}`, { 
           credentials: "include",
           cache: "no-store"
@@ -32,7 +33,7 @@ export default function OrderTable({ refreshKey = 0 }: { refreshKey?: number }) 
     };
 
     fetchBookings();
-  }, [refreshKey]);
+  }, [refreshKey, bookings.length]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-IN", {

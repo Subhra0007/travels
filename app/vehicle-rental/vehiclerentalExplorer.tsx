@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,8 +12,10 @@ import {
   FaStar,
   FaCar,
   FaMotorcycle,
+  FaRupeeSign,
 } from "react-icons/fa";
 import { useWishlist } from "@/app/hooks/useWishlist";
+import { useAvailability } from "@/app/hooks/useAvailability";
 import {
   VEHICLE_RENTAL_CATEGORIES,
   type VehicleRentalCategoryValue,
@@ -57,6 +60,8 @@ type RentalCardProps = {
   wishlistDisabled: boolean;
   onToggleWishlist: (rentalId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
+  pickupDate?: string;
+  dropoffDate?: string;
 };
 
 export const RentalCard = ({
@@ -65,6 +70,8 @@ export const RentalCard = ({
   wishlistDisabled,
   onToggleWishlist,
   onSelectTag,
+  pickupDate,
+  dropoffDate,
 }: RentalCardProps) => {
   const optionCount = rental.options?.length ?? 0;
   const startingPrice = optionCount
@@ -74,6 +81,10 @@ export const RentalCard = ({
   const primaryFeatures = rental.options?.[0]?.features?.slice(0, 4) ?? [];
   const ratingValue = rental.rating?.count ? rental.rating.average : null;
   const tags = rental.tags ?? [];
+  const hasDates = Boolean(pickupDate && dropoffDate);
+  const availability = useAvailability("vehicle", rental._id, pickupDate, dropoffDate);
+  const availableOptionKeys = availability.availableOptionKeys ?? [];
+  const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
 
   return (
     <Link
@@ -113,6 +124,15 @@ export const RentalCard = ({
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-blue-700 shadow">
           {rental.category === "cars-rental" ? "Car" : "Bike"}
         </span>
+        {hasDates && (
+          <span
+            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
+              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"
+            }`}
+          >
+            {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5 text-gray-900">
@@ -191,6 +211,8 @@ export const RentalCard = ({
 };
 
 export default function VehicleRentalExplorer({ initialCategory = "all" }: VehicleRentalExplorerProps) {
+  const params = useSearchParams();
+  const router = useRouter();
   const normalizedInitialCategory: CategoryValue = VEHICLE_RENTAL_CATEGORIES.some(
     (tab) => tab.value === initialCategory
   )
@@ -201,6 +223,8 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
   const [searchTerm, setSearchTerm] = useState("");
+  const [pickupDate, setPickupDate] = useState("");
+  const [dropoffDate, setDropoffDate] = useState("");
   const [priceMin, setPriceMin] = useState<number | "">("");
   const [priceMax, setPriceMax] = useState<number | "">("");
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
@@ -221,18 +245,24 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/vehicle-rentals?all=true", { cache: "no-store" });
+        const url = new URL("/api/vehicle-rentals", window.location.origin);
+        const categoryParam = normalizedInitialCategory !== "all" ? normalizedInitialCategory : undefined;
+        const cityParam = params.get("city") || undefined;
+        if (categoryParam) url.searchParams.set("category", categoryParam);
+        if (cityParam) url.searchParams.set("city", cityParam);
+        const res = await fetch(url.toString(), { cache: "no-store" });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data?.message || "Failed");
         setRentals(data.rentals || []);
-      } catch (e: any) {
-        setError(e?.message || "Failed to load rentals");
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Failed to load rentals";
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, []);
+  }, [normalizedInitialCategory, params]);
 
   useEffect(() => {
     setActiveCategory(normalizedInitialCategory);
@@ -251,8 +281,37 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
     setPriceMax(priceBounds.max);
   }, [priceBounds]);
 
+  const [sortBy, setSortBy] = useState<"rating-desc" | "price-asc" | "price-desc" | "location-asc">("rating-desc");
+
   const filteredRentals = useMemo(() => {
-    return rentals.filter((r) => {
+    const sorted = [...rentals].sort((a, b) => {
+      switch (sortBy) {
+        case "rating-desc": {
+          const aR = a.rating?.average ?? 0;
+          const bR = b.rating?.average ?? 0;
+          if (bR !== aR) return bR - aR;
+          return (b.rating?.count ?? 0) - (a.rating?.count ?? 0);
+        }
+        case "price-asc": {
+          const aP = a.options?.length ? Math.min(...a.options.map((o) => o.pricePerDay)) : Infinity;
+          const bP = b.options?.length ? Math.min(...b.options.map((o) => o.pricePerDay)) : Infinity;
+          return aP - bP;
+        }
+        case "price-desc": {
+          const aP = a.options?.length ? Math.min(...a.options.map((o) => o.pricePerDay)) : -Infinity;
+          const bP = b.options?.length ? Math.min(...b.options.map((o) => o.pricePerDay)) : -Infinity;
+          return bP - aP;
+        }
+        case "location-asc": {
+          const aL = `${a.location.city}, ${a.location.state}`.toLowerCase();
+          const bL = `${b.location.city}, ${b.location.state}`.toLowerCase();
+          return aL.localeCompare(bL);
+        }
+        default:
+          return 0;
+      }
+    });
+    return sorted.filter((r) => {
       if (activeCategory !== "all" && r.category !== activeCategory) return false;
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
@@ -270,13 +329,13 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
       if (selectedTags.length && !(r.tags || []).some((t) => selectedTags.includes(t))) return false;
       return true;
     });
-  }, [rentals, activeCategory, searchTerm, priceMin, priceMax, ratingFilter, selectedTags]);
+  }, [rentals, sortBy, activeCategory, searchTerm, priceMin, priceMax, ratingFilter, selectedTags]);
 
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 py-16 text-white">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10" />
+       
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Rent your ride</h1>
@@ -303,7 +362,41 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                   />
                 </div>
               </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">Pickup</label>
+                <input
+                  type="date"
+                  value={pickupDate}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-gray-700">Dropoff</label>
+                <input
+                  type="date"
+                  value={dropoffDate}
+                  onChange={(e) => setDropoffDate(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
+                />
+              </div>
             </form>
+            <div className="mt-4">
+              <button
+                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                type="button"
+                onClick={() => {
+                  const url = new URL("/vehicle-rental", window.location.origin);
+                  if (searchTerm) url.searchParams.set("city", searchTerm);
+                  if (activeCategory && activeCategory !== "all") url.searchParams.set("category", activeCategory);
+                  if (pickupDate) url.searchParams.set("pickup", pickupDate);
+                  if (dropoffDate) url.searchParams.set("dropoff", dropoffDate);
+                  router.push(`${url.pathname}?${url.searchParams.toString()}`);
+                }}
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -329,13 +422,51 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 {tab.label}
               </button>
             ))}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-600">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as "rating-desc" | "price-asc" | "price-desc" | "location-asc")}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-blue-500 focus:outline-none"
+              >
+                <option value="rating-desc">Highest Rating</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="location-asc">Location (A-Z)</option>
+              </select>
+            </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mt-6 flex flex-wrap gap-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-blue-100">
           <div className="flex flex-col">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price per day (₹)</label>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price per day</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {([
+                { key: "under-1000", label: "Under 1000", min: "", max: 1000 },
+                { key: "1000-plus", label: "1000+", min: 1000, max: "" },
+                { key: "1500-plus", label: "1500+", min: 1500, max: "" },
+                { key: "2000-plus", label: "2000+", min: 2000, max: "" },
+              ] as { key: string; label: string; min: number | ""; max: number | "" }[]).map((p) => {
+                const active = (priceMin === p.min || (p.min === "" && priceMin === "")) && (priceMax === p.max || (p.max === "" && priceMax === ""));
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => {
+                      setPriceMin(p.min);
+                      setPriceMax(p.max);
+                    }}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                    }`}
+                  >
+                    <FaRupeeSign className="text-blue-600" /> {p.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="mt-2 flex items-center gap-3">
               <input
                 type="number"
@@ -358,19 +489,37 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
           </div>
 
           <div className="flex flex-col">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Min rating</label>
-            <select
-              value={ratingFilter}
-              onChange={(e) => setRatingFilter(e.target.value === "" ? "" : Number(e.target.value))}
-              className="mt-2 w-40 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500"
-            >
-              <option value="">All</option>
-              {[5, 4, 3].map((v) => (
-                <option key={v} value={v}>
-                  {v}+ stars
-                </option>
-              ))}
-            </select>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Rating</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {[
+                { key: "4-plus", label: "4.0+", value: 4 },
+                { key: "4-5-plus", label: "4.5+", value: 4.5 },
+                { key: "5-star", label: "5.0", value: 5 },
+              ].map((r) => {
+                const active = ratingFilter !== "" && ratingFilter === r.value;
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setRatingFilter(r.value)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                    }`}
+                  >
+                    <FaStar className="text-yellow-500" /> {r.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setRatingFilter("")}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  ratingFilter === "" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                }`}
+              >
+                All
+              </button>
+            </div>
           </div>
 
           {availableTags.length > 0 && (
@@ -429,6 +578,8 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={(id, state) => toggleWishlist(id, state, "vehicle-rental")}
                 onSelectTag={(tag) => setSelectedTags((p) => (p.includes(tag) ? p : [...p, tag]))}
+                pickupDate={pickupDate}
+                dropoffDate={dropoffDate}
               />
             ))}
           </div>

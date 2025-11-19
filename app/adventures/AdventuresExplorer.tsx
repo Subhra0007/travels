@@ -14,6 +14,7 @@ import {
   FaMountain,
 } from "react-icons/fa";
 import { useWishlist } from "../hooks/useWishlist";
+import { useAvailability } from "../hooks/useAvailability";
 import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
 
 export type AdventureOption = {
@@ -60,6 +61,8 @@ type AdventureCardProps = {
   wishlistDisabled: boolean;
   onToggleWishlist: (advId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
+  startDate?: string;
+  endDate?: string;
 };
 
 export const AdventureCard = ({
@@ -68,6 +71,8 @@ export const AdventureCard = ({
   wishlistDisabled,
   onToggleWishlist,
   onSelectTag,
+  startDate,
+  endDate,
 }: AdventureCardProps) => {
   const optionCount = adventure.options?.length ?? 0;
   const startingPrice = optionCount
@@ -77,6 +82,10 @@ export const AdventureCard = ({
   const primaryFeatures = adventure.options?.[0]?.features?.slice(0, 4) ?? [];
   const ratingValue = adventure.rating?.count ? adventure.rating.average : null;
   const tags = adventure.tags ?? [];
+  const hasDates = Boolean(startDate && endDate);
+  const availability = useAvailability("adventure", adventure._id, startDate, endDate);
+  const availableOptionKeys = availability.availableOptionKeys ?? [];
+  const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
 
   return (
     <Link
@@ -116,6 +125,15 @@ export const AdventureCard = ({
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-orange-700 shadow">
           {adventure.category}
         </span>
+        {hasDates && (
+          <span
+            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
+              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-orange-100 text-orange-700"
+            }`}
+          >
+            {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-5 text-gray-900">
@@ -205,6 +223,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const [activeCategory, setActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
   const [searchTerm, setSearchTerm] = useState("");
   const [guests, setGuests] = useState(2);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [priceMin, setPriceMin] = useState<number | "">("");
   const [priceMax, setPriceMax] = useState<number | "">("");
@@ -230,8 +250,9 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data?.message || "Failed");
         setAdventures(data.adventures || []);
-      } catch (err: any) {
-        setError(err?.message || "Unable to load adventures");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unable to load adventures";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -303,7 +324,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero + Search */}
       <section className="relative overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 py-16 text-white">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10" aria-hidden="true" />
+      
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Discover thrilling adventures</h1>
@@ -343,6 +364,26 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                     className="w-full bg-transparent outline-none"
                   />
                 </div>
+              </div>
+
+              <div className="col-span-1">
+                <label className="mb-1 block text-sm font-semibold text-gray-700">Start date</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-orange-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="col-span-1">
+                <label className="mb-1 block text-sm font-semibold text-gray-700">End date</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-orange-500 focus:outline-none"
+                />
               </div>
 
               <div className="col-span-1">
@@ -539,6 +580,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }
+                startDate={startDate}
+                endDate={endDate}
               />
             ))}
           </div>
