@@ -9,41 +9,34 @@ export const DELETE = auth(async (req: NextRequest, context?: { params: Promise<
   try {
     await dbConnect();
     const userId = (req as any).user.id;
-    if (!context?.params) {
-      return NextResponse.json(
-        { success: false, message: "Invalid request" },
-        { status: 400 }
-      );
-    }
-    const { id: serviceId } = await context.params;
+    const ctxParams = context?.params ? await context.params : ({ id: "" } as { id: string });
+    const serviceId = ctxParams?.id || "";
 
-    if (!serviceId || !mongoose.Types.ObjectId.isValid(serviceId)) {
-      return NextResponse.json(
-        { success: false, message: "Invalid service ID" },
-        { status: 400 }
-      );
-    }
-
-    // Convert serviceId to ObjectId for proper matching
-    const serviceObjectId = new mongoose.Types.ObjectId(serviceId);
+    const isValidObjectId = serviceId && mongoose.Types.ObjectId.isValid(serviceId);
+    const serviceObjectId = isValidObjectId ? new mongoose.Types.ObjectId(serviceId) : null;
     const userObjectId = new mongoose.Types.ObjectId(userId);
 
     // Find and delete the wishlist entry that matches any of the service IDs
-    const deleted = await Wishlist.findOneAndDelete({
-      userId: userObjectId,
-      $or: [
-        { stayId: serviceObjectId },
-        { tourId: serviceObjectId },
-        { adventureId: serviceObjectId },
-        { vehicleRentalId: serviceObjectId },
-      ],
-    });
+    const deleted = await Wishlist.findOneAndDelete(
+      isValidObjectId
+        ? {
+            userId: userObjectId,
+            $or: [
+              { _id: serviceObjectId },
+              { stayId: serviceObjectId },
+              { tourId: serviceObjectId },
+              { adventureId: serviceObjectId },
+              { vehicleRentalId: serviceObjectId },
+            ],
+          }
+        : {
+            userId: userObjectId,
+          }
+    );
 
     if (!deleted) {
-      return NextResponse.json(
-        { success: false, message: "Item not found in wishlist" },
-        { status: 404 }
-      );
+      // Idempotent success: nothing to delete means it's already removed
+      return NextResponse.json({ success: true, message: "Item removed from wishlist" });
     }
 
     return NextResponse.json({ success: true, message: "Item removed from wishlist" });
