@@ -63,12 +63,12 @@ export default function AdminStaysPage() {
   };
 
   return (
-    <div className="flex h-screen bg-sky-50 text-black">
+    <div className="flex h-screen bg-sky-50 text-black  overflow-x-hidden">
       <div className="hidden lg:block">
         <Sidebar />
       </div>
 
-      <div className="flex-1 flex flex-col mt-15">
+      <div className="flex-1 flex flex-col mt-15  overflow-x-hidden">
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
             <div className="flex items-center gap-3">
@@ -85,7 +85,7 @@ export default function AdminStaysPage() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto   p-4 sm:p-6">
           {loading ? (
             <div className="flex justify-center py-10">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
@@ -98,7 +98,7 @@ export default function AdminStaysPage() {
               <p className="text-gray-600">No stays have been submitted yet.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl bg-white shadow">
+            <div className=" rounded-xl bg-white shadow">
               <div className="hidden w-full min-w-[900px] lg:block">
                 <table className="w-full text-left text-sm text-gray-700">
                   <thead className="bg-gray-100 text-xs uppercase text-gray-600">

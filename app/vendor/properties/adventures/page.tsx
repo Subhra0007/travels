@@ -127,7 +127,7 @@ export default function VendorAdventuresPage() {
     return (
       <div
         key={adv._id}
-        className="overflow-hidden rounded-xl bg-white shadow-md transition hover:shadow-lg"
+        className=" rounded-xl bg-white shadow-md transition hover:shadow-lg overflow-x-hidden"
       >
         {/* Image */}
         <div className="relative h-48 w-full">
@@ -272,7 +272,7 @@ export default function VendorAdventuresPage() {
                 Menu
               </button>
               <h1 className="text-xl sm:text-2xl font-semibold text-black flex items-center gap-2">
-                <FaMountain className="text-orange-600" />
+               
                 My Adventures
               </h1>
             </div>
@@ -310,10 +310,10 @@ export default function VendorAdventuresPage() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden "
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl  p-0 lg:hidden overflow-y-auto z-50">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-800">Menu</span>
               <button

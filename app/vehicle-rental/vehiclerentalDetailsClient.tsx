@@ -63,6 +63,11 @@ export type VehicleRentalDetailPayload = {
     available?: number;
     isRefundable?: boolean;
     refundableUntilHours?: number;
+    driver?: {
+      name?: string;
+      age?: number;
+      experienceYears?: number;
+    };
   }>;
   about: { heading: string; description: string };
   checkInOutRules: { pickup: string; dropoff: string; rules: string[] };
@@ -758,6 +763,25 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                                           {feature}
                                         </span>
                                       ))}
+                                    </div>
+                                  </div>
+                                ) : null}
+                                {rental.category === "cars-rental" && vehicle.driver && (vehicle.driver.name || vehicle.driver.age != null || vehicle.driver.experienceYears != null) ? (
+                                  <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Driver</p>
+                                    <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                                      <div className="rounded-lg bg-white px-3 py-2 shadow-sm">
+                                        <p className="text-xs text-gray-500">Name</p>
+                                        <p className="text-sm font-medium text-gray-800">{vehicle.driver.name || "—"}</p>
+                                      </div>
+                                      <div className="rounded-lg bg-white px-3 py-2 shadow-sm">
+                                        <p className="text-xs text-gray-500">Age</p>
+                                        <p className="text-sm font-medium text-gray-800">{vehicle.driver.age != null ? vehicle.driver.age : "—"}</p>
+                                      </div>
+                                      <div className="rounded-lg bg-white px-3 py-2 shadow-sm">
+                                        <p className="text-xs text-gray-500">Experience</p>
+                                        <p className="text-sm font-medium text-gray-800">{vehicle.driver.experienceYears != null ? `${vehicle.driver.experienceYears} yrs` : "—"}</p>
+                                      </div>
                                     </div>
                                   </div>
                                 ) : null}

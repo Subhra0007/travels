@@ -97,7 +97,7 @@ const VendorBookingsPage = () => {
   if (!authorized) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
@@ -112,7 +112,7 @@ const VendorBookingsPage = () => {
           </button>
         </header>
 
-        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16">
+        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16 max-w-5xl mx-auto">
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-900">Stay bookings</h1>
             <p className="text-sm text-gray-600">

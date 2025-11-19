@@ -71,13 +71,13 @@ const Footer: React.FC = () => {
       {/* GRID TOP SECTION */}
       <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10 border-b border-gray-700 pb-10 sm:place-items-center md:place-items-center z-50">
         {/* Column 1 */}
-        <div className="lg:text-left text-center">
+       <div className="flex flex-col items-center flex-1 text-center">
           <Image
               src="/logo.png"
               alt="Logo"
               width={180}
               height={70}
-              className="h-15 w-auto mb-3"
+              className="h-15 w-30 mb-3 flex justify-center "
               priority
             />
           <p className="text-sm leading-relaxed mb-4">

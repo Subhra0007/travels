@@ -124,7 +124,7 @@ const AdminBookingsCategoryPage = () => {
   if (!authorized) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
       <div className="hidden lg:block">
         <Sidebar />
       </div>
@@ -139,7 +139,7 @@ const AdminBookingsCategoryPage = () => {
           </button>
         </header>
 
-        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16">
+        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16 overflow-x-auto max-w-5xl mx-auto">
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-900">{CATEGORY_LABELS[category]}</h1>
             <p className="text-sm text-gray-600">

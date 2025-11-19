@@ -498,7 +498,7 @@ export default function AddAdventurePage() {
   // Render
   // ──────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen bg-gray-50 text-black">
+    <div className="flex h-screen bg-gray-50 text-black overflow-x-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
@@ -521,7 +521,7 @@ export default function AddAdventurePage() {
         </div>
 
         {/* Main Form */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6">
             {uploadError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">

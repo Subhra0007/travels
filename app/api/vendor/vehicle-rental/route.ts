@@ -72,6 +72,20 @@ const normalizeRentalPayload = (body: any) => {
     refundableUntilHours:
       option.refundableUntilHours !== undefined ? Number(option.refundableUntilHours) : 48,
     images: option.images,
+    driver:
+      option.driver && typeof option.driver === "object"
+        ? {
+            name: typeof option.driver.name === "string" ? option.driver.name.trim() : undefined,
+            age:
+              option.driver.age != null && Number.isFinite(Number(option.driver.age))
+                ? Number(option.driver.age)
+                : undefined,
+            experienceYears:
+              option.driver.experienceYears != null && Number.isFinite(Number(option.driver.experienceYears))
+                ? Number(option.driver.experienceYears)
+                : undefined,
+          }
+        : undefined,
   }));
 
   const normalizedVideos = {

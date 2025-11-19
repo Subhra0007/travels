@@ -100,6 +100,11 @@ type OptionForm = {
   features: string[];
   images: string[];
   available: number;
+  driver?: {
+    name: string;
+    age: number;
+    experienceYears: number;
+  };
 };
 
 const createDefaultOption = (): OptionForm => ({
@@ -110,6 +115,7 @@ const createDefaultOption = (): OptionForm => ({
   features: [],
   images: [],
   available: 1,
+  driver: { name: "", age: 0, experienceYears: 0 },
 });
 
 export default function AddVehicleRentalPage() {
@@ -237,6 +243,13 @@ export default function AddVehicleRentalPage() {
               features: option.features ?? [],
               images: option.images ?? [],
               available: option.available ?? 1,
+              driver: option.driver
+                ? {
+                    name: option.driver.name ?? "",
+                    age: option.driver.age ?? 0,
+                    experienceYears: option.driver.experienceYears ?? 0,
+                  }
+                : { name: "", age: 0, experienceYears: 0 },
             }))
           : [createDefaultOption()],
       about: {
@@ -450,14 +463,14 @@ export default function AddVehicleRentalPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 text-black">
+    <div className="flex h-screen bg-gray-50 text-black overflow-x-hidden">
       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
         <Sidebar />
       </div>
 
       <div className="flex-1 flex flex-col">
-        <div className="sticky top-0 z-40 bg-sky-50 border-b">
-          <div className="flex items-center gap-3 p-3">
+        <div className="sticky top-0 z-40 bg-sky-50 border-b mt-15 ">
+          <div className="flex items-center gap-3 p-3 ">
             <button
               className="lg:hidden px-3 py-2 rounded border text-gray-700"
               onClick={() => setMobileSidebarOpen(true)}
@@ -471,7 +484,7 @@ export default function AddVehicleRentalPage() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6">
             {uploadError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -756,6 +769,60 @@ export default function AddVehicleRentalPage() {
                         placeholder="Vehicle description and features"
                       />
                     </div>
+                    {formData.category === "cars-rental" && (
+                      <div className="md:col-span-2">
+                        <h4 className="text-sm font-semibold mb-2">Driver Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Driver Name</label>
+                            <input
+                              type="text"
+                              value={opt.driver?.name || ""}
+                              onChange={(e) =>
+                                updateOption(idx, "driver", {
+                                  ...(opt.driver || { name: "", age: 0, experienceYears: 0 }),
+                                  name: e.target.value,
+                                })
+                              }
+                              className="w-full px-4 py-2 border rounded-lg"
+                              placeholder="e.g., John Doe"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Driver Age</label>
+                            <input
+                              type="number"
+                              min={18}
+                              value={opt.driver?.age ?? 0}
+                              onChange={(e) =>
+                                updateOption(idx, "driver", {
+                                  ...(opt.driver || { name: "", age: 0, experienceYears: 0 }),
+                                  age: Number(e.target.value),
+                                })
+                              }
+                              className="w-full px-4 py-2 border rounded-lg"
+                              placeholder="e.g., 30"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Experience (years)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={opt.driver?.experienceYears ?? 0}
+                              onChange={(e) =>
+                                updateOption(idx, "driver", {
+                                  ...(opt.driver || { name: "", age: 0, experienceYears: 0 }),
+                                  experienceYears: Number(e.target.value),
+                                })
+                              }
+                              className="w-full px-4 py-2 border rounded-lg"
+                              placeholder="e.g., 5"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium mb-1">Available Quantity <span className="text-red-500">*</span></label>
                       <input
@@ -768,7 +835,7 @@ export default function AddVehicleRentalPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Features</label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2">
                         <input
                           type="text"
                           value={optionFeatureDrafts[idx] || ""}
@@ -1227,7 +1294,7 @@ export default function AddVehicleRentalPage() {
             onClick={() => setMobileSidebarOpen(false)}
           />
           <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
-            <div className="p-4 border-b flex items-center justify-between">
+            <div className="p-4 border-b flex items-center justify-between mt-10">
               <span className="text-lg font-semibold">Menu</span>
               <button
                 onClick={() => setMobileSidebarOpen(false)}

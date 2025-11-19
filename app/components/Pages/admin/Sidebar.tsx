@@ -12,6 +12,8 @@ import {
   FaUserCircle,
   FaBed,
 } from "react-icons/fa";
+import { MdShoppingCart } from "react-icons/md";
+import { BiCategory } from "react-icons/bi";
 import { TbLogs } from "react-icons/tb";
 import { RiCouponLine } from "react-icons/ri";
 
@@ -96,16 +98,7 @@ const Sidebar: React.FC = () => {
           <FaChartPie size={14} /> Dashboard
         </button>
 
-        <button
-          onClick={() => router.push("/admin/stays")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
-            isActive("/admin/stays")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
-          }`}
-        >
-          <FaBed size={14} /> Stays
-        </button>
+   
 
         {/* Products */}
         <button
@@ -116,7 +109,7 @@ const Sidebar: React.FC = () => {
               : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
           }`}
         >
-          <FaUsers size={14} /> Products
+          <MdShoppingCart size={14} /> Products
         </button>
 
         {/* Categories */}
@@ -128,11 +121,11 @@ const Sidebar: React.FC = () => {
               : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
           }`}
         >
-          <FaUsers size={14} /> Categories
+          <BiCategory size={14} /> Categories
         </button>
 
         {/* Blogs */}
-        <button
+        {/* <button
           onClick={() => router.push("/admin/blogs")}
           className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
             isActive("/admin/blogs")
@@ -141,7 +134,7 @@ const Sidebar: React.FC = () => {
           }`}
         >
           <FaUsers size={14} /> Blogs
-        </button>
+        </button> */}
 
         {/* Coupons */}
         <button
@@ -346,17 +339,7 @@ const Sidebar: React.FC = () => {
           <TbLogs size={14} /> Blogs
         </button>
 
-        {/* Chat */}
-        <button
-          onClick={() => router.push("/admin/chat")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer  ${
-            isActive("/admin/chat")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
-          }`}
-        >
-          <FaComments size={14} /> Chat
-        </button>
+      
       </nav>
 
       {/* Bottom Section */}

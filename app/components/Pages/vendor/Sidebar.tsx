@@ -130,7 +130,7 @@ export default function Sidebar() {
   const anyPropertiesActive = filteredProperties.some((sub) => isActiveHref(sub.href));
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col px-4 py-6">
+    <aside className="w-64 h-full overflow-y-auto bg-white border-r border-gray-200 flex flex-col px-4 py-6">
 
       <nav className="space-y-3 mt-15">
         {menu

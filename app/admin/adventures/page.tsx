@@ -80,7 +80,7 @@ export default function AdminAdventuresPage() {
   };
 
   return (
-    <div className="flex h-screen bg-sky-50 text-black">
+    <div className="flex h-screen bg-sky-50 text-black overflow-x-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar />

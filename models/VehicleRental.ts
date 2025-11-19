@@ -49,6 +49,11 @@ export interface IVehicleRental extends Document {
     images: string[]; // Minimum 3 per option
     isRefundable?: boolean;
     refundableUntilHours?: number;
+    driver?: {
+      name?: string;
+      age?: number;
+      experienceYears?: number;
+    };
   }>;
   defaultCancellationPolicy?: string;
   defaultHouseRules?: string[];
@@ -148,6 +153,11 @@ const vehicleRentalSchema = new Schema<IVehicleRental>(
         },
         isRefundable: { type: Boolean, default: true },
         refundableUntilHours: { type: Number, default: 48 },
+        driver: {
+          name: { type: String, default: "" },
+          age: { type: Number, default: 0 },
+          experienceYears: { type: Number, default: 0 },
+        },
       },
     ],
     defaultCancellationPolicy: String,

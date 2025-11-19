@@ -142,8 +142,8 @@ const BookingTable: React.FC<BookingTableProps> = ({
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow">
-      <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-3xl border border-gray-200 bg-white shadow">
+      <div className="">
         <table className={`${variant === "user" ? "min-w-full" : "min-w-[1200px]"} divide-y divide-gray-200 text-sm text-gray-700`}>
           <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
             <tr>
