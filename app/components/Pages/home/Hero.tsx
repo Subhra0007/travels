@@ -17,7 +17,7 @@ import {
 import { BsCompass } from "react-icons/bs";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { Menu } from "@headlessui/react";
+import { Menu, Dialog } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 /* -------- TABS -------- */
@@ -298,6 +298,9 @@ const StaysForm: React.FC<StaysFormProps> = ({
   const router = useRouter();
   const [showGuests, setShowGuests] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const closeDetails = () => setDetailsOpen(false);
+  const [modalSection, setModalSection] = useState<"location" | "guests" | null>(null);
   const filteredWB = wbLocations.filter((c) =>
     c.toLowerCase().includes(search.toLowerCase())
   );
@@ -317,7 +320,11 @@ const StaysForm: React.FC<StaysFormProps> = ({
         <p className="text-xs text-gray-500 uppercase mb-1">Location</p>
         <Menu as="div" className="relative">
           <Menu.Button
-            onClick={() => setShowLocationMenu(!showLocationMenu)}
+            onClick={() => {
+              setShowLocationMenu(false);
+              setModalSection("location");
+              setDetailsOpen(true);
+            }}
             className={`w-full text-left text-md font-bold ${locationTextClass} flex items-center justify-between`}
           >
             {locationLabel}
@@ -425,7 +432,11 @@ const StaysForm: React.FC<StaysFormProps> = ({
         <p className="text-xs text-gray-500 uppercase mb-1">Guests</p>
         <Menu as="div" className="relative">
           <Menu.Button
-            onClick={() => setShowGuests(!showGuests)}
+            onClick={() => {
+              setShowGuests(false);
+              setModalSection("guests");
+              setDetailsOpen(true);
+            }}
             className="w-full text-left text-xl font-bold text-gray-900 flex items-center justify-between"
           >
             {rooms} {rooms === 1 ? "Room" : "Rooms"},{" "}
@@ -517,6 +528,103 @@ const StaysForm: React.FC<StaysFormProps> = ({
           Search Stays
         </button>
       </div>
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
+        <div className="fixed inset-0 z-1000 bg-black/60" aria-hidden="true" />
+        <div className="fixed inset-0 z-1001 flex items-center justify-center p-4">
+          <Dialog.Panel className={`relative z-1002 w-full ${modalSection === "location" ? "max-w-sm" : "max-w-lg"} rounded-2xl bg-white p-6 shadow-2xl border border-gray-200`}>
+            <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
+            <Dialog.Title className="text-lg font-semibold text-black">
+              {modalSection === "location" ? "Choose location" : "Choose guests"}
+            </Dialog.Title>
+            {modalSection === "location" && (
+              <div className="mt-4 max-h-[60vh] overflow-y-auto">
+                <div className="p-2 border-b sticky top-0 bg-white">
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search location..."
+                    className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500 text-black"
+                  />
+                </div>
+                <div className="px-2 pt-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                  {filteredWB.map((city) => (
+                    <button
+                      key={`wb-${city}`}
+                      onClick={() => {
+                        setLocation(city);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                  {filteredIndia.map((city) => (
+                    <button
+                      key={`in-${city}`}
+                      onClick={() => {
+                        setLocation(city);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {modalSection === "guests" && (
+              <div className="mt-4 space-y-4 text-black">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Rooms</span>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setRooms(Math.max(1, rooms - 1))} className="p-1 rounded-full bg-gray-200 hover:bg-gray-300">
+                      <FaMinus className="w-3 h-3" />
+                    </button>
+                    <span className="w-8 text-center">{rooms}</span>
+                    <button onClick={() => setRooms(rooms + 1)} className="p-1 rounded-full bg-gray-200 hover:bg-gray-300">
+                      <FaPlus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Adults</span>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setAdults(Math.max(1, adults - 1))} className="p-1 rounded-full bg-gray-200 hover:bg-gray-300">
+                      <FaMinus className="w-3 h-3" />
+                    </button>
+                    <span className="w-8 text-center">{adults}</span>
+                    <button onClick={() => setAdults(adults + 1)} className="p-1 rounded-full bg-gray-200 hover:bg-gray-300">
+                      <FaPlus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Children</span>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setChildren(Math.max(0, children - 1))} className="p-1 rounded-full bg-gray-200 hover:bg-gray-300">
+                      <FaMinus className="w-3 h-3" />
+                    </button>
+                    <span className="w-8 text-center">{children}</span>
+                    <button onClick={() => setChildren(children + 1)} className="p-1 rounded-full bg-gray-200 hover:bg-gray-300">
+                      <FaPlus className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+                <div className="text-right text-xs text-gray-600">Total guests: {totalGuests}</div>
+                <div className="mt-4 flex justify-end gap-3">
+                  {/* <button onClick={closeDetails} className="rounded-full border px-4 py-2 text-sm">Close</button> */}
+                </div>
+              </div>
+            )}
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 };
@@ -536,6 +644,8 @@ const ToursForm: React.FC<{
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const closeDetails = () => setDetailsOpen(false);
 
   const filteredWB = wbLocations.filter((c) =>
     c.toLowerCase().includes(search.toLowerCase())
@@ -552,7 +662,10 @@ const ToursForm: React.FC<{
         <p className="text-xs text-gray-500 uppercase mb-1">Destination</p>
         <Menu as="div" className="relative">
           <Menu.Button
-            onClick={() => setShow(!show)}
+            onClick={() => {
+              setShow(false);
+              setDetailsOpen(true);
+            }}
             className={`w-full text-left text-md font-bold ${
               destination ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
@@ -654,6 +767,55 @@ const ToursForm: React.FC<{
           Find Tours
         </button>
       </div>
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
+        <div className="fixed inset-0 z-1000 bg-black/60" aria-hidden="true" />
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+          <Dialog.Panel className="relative z-[1002] w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-200">
+            <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
+            <Dialog.Title className="text-lg font-semibold text-black">Choose destination</Dialog.Title>
+            <div className="mt-4 max-h-[60vh] overflow-y-auto">
+              <div className="p-2 border-b sticky top-0 bg-white">
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search destination..."
+                  className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500 text-black"
+                />
+              </div>
+              <div className="px-2 pt-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                {filteredWB.map((c) => (
+                  <button
+                    key={`tour-wb-${c}`}
+                    onClick={() => {
+                      setDestination(c);
+                      closeDetails();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+              <div className="px-2 pt-2 pb-2">
+                <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                {filteredIndia.map((c) => (
+                  <button
+                    key={`tour-in-${c}`}
+                    onClick={() => {
+                      setDestination(c);
+                      closeDetails();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 };
@@ -670,6 +832,10 @@ const AdventuresForm: React.FC<{
   const [show, setShow] = useState(false);
   const [search, setSearch] = useState("");
   const [groupSize, setGroupSize] = useState<number>(4);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const openDetails = () => setDetailsOpen(true);
+  const closeDetails = () => setDetailsOpen(false);
+  const [modalSection, setModalSection] = useState<"activity" | "location" | null>(null);
 
   const filteredWB = wbLocations.filter((c) =>
     c.toLowerCase().includes(search.toLowerCase())
@@ -686,7 +852,11 @@ const AdventuresForm: React.FC<{
         <p className="text-xs text-gray-500 uppercase mb-1">Activity</p>
         <Menu as="div" className="relative">
           <Menu.Button
-            onClick={() => setShowActivity(!showActivity)}
+            onClick={() => {
+              setShowActivity(false);
+              setModalSection("activity");
+              setDetailsOpen(true);
+            }}
             className={`w-full text-left text-md font-bold ${
               activity ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
@@ -722,7 +892,11 @@ const AdventuresForm: React.FC<{
         <p className="text-xs text-gray-500 uppercase mb-1">Location</p>
         <Menu as="div" className="relative">
           <Menu.Button
-            onClick={() => setShow(!show)}
+            onClick={() => {
+              setShow(false);
+              setModalSection("location");
+              setDetailsOpen(true);
+            }}
             className={`w-full text-left text-md font-bold ${
               destination ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
@@ -823,6 +997,75 @@ const AdventuresForm: React.FC<{
           Book Adventure
         </button>
       </div>
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
+        <div className="fixed inset-0 z-[1000] bg-black/60" aria-hidden="true" />
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+          <Dialog.Panel className={`relative z-[1002] w-full ${modalSection === "location" ? "max-w-sm" : "max-w-md"} rounded-2xl bg-white p-6 shadow-2xl border border-gray-200`}>
+            <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
+            <Dialog.Title className="text-lg font-semibold text-black">
+              {modalSection === "activity" ? "Choose activity" : "Choose location"}
+            </Dialog.Title>
+            {modalSection === "activity" && (
+              <div className="mt-4">
+                {["Trekking", "Rafting", "Camping", "Hiking"].map((a) => (
+                  <button
+                    key={a}
+                    onClick={() => {
+                      setActivity(a);
+                      closeDetails();
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                  >
+                    {a}
+                  </button>
+                ))}
+              </div>
+            )}
+            {modalSection === "location" && (
+              <div className="mt-4 max-h-[60vh] overflow-y-auto">
+                <div className="p-2 border-b sticky top-0 bg-white">
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search location..."
+                    className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500 text-black"
+                  />
+                </div>
+                <div className="px-2 pt-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                  {filteredWB.map((c) => (
+                    <button
+                      key={`adv-wb-${c}`}
+                      onClick={() => {
+                        setDestination(c);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                  {filteredIndia.map((c) => (
+                    <button
+                      key={`adv-in-${c}`}
+                      onClick={() => {
+                        setDestination(c);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 };
@@ -840,6 +1083,10 @@ const VehicleRentalForm: React.FC<{
   const [searchDropoff, setSearchDropoff] = useState("");
   const [pickupDate, setPickupDate] = useState<Date | null>(new Date());
   const [returnDate, setReturnDate] = useState<Date | null>(new Date());
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const openDetails = () => setDetailsOpen(true);
+  const closeDetails = () => setDetailsOpen(false);
+  const [modalSection, setModalSection] = useState<"pickup" | "dropoff" | null>(null);
 
   const filter = (list: string[], q: string) =>
     list.filter((c) => c.toLowerCase().includes(q.toLowerCase()));
@@ -853,7 +1100,11 @@ const VehicleRentalForm: React.FC<{
         <p className="text-xs text-gray-500 uppercase mb-1">Pick-up</p>
         <Menu as="div" className="relative">
           <Menu.Button
-            onClick={() => setShowPickup(!showPickup)}
+            onClick={() => {
+              setShowPickup(false);
+              setModalSection("pickup");
+              setDetailsOpen(true);
+            }}
             className={`w-full text-left text-md font-bold ${
               pickup ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
@@ -922,7 +1173,11 @@ const VehicleRentalForm: React.FC<{
         <p className="text-xs text-gray-500 uppercase mb-1">Drop-off</p>
         <Menu as="div" className="relative">
           <Menu.Button
-            onClick={() => setShowDropoff(!showDropoff)}
+            onClick={() => {
+              setShowDropoff(false);
+              setModalSection("dropoff");
+              setDetailsOpen(true);
+            }}
             className={`w-full text-left text-md font-bold ${
               dropoff ? "text-gray-900" : "text-gray-400"
             } flex items-center justify-between`}
@@ -1021,6 +1276,101 @@ const VehicleRentalForm: React.FC<{
           Rent Vehicle
         </button>
       </div>
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
+        <div className="fixed inset-0 z-[1000] bg-black/60" aria-hidden="true" />
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+          <Dialog.Panel className="relative z-[1002] w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-200">
+            <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
+            <Dialog.Title className="text-lg font-semibold text-black">
+              {modalSection === "pickup" ? "Choose pick-up" : "Choose drop-off"}
+            </Dialog.Title>
+            {modalSection === "pickup" && (
+              <div className="mt-4 max-h-[60vh] overflow-y-auto">
+                <div className="p-2 border-b sticky top-0 bg-white">
+                  <input
+                    value={searchPickup}
+                    onChange={(e) => setSearchPickup(e.target.value)}
+                    placeholder="Search pick-up..."
+                    className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500 text-black"
+                  />
+                </div>
+                <div className="px-2 pt-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                  {filter(wbLocations, searchPickup).map((c) => (
+                    <button
+                      key={`pu-wb-${c}`}
+                      onClick={() => {
+                        setPickup(c);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                  {filter(indiaLocations, searchPickup).map((c) => (
+                    <button
+                      key={`pu-in-${c}`}
+                      onClick={() => {
+                        setPickup(c);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {modalSection === "dropoff" && (
+              <div className="mt-4 max-h-[60vh] overflow-y-auto">
+                <div className="p-2 border-b sticky top-0 bg-white">
+                  <input
+                    value={searchDropoff}
+                    onChange={(e) => setSearchDropoff(e.target.value)}
+                    placeholder="Search drop-off..."
+                    className="w-full px-3 py-2 text-sm border rounded-md outline-none focus:ring-2 focus:ring-lime-500 text-black"
+                  />
+                </div>
+                <div className="px-2 pt-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">West Bengal</div>
+                  {filter(wbLocations, searchDropoff).map((c) => (
+                    <button
+                      key={`do-wb-${c}`}
+                      onClick={() => {
+                        setDropoff(c);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                <div className="px-2 pt-2 pb-2">
+                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">India</div>
+                  {filter(indiaLocations, searchDropoff).map((c) => (
+                    <button
+                      key={`do-in-${c}`}
+                      onClick={() => {
+                        setDropoff(c);
+                        closeDetails();
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-lime-50 text-black"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 };

@@ -5,15 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  FaHeart,
-  FaMapMarkerAlt,
-  FaSearch,
-  FaStar,
-  FaUsers,
-  FaClock,
-  FaMountain,
-} from "react-icons/fa";
+import { FaHeart, FaMapMarkerAlt, FaSearch, FaStar, FaUsers, FaRupeeSign } from "react-icons/fa";
 import { useWishlist } from "../hooks/useWishlist";
 import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
 
@@ -82,7 +74,7 @@ export const AdventureCard = ({
   return (
     <Link
       href={`/adventures/${adventure._id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+      className="group flex flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-xl backdrop-blur-sm transition hover:-translate-y-2 hover:shadow-2xl"
     >
       <div className="relative h-56 w-full">
         <button
@@ -114,7 +106,8 @@ export const AdventureCard = ({
             No image
           </div>
         )}
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-orange-700 shadow">
+        <div className="absolute inset-0 bg-gradient-to-t from-green-900/60 via-transparent to-transparent" />
+        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
           {adventure.category}
         </span>
       </div>
@@ -124,7 +117,7 @@ export const AdventureCard = ({
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{adventure.name}</h3>
             <p className="mt-1 flex items-center text-sm text-gray-600">
-              <FaMapMarkerAlt className="mr-2 text-orange-600" />
+              <FaMapMarkerAlt className="mr-2 text-green-600" />
               {adventure.location.city}, {adventure.location.state}
             </p>
           </div>
@@ -140,7 +133,7 @@ export const AdventureCard = ({
             {heroHighlights.map((h) => (
               <span
                 key={h}
-                className="rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700"
+                className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
               >
                 {h}
               </span>
@@ -196,11 +189,11 @@ export const AdventureCard = ({
 
 export default function AdventuresExplorer({ initialCategory = "all" }: AdventuresExplorerProps) {
   const params = useSearchParams();
-  const categoryParam = params.get("category") || initialCategory;
+  const categoryFromUrl = params.get("category") || initialCategory;
   const normalizedInitialCategory: CategoryValue = ADVENTURE_CATEGORIES.some(
-    (tab) => tab.value === categoryParam
+    (tab) => tab.value === categoryFromUrl
   )
-    ? (categoryParam as CategoryValue)
+    ? (categoryFromUrl as CategoryValue)
     : "all";
 
   const [adventures, setAdventures] = useState<Adventure[]>([]);
@@ -215,13 +208,14 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [difficultyFilter, setDifficultyFilter] = useState<string>("");
 
-  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
-    useWishlist<{ _id: string }>({ autoLoad: true });
+  // Form-local state (applied on Search submit)
+  const [formSearchTerm, setFormSearchTerm] = useState<string>("");
+  const [formGuests, setFormGuests] = useState<number>(2);
+  const [formDifficultyFilter, setFormDifficultyFilter] = useState<string>("");
+  const [formActiveCategory, setFormActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
 
-  useEffect(() => {
-    const city = params.get("city") || "";
-    setSearchTerm(city);
-  }, [params]);
+  const { wishlistIds, wishlistLoaded, toggleWishlist, error: wishlistError } =
+    useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const set = new Set<string>();
@@ -238,14 +232,20 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data?.message || "Failed");
         setAdventures(data.adventures || []);
-      } catch (err: any) {
-        setError(err?.message || "Unable to load adventures");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unable to load adventures";
+        setError(message);
       } finally {
         setLoading(false);
       }
     };
     load();
   }, []);
+
+  useEffect(() => {
+    setActiveCategory(normalizedInitialCategory);
+    setFormActiveCategory(normalizedInitialCategory);
+  }, [normalizedInitialCategory]);
 
   const priceBounds = useMemo(() => {
     if (!adventures.length) return { min: 0, max: 0 };
@@ -310,7 +310,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero + Search */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 py-16 text-white">
+      <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
       
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="max-w-3xl">
@@ -321,9 +321,15 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
           </div>
 
           <div className="mt-8 rounded-2xl bg-white p-6 shadow-xl">
-            <form
+            <form id="adventure-search-form"
               className="grid grid-cols-1 gap-4 text-gray-900 sm:grid-cols-2 lg:grid-cols-4"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={(e) => {
+                e.preventDefault();
+                setSearchTerm(formSearchTerm);
+                setGuests(formGuests);
+                setDifficultyFilter(formDifficultyFilter);
+                setActiveCategory(formActiveCategory);
+              }}
             >
               <div className="col-span-1">
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Search</label>
@@ -332,8 +338,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                   <input
                     type="text"
                     placeholder="City, name, highlight"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    value={formSearchTerm}
+                    onChange={(e) => setFormSearchTerm(e.target.value)}
                     className="w-full bg-transparent outline-none placeholder:text-gray-500"
                   />
                 </div>
@@ -346,8 +352,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                   <input
                     type="number"
                     min={1}
-                    value={guests}
-                    onChange={(e) => setGuests(Math.max(1, Number(e.target.value)))}
+                    value={formGuests}
+                    onChange={(e) => setFormGuests(Math.max(1, Number(e.target.value)))}
                     className="w-full bg-transparent outline-none"
                   />
                 </div>
@@ -356,8 +362,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <div className="col-span-1">
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Difficulty</label>
                 <select
-                  value={difficultyFilter}
-                  onChange={(e) => setDifficultyFilter(e.target.value)}
+                  value={formDifficultyFilter}
+                  onChange={(e) => setFormDifficultyFilter(e.target.value)}
                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus:border-orange-500 focus:outline-none"
                 >
                   <option value="">All levels</option>
@@ -371,8 +377,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <div className="col-span-1">
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Category</label>
                 <select
-                  value={activeCategory}
-                  onChange={(e) => setActiveCategory(e.target.value as CategoryValue)}
+                  value={formActiveCategory}
+                  onChange={(e) => setFormActiveCategory(e.target.value as CategoryValue)}
                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus:border-orange-500 focus:outline-none"
                 >
                   {ADVENTURE_CATEGORIES.map((c) => (
@@ -383,6 +389,15 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 </select>
               </div>
             </form>
+            <div className="mt-4">
+              <button
+                className="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                type="submit"
+                form="adventure-search-form"
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -403,8 +418,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 onClick={() => setActiveCategory(tab.value)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                   activeCategory === tab.value
-                    ? "bg-orange-600 text-white shadow"
-                    : "bg-white text-gray-700 shadow-sm hover:bg-orange-50"
+                    ? "bg-green-600 text-white shadow"
+                    : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
                 }`}
               >
                 {tab.label}
@@ -413,12 +428,41 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-4 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-green-100">
           {/* Price */}
           <div className="flex flex-col">
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">
               Price (₹)
             </label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {([
+                { key: "under-1000", label: "Under 1000", min: "" as const, max: 1000 as const },
+                { key: "1000-plus", label: "1000+", min: 1000 as const, max: "" as const },
+                { key: "1500-plus", label: "1500+", min: 1500 as const, max: "" as const },
+                { key: "2000-plus", label: "2000+", min: 2000 as const, max: "" as const },
+              ] as const).map((p) => {
+                const active =
+                  (priceMin === p.min || (p.min === "" && priceMin === "")) &&
+                  (priceMax === p.max || (p.max === "" && priceMax === ""));
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => {
+                      setPriceMin(p.min);
+                      setPriceMax(p.max);
+                    }}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                    }`}
+                  >
+                    <FaRupeeSign className="text-green-600" /> {p.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="mt-2 flex items-center gap-3">
               <input
                 type="number"
@@ -426,7 +470,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 value={priceMin === "" ? "" : priceMin}
                 onChange={(e) => setPriceMin(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
                 placeholder={priceBounds.min.toString()}
-                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
               />
               <span className="text-gray-500">to</span>
               <input
@@ -435,28 +479,48 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 value={priceMax === "" ? "" : priceMax}
                 onChange={(e) => setPriceMax(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
                 placeholder={priceBounds.max.toString()}
-                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Rating */}
           <div className="flex flex-col">
-            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">
-              Minimum rating
-            </label>
-            <select
-              value={ratingFilter}
-              onChange={(e) => setRatingFilter(e.target.value === "" ? "" : Number(e.target.value))}
-              className="mt-2 w-40 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
-            >
-              <option value="">All</option>
-              {[5, 4, 3].map((n) => (
-                <option key={n} value={n}>
-                  {n}+ stars
-                </option>
-              ))}
-            </select>
+            <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Rating</label>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {[
+                { key: "5-star", label: "5.0", value: 5 },
+                { key: "4-5-plus", label: "4.5+", value: 4.5 },
+                { key: "4-plus", label: "4.0+", value: 4 },
+              ].map((r) => {
+                const active = ratingFilter !== "" && ratingFilter === r.value;
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setRatingFilter(r.value)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      active
+                        ? "border-yellow-500 bg-yellow-50 text-yellow-700"
+                        : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                    }`}
+                  >
+                    <FaStar className="text-yellow-500" /> {r.label}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setRatingFilter("")}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                  ratingFilter === ""
+                    ? "border-green-500 bg-green-50 text-green-700"
+                    : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                }`}
+              >
+                All
+              </button>
+            </div>
           </div>
 
           {/* Tags */}
@@ -479,8 +543,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                       }
                       className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                         active
-                          ? "border-orange-500 bg-orange-50 text-orange-700"
-                          : "border-gray-200 text-gray-600 hover:border-orange-400 hover:bg-orange-50"
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
                       }`}
                     >
                       {tag}
@@ -496,15 +560,15 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               {selectedTags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-2 rounded-full border border-orange-500 px-3 py-1 text-xs font-semibold text-orange-700"
+                  className="inline-flex items-center gap-2 rounded-full border border-green-500 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
                 >
                   {tag}
                   <button
                     type="button"
                     onClick={() => setSelectedTags(selectedTags.filter((t) => t !== tag))}
-                    className="text-orange-600 hover:text-orange-800"
+                    className="ml-1 text-green-600 hover:text-green-800"
                   >
-                    x
+                    ×
                   </button>
                 </span>
               ))}
@@ -526,7 +590,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
 
         {loading ? (
           <div className="mt-12 flex justify-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
           </div>
         ) : filteredAdventures.length === 0 ? (
           <div className="mt-12 rounded-2xl bg-white p-10 text-center shadow">
@@ -541,7 +605,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <AdventureCard
                 key={adv._id}
                 adventure={adv}
-                isWishlisted={isInWishlist(adv._id)}
+                isWishlisted={wishlistIds.has(adv._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={(id, state) => toggleWishlist(id, state, "adventure")}
                 onSelectTag={(tag) =>

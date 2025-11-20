@@ -16,4 +16,15 @@ export const VEHICLE_RENTAL_SLUG_TO_VALUE: Record<string, VehicleRentalCategoryV
     {} as Record<string, VehicleRentalCategoryValue>
   );
 
+export const VEHICLE_RENTAL_VALUE_TO_SLUG: Record<
+  VehicleRentalCategoryValue,
+  VehicleRentalCategorySlug
+> = VEHICLE_RENTAL_CATEGORIES.reduce(
+  (acc, item) => {
+    acc[item.value] = item.slug;
+    return acc;
+  },
+  {} as Record<VehicleRentalCategoryValue, VehicleRentalCategorySlug>
+);
+
 

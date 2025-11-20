@@ -1,8 +1,16 @@
 //stays/page.tsx
-"use client";
-
 import StaysExplorer from "./StaysExplorer";
 
-export default function StaysPage() {
-  return <StaysExplorer />;
+type StaysPageProps = {
+  searchParams?: Promise<{
+    category?: string | string[];
+  }>;
+};
+
+export default async function StaysPage({ searchParams }: StaysPageProps) {
+  const resolvedParams = searchParams ? await searchParams : undefined;
+  const initialCategory =
+    typeof resolvedParams?.category === "string" ? resolvedParams.category : undefined;
+
+  return <StaysExplorer initialCategory={initialCategory} />;
 }

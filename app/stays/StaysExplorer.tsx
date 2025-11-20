@@ -1,7 +1,7 @@
-// Stays/Explorer.tsx
+// Stays/StaysExplorer.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,6 +27,7 @@ import {
 import { STAY_CATEGORIES, type StayCategoryValue } from "./categories";
 import { useWishlist } from "../hooks/useWishlist";
 import { useAvailability } from "../hooks/useAvailability";
+import CategoryTabs from "@/app/components/common/CategoryTabs";
 
 export type Room = {
   _id?: string;
@@ -282,11 +283,11 @@ const guestsFallback = (stay: Stay) => stay.rooms?.reduce((max, room) => Math.ma
 export default function StaysExplorer({ initialCategory = "all" }: StaysExplorerProps) {
   const params = useSearchParams();
   const router = useRouter();
-  const categoryParam = params.get("category") || initialCategory;
+  const categoryFromUrl = params.get("category") || initialCategory;
   const normalizedInitialCategory: CategoryValue = STAY_CATEGORIES.some(
-    (tab) => tab.value === categoryParam
+    (tab) => tab.value === categoryFromUrl
   )
-    ? (categoryParam as CategoryValue)
+    ? (categoryFromUrl as CategoryValue)
     : "all";
 
   const [stays, setStays] = useState<Stay[]>([]);
@@ -464,6 +465,21 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
     sortBy,
   ]);
 
+  const handleCategoryChange = useCallback(
+    (value: CategoryValue) => {
+      setActiveCategory(value);
+      const nextSearch = new URLSearchParams(params.toString());
+      if (value === "all") {
+        nextSearch.delete("category");
+      } else {
+        nextSearch.set("category", value);
+      }
+      const queryString = nextSearch.toString();
+      router.replace(queryString ? `/stays?${queryString}` : "/stays", { scroll: false });
+    },
+    [params, router]
+  );
+
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero Section */}
@@ -564,25 +580,14 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Category Tabs */}
-            <div className="flex flex-wrap gap-2">
-              {STAY_CATEGORIES.map((tab) => (
-                <button
-                  key={tab.value}
-                  onClick={() => setActiveCategory(tab.value)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    activeCategory === tab.value
-                      ? "bg-green-600 text-white shadow"
-                      : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-          </div>
+          <CategoryTabs
+            categories={STAY_CATEGORIES}
+            activeValue={activeCategory}
+            onChange={handleCategoryChange}
+            accent="green"
+            scrollable={false}
+            className="flex flex-wrap items-center gap-2"
+          />
         </div>
 
         {/* Filters Bar */}
@@ -591,14 +596,12 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
           <div className="flex flex-col">
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price</label>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              {(
-                [
-                  { key: "under-1000", label: "Under 1000", min: "", max: 1000 },
-                  { key: "1000-plus", label: "1000+", min: 1000, max: "" },
-                  { key: "1500-plus", label: "1500+", min: 1500, max: "" },
-                  { key: "2000-plus", label: "2000+", min: 2000, max: "" },
-                ] as { key: string; label: string; min: number | ""; max: number | "" }[]
-              ).map((p) => {
+              {([
+                { key: "under-1000", label: "Under 1000", min: "" as const, max: 1000 as const },
+                { key: "1000-plus", label: "1000+", min: 1000 as const, max: "" as const },
+                { key: "1500-plus", label: "1500+", min: 1500 as const, max: "" as const },
+                { key: "2000-plus", label: "2000+", min: 2000 as const, max: "" as const },
+              ] as const).map((p) => {
                 const active = (priceMin === p.min || (p.min === "" && priceMin === "")) && (priceMax === p.max || (p.max === "" && priceMax === ""));
                 return (
               <button
@@ -612,8 +615,8 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
                   active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
                 }`}
               >
-                  <FaRupeeSign className="text-green-600" /> {p.label}
-                </button>
+                    <FaRupeeSign className="text-green-600" /> {p.label}
+                  </button>
                 );
               })}
             </div>

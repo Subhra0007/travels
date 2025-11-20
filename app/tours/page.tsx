@@ -1,8 +1,16 @@
 // tours/page.tsx
-"use client";
-
 import ToursExplorer from "./ToursExplorer";
 
-export default function ToursPage() {
-  return <ToursExplorer />;
+type ToursPageProps = {
+  searchParams?: Promise<{
+    category?: string | string[];
+  }>;
+};
+
+export default async function ToursPage({ searchParams }: ToursPageProps) {
+  const resolvedParams = searchParams ? await searchParams : undefined;
+  const initialCategory =
+    typeof resolvedParams?.category === "string" ? resolvedParams.category : undefined;
+
+  return <ToursExplorer initialCategory={initialCategory} />;
 }

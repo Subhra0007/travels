@@ -328,7 +328,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                 <button
                   type="button"
                   aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-                  onClick={() => toggleWishlist(tour._id, !isWishlisted)}
+                  onClick={() => toggleWishlist(tour._id, !isWishlisted, "tour")}
                   disabled={!wishlistLoaded}
                   className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
                     !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""

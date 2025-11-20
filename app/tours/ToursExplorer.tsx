@@ -1,7 +1,7 @@
 // tours/ToursExplorer.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,6 +25,7 @@ import { useWishlist } from "../hooks/useWishlist";
 import { useAvailability } from "../hooks/useAvailability";
 import { FaRupeeSign } from "react-icons/fa";
 import { TOUR_CATEGORIES, type TourCategoryValue } from "./categories";
+import CategoryTabs from "@/app/components/common/CategoryTabs";
 
 export type TourOption = {
   _id?: string;
@@ -288,11 +289,11 @@ export const TourCard = ({
 export default function ToursExplorer({ initialCategory = "all" }: ToursExplorerProps) {
   const params = useSearchParams();
   const router = useRouter();
-  const categoryParam = params.get("category") || initialCategory;
+  const categoryFromUrl = params.get("category") || initialCategory;
   const normalizedInitialCategory: CategoryValue = TOUR_CATEGORIES.some(
-    (tab) => tab.value === categoryParam
+    (tab) => tab.value === categoryFromUrl
   )
-    ? (categoryParam as CategoryValue)
+    ? (categoryFromUrl as CategoryValue)
     : "all";
 
   const [tours, setTours] = useState<Tour[]>([]);
@@ -308,8 +309,14 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
-    useWishlist<{ _id: string }>({ autoLoad: true });
+ // Fixed Wishlist Hook
+  const {
+    wishlistIds,
+    isInWishlist,
+    wishlistLoaded,
+    toggleWishlist,
+    error: wishlistError,
+  } = useWishlist({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
@@ -454,6 +461,21 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
     });
   }, [tours, sortBy, activeCategory, searchTerm, guests, priceMin, priceMax, ratingFilter, selectedTags]);
 
+  const handleCategoryChange = useCallback(
+    (value: CategoryValue) => {
+      setActiveCategory(value);
+      const nextSearch = new URLSearchParams(params.toString());
+      if (value === "all") {
+        nextSearch.delete("category");
+      } else {
+        nextSearch.set("category", value);
+      }
+      const queryString = nextSearch.toString();
+      router.replace(queryString ? `/tours?${queryString}` : "/tours", { scroll: false });
+    },
+    [params, router]
+  );
+
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
@@ -552,34 +574,31 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               Browse by category or use filters to narrow down the perfect match for your trip.
             </p>
           </div>
-        <div className="flex flex-wrap gap-2">
-          {TOUR_CATEGORIES.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setActiveCategory(tab.value)}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                activeCategory === tab.value
-                  ? "bg-green-600 text-white shadow"
-                  : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-600">Sort:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as "rating-desc" | "price-asc" | "price-desc" | "location-asc")}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-green-500 focus:outline-none"
-            >
-              <option value="rating-desc">Highest Rating</option>
-              <option value="price-asc">Price: Low to High</option>
-              <option value="price-desc">Price: High to Low</option>
-              <option value="location-asc">Location (A-Z)</option>
-            </select>
+          <div className="flex flex-wrap items-center gap-4">
+            <CategoryTabs
+              categories={TOUR_CATEGORIES}
+              activeValue={activeCategory}
+              onChange={handleCategoryChange}
+              accent="green"
+              scrollable={false}
+              className="flex flex-wrap gap-2"
+            />
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-600">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(e.target.value as "rating-desc" | "price-asc" | "price-desc" | "location-asc")
+                }
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-green-500 focus:outline-none"
+              >
+                <option value="rating-desc">Highest Rating</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="location-asc">Location (A-Z)</option>
+              </select>
+            </div>
           </div>
-        </div>
         </div>
 
         <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-green-100">
@@ -750,7 +769,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               <TourCard
                 key={tour._id}
                 tour={tour}
-                isWishlisted={isInWishlist(tour._id)}
+                isWishlisted={wishlistIds.has(tour._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={(id, state) => toggleWishlist(id, state, "tour")}
                 onSelectTag={(tag) =>

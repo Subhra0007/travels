@@ -1,7 +1,7 @@
 // app/vehicle-rental/VehicleRentalExplorer.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,7 +20,9 @@ import {
   VEHICLE_RENTAL_CATEGORIES,
   type VehicleRentalCategoryValue,
   VEHICLE_RENTAL_SLUG_TO_VALUE,
+  VEHICLE_RENTAL_VALUE_TO_SLUG,
 } from "./categories";
+import CategoryTabs from "@/app/components/common/CategoryTabs";
 
 export type VehicleOption = {
   _id?: string;
@@ -214,12 +216,12 @@ export const RentalCard = ({
 export default function VehicleRentalExplorer({ initialCategory = "all" }: VehicleRentalExplorerProps) {
   const params = useSearchParams();
   const router = useRouter();
-  const slugOrValue = params.get("category") || initialCategory;
-  const valueFromSlug = VEHICLE_RENTAL_SLUG_TO_VALUE[slugOrValue as string] || slugOrValue;
+  const slug = params.get("category") || undefined;
+  const fromSlug = slug ? VEHICLE_RENTAL_SLUG_TO_VALUE[slug] ?? "all" : initialCategory;
   const normalizedInitialCategory: CategoryValue = VEHICLE_RENTAL_CATEGORIES.some(
-    (tab) => tab.value === valueFromSlug
+    (tab) => tab.value === fromSlug
   )
-    ? (valueFromSlug as CategoryValue)
+    ? (fromSlug as CategoryValue)
     : "all";
 
   const [rentals, setRentals] = useState<VehicleRental[]>([]);
@@ -233,11 +235,6 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const city = params.get("city") || "";
-    setSearchTerm(city);
-  }, [params]);
 
   const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
@@ -275,6 +272,15 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   useEffect(() => {
     setActiveCategory(normalizedInitialCategory);
   }, [normalizedInitialCategory]);
+
+  useEffect(() => {
+    const city = params.get("city") || "";
+    const pickup = params.get("pickup") || "";
+    const dropoff = params.get("dropoff") || "";
+    setSearchTerm(city);
+    setPickupDate(pickup);
+    setDropoffDate(dropoff);
+  }, [params]);
 
   const priceBounds = useMemo(() => {
     if (!rentals.length) return { min: 0, max: 0 };
@@ -339,6 +345,22 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
     });
   }, [rentals, sortBy, activeCategory, searchTerm, priceMin, priceMax, ratingFilter, selectedTags]);
 
+  const handleCategoryChange = useCallback(
+    (value: CategoryValue) => {
+      setActiveCategory(value);
+      const nextSearch = new URLSearchParams(params.toString());
+      if (value === "all") {
+        nextSearch.delete("category");
+      } else {
+        const slugValue = VEHICLE_RENTAL_VALUE_TO_SLUG[value] || value;
+        nextSearch.set("category", slugValue);
+      }
+      const queryString = nextSearch.toString();
+      router.replace(queryString ? `/vehicle-rental?${queryString}` : "/vehicle-rental", { scroll: false });
+    },
+    [params, router]
+  );
+
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero */}
@@ -396,7 +418,10 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 onClick={() => {
                   const url = new URL("/vehicle-rental", window.location.origin);
                   if (searchTerm) url.searchParams.set("city", searchTerm);
-                  if (activeCategory && activeCategory !== "all") url.searchParams.set("category", activeCategory);
+                  if (activeCategory && activeCategory !== "all") {
+                    const slugValue = VEHICLE_RENTAL_VALUE_TO_SLUG[activeCategory] || activeCategory;
+                    url.searchParams.set("category", slugValue);
+                  }
                   if (pickupDate) url.searchParams.set("pickup", pickupDate);
                   if (dropoffDate) url.searchParams.set("dropoff", dropoffDate);
                   router.push(`${url.pathname}?${url.searchParams.toString()}`);
@@ -416,25 +441,22 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
             <h2 className="text-2xl font-semibold text-gray-900">Available rentals</h2>
             <p className="text-sm text-gray-600">Filter by category, price, or tags.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {VEHICLE_RENTAL_CATEGORIES.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setActiveCategory(tab.value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                  activeCategory === tab.value
-                    ? "bg-blue-600 text-white shadow"
-                    : "bg-white text-gray-700 shadow-sm hover:bg-blue-50"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-4">
+            <CategoryTabs
+              categories={VEHICLE_RENTAL_CATEGORIES}
+              activeValue={activeCategory}
+              onChange={handleCategoryChange}
+              accent="blue"
+              scrollable={false}
+              className="flex flex-wrap gap-2"
+            />
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-600">Sort:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as "rating-desc" | "price-asc" | "price-desc" | "location-asc")}
+                onChange={(e) =>
+                  setSortBy(e.target.value as "rating-desc" | "price-asc" | "price-desc" | "location-asc")
+                }
                 className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-blue-500 focus:outline-none"
               >
                 <option value="rating-desc">Highest Rating</option>
