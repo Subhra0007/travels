@@ -44,8 +44,12 @@ export async function GET(req: NextRequest) {
   }
 }
 
+type AdminBlogsRouteContext = {
+  params: Promise<Record<string, never>>;
+};
+
 // POST - Create a new blog (admin only)
-export const POST = auth(async (req: NextRequest) => {
+export const POST = auth(async (req: NextRequest, _context: AdminBlogsRouteContext) => {
   try {
     await dbConnect();
     const user = (req as any).user;

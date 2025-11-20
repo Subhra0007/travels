@@ -44,13 +44,12 @@ export async function GET(req: NextRequest) {
 }
 
 // POST - Create a new category (admin only)
-export const POST = auth(async (req: NextRequest) => {
+export const POST = auth(async (req: NextRequest, context: any) => {
   try {
     await dbConnect();
     const body = await req.json();
     const user = (req as any).user;
 
-    // Only admin can create categories
     if (user.accountType !== "admin") {
       return NextResponse.json(
         { success: false, message: "Only admin can create categories" },
@@ -67,7 +66,6 @@ export const POST = auth(async (req: NextRequest) => {
       );
     }
 
-    // Generate slug from name
     const slug = name
       .toLowerCase()
       .trim()
@@ -75,11 +73,10 @@ export const POST = auth(async (req: NextRequest) => {
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
 
-    // Check if category with same slug exists
     const existing = await Category.findOne({ slug });
     if (existing) {
       return NextResponse.json(
-        { success: false, message: "Category with this name already exists" },
+        { success: false, message: "Category already exists" },
         { status: 400 }
       );
     }
@@ -87,16 +84,13 @@ export const POST = auth(async (req: NextRequest) => {
     const category = await Category.create({
       name: name.trim(),
       slug,
-      requiresVariants: requiresVariants || false,
+      requiresVariants: !!requiresVariants,
       image: image || undefined,
       displayOrder: displayOrder || 0,
       isActive: true,
     });
 
-    return NextResponse.json(
-      { success: true, category },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, category }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || "Failed to create category" },
@@ -104,4 +98,3 @@ export const POST = auth(async (req: NextRequest) => {
     );
   }
 });
-

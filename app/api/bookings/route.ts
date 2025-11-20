@@ -648,7 +648,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export const GET = auth(async (req: NextRequest) => {
+export const GET = auth(async (req: NextRequest, context: any) => {
   try {
     await dbConnect();
     const user = (req as any).user;
@@ -658,9 +658,7 @@ export const GET = auth(async (req: NextRequest) => {
 
     const query: any = {};
 
-    if (status) {
-      query.status = status;
-    }
+    if (status) query.status = status;
 
     if (user.accountType === "admin") {
       if (vendorIdParam) {
@@ -675,7 +673,6 @@ export const GET = auth(async (req: NextRequest) => {
     } else if (user.accountType === "vendor") {
       query.vendorId = user.id;
     } else {
-      // regular user
       query.$or = [{ customerId: user.id }, { "customer.email": user.email }];
     }
 

@@ -82,7 +82,7 @@ const VendorCancellationsPage = () => {
         <Sidebar />
       </div>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col mt-15">
         <header className="sticky top-0 z-40 bg-slate-50 px-4 pt-10 pb-4 shadow-sm lg:hidden">
           <button
             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"
@@ -92,7 +92,7 @@ const VendorCancellationsPage = () => {
           </button>
         </header>
 
-        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16 max-w-5xl mx-auto">
+        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16  lg:max-w-6xl mx-auto max-w-3xl">
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-900">Cancelled bookings</h1>
             <p className="text-sm text-gray-600">
@@ -113,7 +113,7 @@ const VendorCancellationsPage = () => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto lg:max-w-6xl mx-auto max-w-3xl">
               <BookingTable
                 bookings={bookings}
                 variant="vendor"

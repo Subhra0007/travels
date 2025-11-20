@@ -3,7 +3,11 @@ import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import AdminMeta from "@/models/AdminMeta";
 
-export const GET = auth(async (req: NextRequest) => {
+type AdminMetaRouteContext = {
+  params: Promise<Record<string, never>>;
+};
+
+export const GET = auth(async (req: NextRequest, _context: AdminMetaRouteContext) => {
   try {
     await dbConnect();
     const { email, accountType } = (req as any).user || {};

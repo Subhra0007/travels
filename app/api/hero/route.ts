@@ -158,13 +158,16 @@ export async function GET() {
   }
 }
 
-export const PUT = auth(async (req: NextRequest) => {
+export const PUT = auth(async (req: NextRequest, context: any) => {
   try {
     await dbConnect();
     const user = (req as any).user;
 
     if (user.accountType !== "admin") {
-      return NextResponse.json({ success: false, message: "Only admins can update hero content" }, { status: 403 });
+      return NextResponse.json(
+        { success: false, message: "Only admins can update hero content" },
+        { status: 403 }
+      );
     }
 
     const body = await req.json();
@@ -190,4 +193,3 @@ export const PUT = auth(async (req: NextRequest) => {
     );
   }
 });
-

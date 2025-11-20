@@ -4,11 +4,16 @@ import dbConnect from "@/lib/config/database";
 import Transaction from "@/models/Transaction";
 import { auth } from "@/lib/middlewares/auth";
 
-export const POST = auth(async (req: NextRequest) => {
+type AdminTransactionContext = {
+  params: Promise<Record<string, never>>;
+};
+
+// POST - Create transaction
+export const POST = auth(async (req: NextRequest, _context?: AdminTransactionContext) => {
   try {
     await dbConnect();
     const user = (req as any).user;
-    
+
     if (user.accountType !== "admin") {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
@@ -20,7 +25,7 @@ export const POST = auth(async (req: NextRequest) => {
       return NextResponse.json({ success: false, message: "Invalid vendor ID" }, { status: 400 });
     }
 
-    if (!message || !message.trim()) {
+    if (!message?.trim()) {
       return NextResponse.json({ success: false, message: "Message is required" }, { status: 400 });
     }
 
@@ -34,16 +39,16 @@ export const POST = auth(async (req: NextRequest) => {
       amount: amount ? Number(amount) : undefined,
       currency: currency || "INR",
       scheduledDate: new Date(scheduledDate),
-      notes: notes ? notes.trim() : undefined,
+      notes: notes?.trim(),
       status: "pending",
     });
 
     await transaction.save();
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       transaction,
-      message: "Transaction created successfully" 
+      message: "Transaction created successfully",
     });
   } catch (error: any) {
     console.error("Transaction creation error", error);
@@ -54,7 +59,8 @@ export const POST = auth(async (req: NextRequest) => {
   }
 });
 
-export const GET = auth(async (req: NextRequest) => {
+// GET - Admin/vendor fetch transactions
+export const GET = auth(async (req: NextRequest, _context?: AdminTransactionContext) => {
   try {
     await dbConnect();
     const user = (req as any).user;
@@ -64,9 +70,7 @@ export const GET = auth(async (req: NextRequest) => {
     const status = searchParams.get("status");
     const vendorId = searchParams.get("vendorId");
 
-    if (status) {
-      query.status = status;
-    }
+    if (status) query.status = status;
 
     if (user.accountType === "admin") {
       if (vendorId) {
@@ -95,4 +99,3 @@ export const GET = auth(async (req: NextRequest) => {
     );
   }
 });
-

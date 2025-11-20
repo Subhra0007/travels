@@ -3,13 +3,11 @@ import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import Support from "@/models/Support";
 
-// GET - User's inbox (messages with admin replies)
-export const GET = auth(async (req: NextRequest) => {
+export const GET = auth(async (req: NextRequest, context: any) => {
   try {
     await dbConnect();
     const userId = (req as any).user.id;
 
-    // Get messages that have admin replies
     const inboxMessages = await Support.find({
       userId,
       status: { $in: ["replied", "closed"] },

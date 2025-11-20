@@ -4,13 +4,15 @@ import { auth } from "@/lib/middlewares/auth";
 import Support from "@/models/Support";
 import User from "@/models/User";
 
-// GET - Admin views all support messages
-export const GET = auth(async (req: NextRequest) => {
+type AdminSupportRouteContext = {
+  params: Promise<Record<string, never>>;
+};
+
+export const GET = auth(async (req: NextRequest, _context: AdminSupportRouteContext) => {
   try {
     await dbConnect();
     const user = (req as any).user;
 
-    // Verify admin
     if (user.accountType !== "admin") {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
@@ -20,10 +22,9 @@ export const GET = auth(async (req: NextRequest) => {
 
     const searchParams = new URL(req.url).searchParams;
     const status = searchParams.get("status");
+
     const query: any = {};
-    if (status) {
-      query.status = status;
-    }
+    if (status) query.status = status;
 
     const messages = await Support.find(query)
       .sort({ createdAt: -1 })
@@ -40,4 +41,3 @@ export const GET = auth(async (req: NextRequest) => {
     );
   }
 });
-

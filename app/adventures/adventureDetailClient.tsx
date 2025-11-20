@@ -293,7 +293,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
 
   return (
     <div className="min-h-screen bg-sky-50 text-black">
-      <header className="relative isolate overflow-hidden bg-gradient-to-br from-orange-600 via-orange-500 to-amber-400 pb-20 pt-16 text-white">
+      <header className="relative isolate overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 pb-20 pt-16 text-white">
         {/* <div
           className="absolute inset-0 opacity-20"
           style={{
@@ -391,7 +391,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                         setEndDate(formatDateInput(next));
                       }
                     }}
-                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -401,7 +401,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                     value={endDate}
                     min={startDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -411,7 +411,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                     min={1}
                     value={adults}
                     onChange={(e) => setAdults(Math.max(1, Number(e.target.value)))}
-                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   />
                 </label>
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
@@ -422,7 +422,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                       min={0}
                       value={children}
                       onChange={(e) => setChildren(Math.max(0, Number(e.target.value)))}
-                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
@@ -432,7 +432,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                       min={0}
                       value={infants}
                       onChange={(e) => setInfants(Math.max(0, Number(e.target.value)))}
-                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                     />
                   </label>
                 </div>
@@ -470,7 +470,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                   const target = document.getElementById("adventure-availability");
                   if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="mt-4 w-full rounded-lg bg-orange-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-orange-700"
+                className="mt-4 w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-green-700"
               >
                 View available options
               </button>
@@ -478,7 +478,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                 href={mapDirectionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 flex w-full items-center justify-center gap-2 text-sm font-medium text-orange-50 hover:text-white"
+                className="mt-3 flex w-full items-center justify-center gap-2 text-sm font-medium text-white/90 hover:text-white"
               >
                 <FaMapMarkerAlt /> Open in Google Maps
               </a>
@@ -498,14 +498,14 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
             </div>
             <div className="space-y-3 text-sm text-gray-700">
               <div className="flex items-center gap-2">
-                <FaMapMarkerAlt className="text-orange-600" />
+                <FaMapMarkerAlt className="text-green-600" />
                 <span>{adventure.location.city}, {adventure.location.state}</span>
               </div>
               <a
                 href={mapDirectionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 transition hover:bg-orange-100"
+                className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 transition hover:bg-green-100"
               >
                 <FaMapMarkerAlt /> Open in Google Maps
               </a>
@@ -560,7 +560,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
               {facilities.map((f) => (
                 <span
                   key={f}
-                  className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-4 py-1 text-sm font-medium text-orange-700"
+                  className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1 text-sm font-medium text-green-700"
                 >
                   <span className="text-base leading-none">{getFacilityIcon(f)}</span>
                   {f}
@@ -577,12 +577,12 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
               {adventure.curatedHighlights.map((item, i) => (
                 <div
                   key={item.title + i}
-                  className="flex gap-3 rounded-2xl bg-orange-50 px-4 py-3 text-sm text-orange-800"
+                  className="flex gap-3 rounded-2xl bg-green-50 px-4 py-3 text-sm text-green-800"
                 >
-                  <div className="mt-1 text-lg text-orange-600">{item.icon ? <i className={item.icon} /> : <FaCheck />}</div>
+                  <div className="mt-1 text-lg text-green-600">{item.icon ? <i className={item.icon} /> : <FaCheck />}</div>
                   <div>
                     <p className="font-semibold">{item.title}</p>
-                    {item.description && <p className="mt-1 text-orange-700/90">{item.description}</p>}
+                    {item.description && <p className="mt-1 text-green-700/90">{item.description}</p>}
                   </div>
                 </div>
               ))}
@@ -598,7 +598,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
               {adventure.about.description}
             </p>
             {adventure.vendorMessage && (
-              <div className="mt-4 rounded-2xl bg-orange-50 p-4 text-sm text-orange-800">
+              <div className="mt-4 rounded-2xl bg-green-50 p-4 text-sm text-green-800">
                 <p className="font-semibold">Vendor message</p>
                 <p className="mt-2 whitespace-pre-line">{adventure.vendorMessage}</p>
               </div>
@@ -632,11 +632,11 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                 Choose the experiences you’d like to join for {days} day{days === 1 ? "" : "s"}.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs font-semibold text-orange-700">
-              <span className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1">
+            <div className="flex flex-wrap gap-2 text-xs font-semibold text-green-700">
+              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1">
                 <FaCheck /> Expert guides
               </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1">
+              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1">
                 <FaInfoCircle /> Safety briefings included
               </span>
             </div>
@@ -690,13 +690,13 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
 
                   return (
                     <Fragment key={key}>
-                      <tr className={isSelected ? "bg-orange-50/60 transition" : "transition hover:bg-gray-50/60"}>
+                      <tr className={isSelected ? "bg-green-50/60 transition" : "transition hover:bg-gray-50/60"}>
                         <td className="align-top px-4 py-4 text-sm text-gray-700">
                           <div className="flex flex-col gap-2">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="text-base font-semibold text-gray-900">{opt.name}</span>
                               {isSelected && (
-                                <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-700">
+                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
                                   Selected
                                 </span>
                               )}
@@ -707,7 +707,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                               )}
                             </div>
                             <p className="text-xs text-gray-500">
-                              <FaClock className="mr-1 inline text-orange-500" />
+                              <FaClock className="mr-1 inline text-green-500" />
                               {opt.duration} · Difficulty: {opt.difficulty}
                             </p>
                             {opt.description && (
@@ -779,8 +779,8 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                                 disabled={optionUnavailable}
                               className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
                                 isSelected
-                                  ? "bg-orange-600 text-white shadow hover:bg-orange-700"
-                                  : "border border-orange-600 text-orange-700 hover:bg-orange-50 disabled:border-gray-300 disabled:text-gray-400"
+                                  ? "bg-green-600 text-white shadow hover:bg-green-700"
+                                  : "border border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-400"
                                 } ${
                                   optionUnavailable
                                     ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
@@ -901,7 +901,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
               </div>
             </div>
             {!pricing.totalOptions && (
-              <p className="text-xs text-amber-600">
+              <p className="text-xs text-rose-600">
                 Select at least one option above to continue.
               </p>
             )}
@@ -914,7 +914,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
               type="button"
               onClick={handleBookNow}
               disabled={!pricing.totalOptions || soldOutForDates}
-              className="w-full rounded-lg bg-orange-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {soldOutForDates
                 ? "Unavailable for these dates"
@@ -924,7 +924,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
             </button>
           </div>
 
-          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-orange-50 via-white to-orange-100 p-5 text-sm text-gray-700 shadow-inner">
+          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900">What happens next?</h3>
               <p>Clicking <strong>Book now</strong> will take you to a dedicated page where you can:</p>
@@ -950,7 +950,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                   <ul className="mt-3 space-y-2 text-sm text-gray-700">
                     {items.map((it, i) => (
                       <li key={it + i} className="flex items-start gap-3">
-                        <span className="mt-0.5 text-orange-600">{getFacilityIcon(it)}</span>
+                        <span className="mt-0.5 text-green-600">{getFacilityIcon(it)}</span>
                         <span>{it}</span>
                       </li>
                     ))}
@@ -1064,7 +1064,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                   key={src + i}
                   type="button"
                   onClick={() => setOptionImgIdx(i)}
-                  className={`relative h-20 overflow-hidden rounded-lg ${optionImgIdx === i ? "ring-2 ring-orange-500" : ""}`}
+                  className={`relative h-20 overflow-hidden rounded-lg ${optionImgIdx === i ? "ring-2 ring-green-500" : ""}`}
                 >
                   <Image src={src} alt="thumb" fill className="object-cover" />
                 </button>

@@ -2,18 +2,18 @@
 
 import type { ReactNode } from "react";
 
-type CategoryTab<T extends string = string> = {
+type CategoryTab = {
   label: string;
-  value: T;
+  value: string;
   icon?: ReactNode;
 };
 
 type Accent = "green" | "blue" | "emerald";
 
-type CategoryTabsProps<T extends string = string> = {
-  categories: ReadonlyArray<CategoryTab<T>>;
-  activeValue: T;
-  onChange: (value: T) => void;
+type CategoryTabsProps<Value extends string = string> = {
+  categories: ReadonlyArray<CategoryTab>;
+  activeValue: Value;
+  onChange: (value: Value) => void;
   accent?: Accent;
   className?: string;
   scrollable?: boolean;
@@ -31,14 +31,14 @@ const INACTIVE_STYLES: Record<Accent, string> = {
   emerald: "bg-white text-gray-700 shadow-sm hover:bg-emerald-50",
 };
 
-export default function CategoryTabs<T extends string = string>({
+export default function CategoryTabs<Value extends string = string>({
   categories,
   activeValue,
   onChange,
   accent = "green",
   className = "",
   scrollable = true,
-}: CategoryTabsProps<T>) {
+}: CategoryTabsProps<Value>) {
   return (
     <div
       className={`flex flex-wrap gap-2 ${
@@ -51,7 +51,7 @@ export default function CategoryTabs<T extends string = string>({
           <button
             key={category.value}
             type="button"
-            onClick={() => onChange(category.value)}
+            onClick={() => onChange(category.value as Value)}
             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
               isActive ? ACTIVE_STYLES[accent] : INACTIVE_STYLES[accent]
             }`}

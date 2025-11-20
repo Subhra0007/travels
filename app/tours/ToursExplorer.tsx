@@ -310,13 +310,8 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
  // Fixed Wishlist Hook
-  const {
-    wishlistIds,
-    isInWishlist,
-    wishlistLoaded,
-    toggleWishlist,
-    error: wishlistError,
-  } = useWishlist({ autoLoad: true });
+ const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
+     useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
@@ -769,9 +764,9 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               <TourCard
                 key={tour._id}
                 tour={tour}
-                isWishlisted={wishlistIds.has(tour._id)}
+                   isWishlisted={wishlistIds.has(tour._id)}
                 wishlistDisabled={!wishlistLoaded}
-                onToggleWishlist={(id, state) => toggleWishlist(id, state, "tour")}
+                onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }

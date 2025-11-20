@@ -4,7 +4,11 @@ import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import User from "@/models/User";
 
-export const PUT = auth(async (req: NextRequest) => {
+type ProfilePictureRemoveRouteContext = {
+  params: Promise<Record<string, never>>;
+};
+
+export const PUT = auth(async (req: NextRequest, _context: ProfilePictureRemoveRouteContext) => {
   await dbConnect();
   const userId = (req as any).user.id;
 

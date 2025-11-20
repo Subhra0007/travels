@@ -4,7 +4,7 @@ import dbConnect from "@/lib/config/database";
 import Settlement from "@/models/Settlement";
 import { auth } from "@/lib/middlewares/auth";
 
-export const GET = auth(async (req: NextRequest) => {
+export const GET = auth(async (req: NextRequest, context: any) => {
   try {
     await dbConnect();
     const user = (req as any).user;
@@ -14,9 +14,7 @@ export const GET = auth(async (req: NextRequest) => {
     const status = searchParams.get("status");
     const vendorId = searchParams.get("vendorId");
 
-    if (status) {
-      query.status = status;
-    }
+    if (status) query.status = status;
 
     if (user.accountType === "admin") {
       if (vendorId) {
@@ -47,10 +45,11 @@ export const GET = auth(async (req: NextRequest) => {
   }
 });
 
-export const PATCH = auth(async (req: NextRequest) => {
+export const PATCH = auth(async (req: NextRequest, context: any) => {
   try {
     await dbConnect();
     const user = (req as any).user;
+
     if (user.accountType !== "admin") {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
     }
@@ -69,24 +68,21 @@ export const PATCH = auth(async (req: NextRequest) => {
         return NextResponse.json({ success: false, message: "Invalid status" }, { status: 400 });
       }
       updates.status = status;
-      if (status === "paid") {
-        updates.paidAt = new Date();
-      }
+      if (status === "paid") updates.paidAt = new Date();
     }
 
-    if (amountPaid !== undefined) {
-      updates.amountPaid = Number(amountPaid);
-    }
-
-    if (notes !== undefined) {
-      updates.notes = String(notes);
-    }
+    if (amountPaid !== undefined) updates.amountPaid = Number(amountPaid);
+    if (notes !== undefined) updates.notes = String(notes);
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ success: false, message: "No updates provided" }, { status: 400 });
     }
 
-    const updated = await Settlement.findByIdAndUpdate(settlementId, { $set: updates }, { new: true });
+    const updated = await Settlement.findByIdAndUpdate(
+      settlementId,
+      { $set: updates },
+      { new: true }
+    );
 
     return NextResponse.json({ success: true, settlement: updated });
   } catch (error: any) {
