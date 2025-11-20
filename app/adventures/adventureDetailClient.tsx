@@ -321,6 +321,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                     <h1 className="text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">{adventure.name}</h1>
                     <button
                       type="button"
+                      aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
                       onClick={() => toggleWishlist(adventure._id, !isWishlisted, "adventure")}
                       disabled={!wishlistLoaded}
                       className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-white/25 ${

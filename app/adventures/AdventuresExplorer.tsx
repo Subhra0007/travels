@@ -1,13 +1,14 @@
 // adventures/AdventuresExplorer.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { FaHeart, FaMapMarkerAlt, FaSearch, FaStar, FaUsers, FaRupeeSign } from "react-icons/fa";
 import { useWishlist } from "../hooks/useWishlist";
 import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
+import CategoryTabs from "@/app/components/common/CategoryTabs";
 
 export type AdventureOption = {
   _id?: string;
@@ -189,6 +190,7 @@ export const AdventureCard = ({
 
 export default function AdventuresExplorer({ initialCategory = "all" }: AdventuresExplorerProps) {
   const params = useSearchParams();
+  const router = useRouter();
   const categoryFromUrl = params.get("category") || initialCategory;
   const normalizedInitialCategory: CategoryValue = ADVENTURE_CATEGORIES.some(
     (tab) => tab.value === categoryFromUrl
@@ -214,7 +216,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const [formDifficultyFilter, setFormDifficultyFilter] = useState<string>("");
   const [formActiveCategory, setFormActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
 
-  const { wishlistIds, wishlistLoaded, toggleWishlist, error: wishlistError } =
+  const { isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
@@ -246,6 +248,21 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
     setActiveCategory(normalizedInitialCategory);
     setFormActiveCategory(normalizedInitialCategory);
   }, [normalizedInitialCategory]);
+
+  const handleCategoryChange = useCallback(
+    (value: CategoryValue) => {
+      setActiveCategory(value);
+      const nextSearch = new URLSearchParams(params.toString());
+      if (value === "all") {
+        nextSearch.delete("category");
+      } else {
+        nextSearch.set("category", value);
+      }
+      const queryString = nextSearch.toString();
+      router.replace(queryString ? `/adventures?${queryString}` : "/adventures", { scroll: false });
+    },
+    [params, router]
+  );
 
   const priceBounds = useMemo(() => {
     if (!adventures.length) return { min: 0, max: 0 };
@@ -404,28 +421,22 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
 
       {/* Filters + List */}
       <section className="mx-auto max-w-6xl px-6 py-12">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Choose your adventure</h2>
             <p className="text-sm text-gray-600">
               Use filters below to narrow down the perfect experience.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {ADVENTURE_CATEGORIES.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setActiveCategory(tab.value)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                  activeCategory === tab.value
-                    ? "bg-green-600 text-white shadow"
-                    : "bg-white text-gray-700 shadow-sm hover:bg-green-50"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+
+          <CategoryTabs
+            categories={ADVENTURE_CATEGORIES}
+            activeValue={activeCategory}
+            onChange={handleCategoryChange}
+            accent="green"
+            scrollable={false}
+            className="flex flex-wrap items-center gap-2"
+          />
         </div>
 
         <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-green-100">
@@ -605,7 +616,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <AdventureCard
                 key={adv._id}
                 adventure={adv}
-                isWishlisted={wishlistIds.has(adv._id)}
+                isWishlisted={isInWishlist(adv._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={(id, state) => toggleWishlist(id, state, "adventure")}
                 onSelectTag={(tag) =>
