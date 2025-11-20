@@ -63,6 +63,11 @@ export type VehicleRentalDetailPayload = {
     available?: number;
     isRefundable?: boolean;
     refundableUntilHours?: number;
+    driver?: {
+      name?: string;
+      age?: number;
+      experienceYears?: number;
+    };
   }>;
   about: { heading: string; description: string };
   checkInOutRules: { pickup: string; dropoff: string; rules: string[] };
@@ -759,6 +764,28 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                                         </span>
                                       ))}
                                     </div>
+                                  </div>
+                                ) : null}
+                                {rental.category === "cars-rental" &&
+                                vehicle.driver &&
+                                (vehicle.driver.name || vehicle.driver.age || vehicle.driver.experienceYears) ? (
+                                  <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                      Chauffer details
+                                    </p>
+                                    <ul className="mt-2 space-y-1 text-xs text-gray-600">
+                                      {vehicle.driver.name && <li>Name: {vehicle.driver.name}</li>}
+                                      {typeof vehicle.driver.age === "number" && vehicle.driver.age > 0 && (
+                                        <li>Age: {vehicle.driver.age} yrs</li>
+                                      )}
+                                      {typeof vehicle.driver.experienceYears === "number" &&
+                                        vehicle.driver.experienceYears >= 0 && (
+                                          <li>
+                                            Experience: {vehicle.driver.experienceYears} yr
+                                            {vehicle.driver.experienceYears === 1 ? "" : "s"}
+                                          </li>
+                                        )}
+                                    </ul>
                                   </div>
                                 ) : null}
                               </div>

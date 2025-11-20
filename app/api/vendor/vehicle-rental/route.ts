@@ -58,21 +58,43 @@ const normalizeRentalPayload = (body: any) => {
     }
   }
 
-  const normalizedOptions = options.map((option: any) => ({
-    model: option.model.trim(),
-    description: option.description ?? "",
-    type: option.type.trim(),
-    pricePerDay: Number(option.pricePerDay),
-    taxes: option.taxes != null ? Number(option.taxes) : 0,
-    currency: typeof option.currency === "string" && option.currency.trim().length ? option.currency : "INR",
-    features: Array.isArray(option.features) ? option.features : [],
-    amenities: Array.isArray(option.amenities) ? option.amenities : [],
-    available: Number(option.available ?? option.inventory ?? 1),
-    isRefundable: option.isRefundable !== undefined ? Boolean(option.isRefundable) : true,
-    refundableUntilHours:
-      option.refundableUntilHours !== undefined ? Number(option.refundableUntilHours) : 48,
-    images: option.images,
-  }));
+  const allowDriverDetails = category === "cars-rental";
+
+  const normalizedOptions = options.map((option: any) => {
+    const driverName =
+      typeof option?.driver?.name === "string" ? option.driver.name.trim() : "";
+    const driverAge = Number(option?.driver?.age);
+    const driverExperience = Number(option?.driver?.experienceYears);
+
+    const driver =
+      allowDriverDetails &&
+      (driverName || Number.isFinite(driverAge) || Number.isFinite(driverExperience))
+        ? {
+            ...(driverName ? { name: driverName } : {}),
+            ...(Number.isFinite(driverAge) && driverAge > 0 ? { age: driverAge } : {}),
+            ...(Number.isFinite(driverExperience) && driverExperience >= 0
+              ? { experienceYears: driverExperience }
+              : {}),
+          }
+        : undefined;
+
+    return {
+      model: option.model.trim(),
+      description: option.description ?? "",
+      type: option.type.trim(),
+      pricePerDay: Number(option.pricePerDay),
+      taxes: option.taxes != null ? Number(option.taxes) : 0,
+      currency: typeof option.currency === "string" && option.currency.trim().length ? option.currency : "INR",
+      features: Array.isArray(option.features) ? option.features : [],
+      amenities: Array.isArray(option.amenities) ? option.amenities : [],
+      available: Number(option.available ?? option.inventory ?? 1),
+      isRefundable: option.isRefundable !== undefined ? Boolean(option.isRefundable) : true,
+      refundableUntilHours:
+        option.refundableUntilHours !== undefined ? Number(option.refundableUntilHours) : 48,
+      images: option.images,
+      ...(driver ? { driver } : {}),
+    };
+  });
 
   const normalizedVideos = {
     inside: Array.isArray(videos?.inside) ? videos.inside : [],

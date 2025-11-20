@@ -92,6 +92,12 @@ const VEHICLE_TYPES = [
   "Hybrid",
 ];
 
+type DriverInfoForm = {
+  name: string;
+  age: string;
+  experienceYears: string;
+};
+
 type OptionForm = {
   model: string;
   description: string;
@@ -100,6 +106,7 @@ type OptionForm = {
   features: string[];
   images: string[];
   available: number;
+  driver: DriverInfoForm;
 };
 
 const createDefaultOption = (): OptionForm => ({
@@ -110,6 +117,11 @@ const createDefaultOption = (): OptionForm => ({
   features: [],
   images: [],
   available: 1,
+  driver: {
+    name: "",
+    age: "",
+    experienceYears: "",
+  },
 });
 
 export default function AddVehicleRentalPage() {
@@ -199,6 +211,11 @@ export default function AddVehicleRentalPage() {
     });
   };
 
+  const updateDriverField = (idx: number, key: keyof DriverInfoForm, value: string) => {
+    const currentDriver = formData.options[idx]?.driver ?? { name: "", age: "", experienceYears: "" };
+    updateOption(idx, "driver", { ...currentDriver, [key]: value });
+  };
+
   const addOption = () => setFormData((prev) => ({ ...prev, options: [...prev.options, createDefaultOption()] }));
   const removeOption = (idx: number) =>
     setFormData((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
@@ -237,6 +254,12 @@ export default function AddVehicleRentalPage() {
               features: option.features ?? [],
               images: option.images ?? [],
               available: option.available ?? 1,
+              driver: {
+                name: option.driver?.name ?? "",
+                age: option.driver?.age != null ? String(option.driver.age) : "",
+                experienceYears:
+                  option.driver?.experienceYears != null ? String(option.driver.experienceYears) : "",
+              },
             }))
           : [createDefaultOption()],
       about: {
@@ -810,6 +833,54 @@ export default function AddVehicleRentalPage() {
                         </div>
                       )}
                     </div>
+                    {formData.category === "cars-rental" && (
+                      <div className="md:col-span-2 rounded-xl border border-dashed border-green-200 bg-green-50/40 p-4">
+                        <p className="text-sm font-semibold text-green-800">Driver details (optional)</p>
+                        <p className="text-xs text-green-700 mb-3">
+                          Share driver info to build trust with guests. Leave blank if self-drive only.
+                        </p>
+                        <div className="grid gap-4 md:grid-cols-3">
+                          <div>
+                            <label className="block text-xs font-medium uppercase tracking-wide text-green-900">
+                              Driver name
+                            </label>
+                            <input
+                              type="text"
+                              value={opt.driver?.name ?? ""}
+                              onChange={(e) => updateDriverField(idx, "name", e.target.value)}
+                              className="mt-1 w-full rounded-lg border border-green-200 px-3 py-2 text-sm"
+                              placeholder="e.g., Rajesh Kumar"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium uppercase tracking-wide text-green-900">
+                              Age
+                            </label>
+                            <input
+                              type="number"
+                              min={18}
+                              value={opt.driver?.age ?? ""}
+                              onChange={(e) => updateDriverField(idx, "age", e.target.value)}
+                              className="mt-1 w-full rounded-lg border border-green-200 px-3 py-2 text-sm"
+                              placeholder="35"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium uppercase tracking-wide text-green-900">
+                              Experience (years)
+                            </label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={opt.driver?.experienceYears ?? ""}
+                              onChange={(e) => updateDriverField(idx, "experienceYears", e.target.value)}
+                              className="mt-1 w-full rounded-lg border border-green-200 px-3 py-2 text-sm"
+                              placeholder="10"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium mb-1">
                         Vehicle Images <span className="text-red-500">*</span> (min 3)
