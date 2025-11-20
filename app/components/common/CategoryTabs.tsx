@@ -2,18 +2,18 @@
 
 import type { ReactNode } from "react";
 
-type CategoryTab = {
+type CategoryTab<T extends string = string> = {
   label: string;
-  value: string;
+  value: T;
   icon?: ReactNode;
 };
 
 type Accent = "green" | "blue" | "emerald";
 
-type CategoryTabsProps = {
-  categories: CategoryTab[];
-  activeValue: string;
-  onChange: (value: string) => void;
+type CategoryTabsProps<T extends string = string> = {
+  categories: ReadonlyArray<CategoryTab<T>>;
+  activeValue: T;
+  onChange: (value: T) => void;
   accent?: Accent;
   className?: string;
   scrollable?: boolean;
@@ -31,14 +31,14 @@ const INACTIVE_STYLES: Record<Accent, string> = {
   emerald: "bg-white text-gray-700 shadow-sm hover:bg-emerald-50",
 };
 
-export default function CategoryTabs({
+export default function CategoryTabs<T extends string = string>({
   categories,
   activeValue,
   onChange,
   accent = "green",
   className = "",
   scrollable = true,
-}: CategoryTabsProps) {
+}: CategoryTabsProps<T>) {
   return (
     <div
       className={`flex flex-wrap gap-2 ${
