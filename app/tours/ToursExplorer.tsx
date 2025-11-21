@@ -71,7 +71,7 @@ type TourCardProps = {
   tour: Tour;
   isWishlisted: boolean;
   wishlistDisabled: boolean;
-  onToggleWishlist: (tourId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
+  onToggleWishlist: (TourId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
   startDate?: string;
   endDate?: string;
@@ -101,7 +101,7 @@ export const TourCard = ({
   wishlistDisabled,
   onToggleWishlist,
   onSelectTag,
-  startDate,
+   startDate,
   endDate,
 }: TourCardProps) => {
   const optionCount = tour.options?.length ?? 0;
@@ -113,7 +113,7 @@ export const TourCard = ({
   const ratingValue = tour.rating?.count ? tour.rating.average : null;
   const tags = tour.tags ?? [];
   const hasDates = Boolean(startDate && endDate);
-  const availability = useAvailability("tour", tour._id, startDate, endDate);
+  const availability = useAvailability("tour", tour._id, startDate, endDate);    
   const availableOptionKeys = availability.availableOptionKeys ?? [];
   const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
 
@@ -154,7 +154,7 @@ export const TourCard = ({
             No image
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-emerald-900/60 via-transparent to-transparent" />
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-emerald-700 shadow">
           {tour.category}
         </span>
@@ -301,7 +301,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
   const [activeCategory, setActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
   const [searchTerm, setSearchTerm] = useState("");
   const [guests, setGuests] = useState(2);
-  const [checkIn, setCheckIn] = useState("");
+    const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [priceMin, setPriceMin] = useState<number | "">("");
@@ -311,7 +311,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
 
  // Fixed Wishlist Hook
  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
-     useWishlist<{ _id: string }>({ autoLoad: true });
+    useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
@@ -361,7 +361,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
     const ed = params.get("endDate") || "";
     setSearchTerm(city);
     setGuests(g ? Math.max(1, Number(g)) || 2 : 2);
-    setCheckIn(sd);
+   setCheckIn(sd);
     setCheckOut(ed);
   }, [params]);
 
@@ -475,9 +475,9 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
     <div className="min-h-screen bg-sky-50 text-black">
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
        
-        <div className="relative mx-auto max-w-6xl px-6">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect tour</h1>
+            <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect Tour</h1>
             <p className="mt-3 text-base text-white/80">
               Explore handpicked tours and packages with verified details and itineraries—just like your favourite booking websites.
             </p>
@@ -546,7 +546,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                   const url = new URL("/tours", window.location.origin);
                   if (searchTerm) url.searchParams.set("city", searchTerm);
                   if (guests) url.searchParams.set("guests", String(guests));
-                  if (checkIn) url.searchParams.set("startDate", checkIn);
+                     if (checkIn) url.searchParams.set("startDate", checkIn);
                   if (checkOut) url.searchParams.set("endDate", checkOut);
                   if (activeCategory && activeCategory !== "all") {
                     url.searchParams.set("category", activeCategory);
@@ -561,7 +561,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-12">
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-2">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Curated tours just for you</h2>
@@ -578,7 +578,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               scrollable={false}
               className="flex flex-wrap gap-2"
             />
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-600">Sort:</span>
               <select
                 value={sortBy}
@@ -592,7 +592,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                 <option value="price-desc">Price: High to Low</option>
                 <option value="location-asc">Location (A-Z)</option>
               </select>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -764,13 +764,13 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               <TourCard
                 key={tour._id}
                 tour={tour}
-                   isWishlisted={wishlistIds.has(tour._id)}
+                 isWishlisted={wishlistIds.has(tour._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }
-                startDate={checkIn}
+              startDate={checkIn}
                 endDate={checkOut}
               />
             ))}

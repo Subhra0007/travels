@@ -50,7 +50,7 @@ type AdventuresExplorerProps = {
 
 type AdventureCardProps = {
   adventure: Adventure;
-  isWishlisted: boolean;
+   isWishlisted: boolean;
   wishlistDisabled: boolean;
   onToggleWishlist: (advId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
@@ -58,7 +58,7 @@ type AdventureCardProps = {
 
 export const AdventureCard = ({
   adventure,
-  isWishlisted,
+ isWishlisted,
   wishlistDisabled,
   onToggleWishlist,
   onSelectTag,
@@ -179,7 +179,7 @@ export const AdventureCard = ({
               <span className="text-xs text-gray-500">Pricing on request</span>
             )}
           </div>
-          <span className="rounded-full bg-orange-100 px-4 py-1 text-xs font-semibold text-orange-700">
+          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-semibold text-green-700">
             View details
           </span>
         </div>
@@ -216,7 +216,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const [formDifficultyFilter, setFormDifficultyFilter] = useState<string>("");
   const [formActiveCategory, setFormActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
 
-  const { isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
+   const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
     useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
@@ -329,9 +329,9 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
       {/* Hero + Search */}
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
       
-        <div className="relative mx-auto max-w-6xl px-6">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-bold sm:text-4xl">Discover thrilling adventures</h1>
+            <h1 className="text-3xl font-bold sm:text-4xl">Discover thrilling Adventures</h1>
             <p className="mt-3 text-base text-white/80">
               Hand-picked treks, hikes, camps & rafting experiences with live availability.
             </p>
@@ -420,7 +420,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
       </section>
 
       {/* Filters + List */}
-      <section className="mx-auto max-w-6xl px-6 py-12">
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-2 mt-5">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Choose your adventure</h2>
@@ -616,9 +616,9 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <AdventureCard
                 key={adv._id}
                 adventure={adv}
-                isWishlisted={isInWishlist(adv._id)}
+                isWishlisted={wishlistIds.has(adv._id)}
                 wishlistDisabled={!wishlistLoaded}
-                onToggleWishlist={(id, state) => toggleWishlist(id, state, "adventure")}
+                onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }

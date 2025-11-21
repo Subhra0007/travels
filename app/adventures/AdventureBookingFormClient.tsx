@@ -262,7 +262,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
             <button
               type="button"
               onClick={() => router.push(`/adventures/${adventure._id}`)}
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-orange-700"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-700"
             >
               <FaArrowLeft /> Back to adventure
             </button>
@@ -299,7 +299,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
               <button
                 type="button"
                 onClick={() => router.push("/bookings")}
-                className="inline-flex items-center gap-2 rounded-full bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-orange-700"
+                className="inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-700"
               >
                 Go to my bookings
               </button>
@@ -319,7 +319,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
               <button
                 type="button"
                 onClick={() => router.push(`/adventures/${adventure._id}`)}
-                className="inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 transition hover:bg-orange-100"
+                className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 transition hover:bg-green-100"
               >
                 <FaArrowLeft /> Back to adventure details
               </button>
@@ -330,11 +330,11 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
             </div>
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-700">
               <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1">
-                <FaCalendarAlt className="text-orange-500" />
+                <FaCalendarAlt className="text-green-500" />
                 {formatDateDisplay(start)} · {formatDateDisplay(end)}
               </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1">
-                <FaUsers className="text-orange-500" /> {adults} adult{adults === 1 ? "" : "s"}
+                <FaUsers className="text-green-500" /> {adults} adult{adults === 1 ? "" : "s"}
                 {children > 0 && ` · ${children} child${children === 1 ? "" : "ren"}`}
               </span>
             </div>
@@ -358,7 +358,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                   required
                   value={formData.fullName}
                   onChange={handleFieldChange("fullName")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   placeholder="Primary traveller name"
                 />
               </label>
@@ -369,13 +369,13 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                   required
                   value={formData.email}
                   onChange={handleFieldChange("email")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   placeholder="you@example.com"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm text-gray-700">
                 Mobile number <span className="text-xs text-rose-500">*</span>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-orange-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-green-500">
                   <FaPhoneAlt className="text-gray-400" />
                   <input
                     type="tel"
@@ -394,7 +394,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                   required
                   value={formData.addressLine}
                   onChange={handleFieldChange("addressLine")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   placeholder="Street address, apartment, suite, etc."
                 />
               </label>
@@ -408,7 +408,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                   required
                   value={formData.city}
                   onChange={handleFieldChange("city")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -418,7 +418,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                   required
                   value={formData.state}
                   onChange={handleFieldChange("state")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -428,7 +428,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                   required
                   value={formData.postalCode}
                   onChange={handleFieldChange("postalCode")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -438,7 +438,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                   required
                   value={formData.country}
                   onChange={handleFieldChange("country")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
             </div>
@@ -449,7 +449,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
                 rows={4}
                 value={formData.specialRequests}
                 onChange={handleFieldChange("specialRequests")}
-                className="rounded-lg border border-gray-200 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 placeholder="Share dietary needs, health conditions, or expectations for your guide."
               />
             </label>
@@ -463,7 +463,7 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Processing booking…" : "Confirm booking"}
             </button>
@@ -485,14 +485,14 @@ const AdventureBookingFormClient: React.FC<AdventureBookingFormProps> = ({ adven
 
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
               <p className="flex items-center gap-2 text-gray-900">
-                <FaMapMarkerAlt className="text-orange-600" /> {adventureLocation}
+                <FaMapMarkerAlt className="text-green-600" /> {adventureLocation}
               </p>
               <p className="mt-2 flex items-center gap-2">
-                <FaCalendarAlt className="text-orange-600" />
+                <FaCalendarAlt className="text-green-600" />
                 {formatDateDisplay(start)} → {formatDateDisplay(end)} ({calculateDays(start, end)} day{calculateDays(start, end) === 1 ? "" : "s"})
               </p>
               <p className="mt-2 flex items-center gap-2">
-                <FaUsers className="text-orange-600" /> {adults} adult{adults === 1 ? "" : "s"}
+                <FaUsers className="text-green-600" /> {adults} adult{adults === 1 ? "" : "s"}
                 {children > 0 && ` · ${children} child${children === 1 ? "" : "ren"}`}
                 {infants > 0 && ` · ${infants} infant${infants === 1 ? "" : "s"}`}
               </p>

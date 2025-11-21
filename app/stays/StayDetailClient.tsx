@@ -315,12 +315,12 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
     <div className="min-h-screen bg-sky-50 text-black">
       <header className="relative isolate overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 pb-20 pt-16 text-white">
 
-        <div className="relative mx-auto max-w-6xl px-6">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm text-white backdrop-blur transition hover:bg-white/25"
           >
-            <FaArrowLeft /> Back to stays
+            <FaArrowLeft /> Back to Stays
           </button>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)]">
@@ -546,7 +546,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
         {images.length > 0 && (
           <button
             onClick={() => setGalleryOpen(true)}
-            className="absolute bottom-4 right-4 rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-gray-800 shadow-md hover:bg-white"
+            className="absolute bottom-4 right-4 rounded-lg bg-white/90 px-4 py-2 text-sm font-semibold text-gray-800 shadow-md hover:bg-white "
           >
             View all photos
           </button>
@@ -1099,7 +1099,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
           <button
             type="button"
             onClick={() => setGalleryOpen(false)}
-            className="absolute right-6 top-6 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
+            className="absolute right-10 top-20 rounded-full bg-white/10 px-3 py-1 text-sm text-white shadow-lg z-100"
           >
             Close
           </button>

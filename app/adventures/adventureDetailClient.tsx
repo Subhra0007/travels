@@ -289,7 +289,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
   };
 
   const facilities = adventure.popularFacilities || [];
-  const hasRating = adventure.rating && adventure.rating.count;
+ const hasRating = adventure.rating?.average != null;
 
   return (
     <div className="min-h-screen bg-sky-50 text-black">
@@ -304,7 +304,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
             backgroundPosition: "center",
           }}
         /> */}
-        <div className="relative mx-auto max-w-6xl px-6">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm text-white backdrop-blur transition hover:bg-white/25"
@@ -313,66 +313,67 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </button>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)]">
-            <div className="max-w-3xl">
-              <div className="flex items-start justify-between gap-6">
-                <div className="max-w-xl">
-                  <p className="uppercase tracking-wide text-white/80">{adventure.category}</p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <h1 className="text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">{adventure.name}</h1>
-                    <button
-                      type="button"
-                      aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-                      onClick={() => toggleWishlist(adventure._id, !isWishlisted, "adventure")}
-                      disabled={!wishlistLoaded}
-                      className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-white/25 ${
-                        !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""
-                      }`}
-                    >
-                      <FaHeart className={isWishlisted ? "text-red-400" : "text-white"} />
-                    </button>
-                  </div>
-                  <p className="mt-3 flex items-center text-base text-white/90">
-                    <FaMapMarkerAlt className="mr-2" />
-                    {locationString}
-                  </p>
-                </div>
-                <a
-                  href={mapDirectionsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hidden rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/25 md:flex md:items-center md:gap-2"
-                >
-                  View on map
-                </a>
-              </div>
-
-              {adventure.tags && adventure.tags.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {adventure.tags.slice(0, 4).map((t) => (
-                    <span key={t} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
-                      <FaTag /> {t}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {hasRating && (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold text-white">
-                  <FaStar className="text-yellow-300" /> {adventure.rating!.average.toFixed(1)} · {adventure.rating!.count} reviews
-                </div>
-              )}
-              {adventure.heroHighlights?.length > 0 && (
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {adventure.heroHighlights.slice(0, 3).map((h) => (
-                    <div
-                      key={h}
-                      className="rounded-2xl bg-white/15 px-4 py-3 text-sm font-medium text-white shadow-sm backdrop-blur"
-                    >
-                      {h}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <div className="space-y-6">
+                        <div className="flex items-start justify-between gap-6">
+                          <div className="max-w-2xl">
+                            <p className="uppercase tracking-wide text-white/80">
+                              {adventure.category.replace(/-/g, " ")}
+                            </p>
+                            <h1 className="mt-2 text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">
+                              {adventure.name}
+                            </h1>
+                            <p className="mt-3 flex items-center text-base text-white/90">
+                              <FaMapMarkerAlt className="mr-2" />
+                              {locationString}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
+                            onClick={() => toggleWishlist(adventure._id, !isWishlisted, "tour")}
+                            disabled={!wishlistLoaded}
+                            className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
+                              !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""
+                            }`}
+                          >
+                            <FaHeart className={isWishlisted ? "text-red-400" : "text-white"} />
+                          </button>
+                        </div>
+          
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
+                          {hasRating && (
+                            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold">
+                              <FaStar className="text-yellow-300" /> {adventure.rating!.average.toFixed(1)} · {adventure.rating!.count} reviews
+                            </span>
+                          )}
+                          <a
+                            href={mapDirectionsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold transition hover:bg-white/25"
+                          >
+                            <FaMapMarkerAlt /> View on map
+                          </a>
+                          {adventure.tags?.slice(0, 3).map((tag) => (
+                            <span key={tag} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
+                              <FaTag /> {tag}
+                            </span>
+                          ))}
+                        </div>
+          
+                        {adventure.heroHighlights?.length > 0 && (
+                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {adventure.heroHighlights.slice(0, 3).map((highlight) => (
+                              <div
+                                key={highlight}
+                                className="rounded-2xl bg-white/15 px-4 py-3 text-sm font-medium text-white shadow-sm backdrop-blur"
+                              >
+                                {highlight}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
             <div className="w-full max-w-xl rounded-2xl bg-white/95 p-6 text-gray-900 shadow-lg backdrop-blur">
               <h2 className="text-lg font-semibold text-gray-900">Plan your adventure</h2>
@@ -487,7 +488,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
         </div>
       </header>
 
-      <main className="mx-auto -mt-12 max-w-6xl px-6 pb-16">
+      <main className="mx-auto  max-w-7xl px-6 pb-16 lg:px-2 mt-10">
         <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="flex flex-col justify-between space-y-4">
             <div>
@@ -522,7 +523,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </div>
         </section>
 
-        <section className="grid gap-4 rounded-3xl bg-white p-6 shadow-xl md:grid-cols-5">
+        <section className="grid gap-4 rounded-3xl bg-white p-6 shadow-xl md:grid-cols-5 mt-10">
           <div className="relative h-64 w-full overflow-hidden rounded-2xl md:col-span-3">
             {images.length ? (
               <Image src={images[galleryIndex]} alt={adventure.name} fill className="object-cover" />
@@ -554,7 +555,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
         </section>
 
         {facilities.length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow">
+          <section className="rounded-3xl bg-white p-6 shadow mt-10">
             <h2 className="text-xl font-semibold text-gray-900">Popular facilities</h2>
             <div className="mt-4 flex flex-wrap gap-3">
               {facilities.map((f) => (
@@ -571,7 +572,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
         )}
 
         {adventure.curatedHighlights && adventure.curatedHighlights.length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow">
+          <section className="rounded-3xl bg-white p-6 shadow mt-10">
             <h2 className="text-xl font-semibold text-gray-900">Why guests love it</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {adventure.curatedHighlights.map((item, i) => (
@@ -590,7 +591,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </section>
         )}
 
-        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-2">
+        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-2 mt-10">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">About this adventure</h2>
             <h3 className="mt-2 text-lg font-semibold text-gray-800">{adventure.about.heading}</h3>
@@ -624,7 +625,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </div>
         </section>
 
-        <section id="adventure-availability" className="space-y-5 rounded-3xl bg-white p-6 shadow">
+        <section id="adventure-availability" className="space-y-5 rounded-3xl bg-white p-6 shadow mt-10">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Availability</h2>
@@ -866,7 +867,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </div>
         </section>
 
-        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mt-10">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Booking summary</h2>
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
@@ -924,7 +925,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
             </button>
           </div>
 
-          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
+          <div className="flex flex-col justify-between rounded-2xl bg-linear-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900">What happens next?</h3>
               <p>Clicking <strong>Book now</strong> will take you to a dedicated page where you can:</p>
@@ -941,7 +942,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
         </section>
 
         {adventure.amenities && Object.keys(adventure.amenities).length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow">
+          <section className="rounded-3xl bg-white p-6 shadow mt-10">
             <h2 className="text-xl font-semibold text-gray-900">Amenities</h2>
             <div className="mt-4 grid gap-6 md:grid-cols-2">
               {Object.entries(adventure.amenities).map(([cat, items]) => (
@@ -961,29 +962,38 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </section>
         )}
 
-        {(adventure.videos?.inside?.length || adventure.videos?.outside?.length) && (
-          <section className="rounded-3xl bg-white p-6 shadow">
-            <h2 className="text-xl font-semibold text-gray-900">Videos</h2>
+       {/* Videos */}
+        {(adventure.videos?.inside?.length ?? 0) > 0 || (adventure.videos?.outside?.length ?? 0) > 0 ? (
+          <section className="rounded-3xl bg-white p-6 shadow mt-10">
+            <h2 className="text-xl font-semibold text-gray-900">Experience in motion</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {(["inside", "outside"] as const).map((k) => (
-                <div key={k} className="space-y-3">
-                  <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-600">
-                    <FaVideo /> {k === "inside" ? "Inside" : "Outside"} walk-through
-                  </h3>
-                  {(adventure.videos as any)?.[k]?.length ? (
-                    (adventure.videos as any)[k].map((url: string, i: number) => (
-                      <video key={url + i} controls className="h-48 w-full rounded-2xl bg-black">
-                        <source src={url} />
-                      </video>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-500">Coming soon</p>
-                  )}
-                </div>
-              ))}
+              {["inside", "outside"].map((key) => {
+                const videos = adventure.videos?.[key as keyof typeof adventure.videos] ?? [];
+                return (
+                  <div key={key} className="space-y-3">
+                    <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-600">
+                      <FaVideo /> {key === "inside" ? "Inside" : "Outside"} walk-through
+                    </h3>
+                    {videos.length > 0 ? (
+                      videos.map((videoUrl: string, idx: number) => (
+                        <video
+                          key={videoUrl + idx}
+                          controls
+                          className="h-48 w-full overflow-hidden rounded-2xl bg-black object-cover"
+                        >
+                          <source src={videoUrl} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No video available.</p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
-        )}
+        ) : null}
       </main>
 
       {galleryOpen && images.length > 0 && (

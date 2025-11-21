@@ -68,7 +68,7 @@ export default function ProductDetailPage() {
       if (data.product.variants && data.product.variants.length > 0) {
         setSelectedVariant(data.product.variants[0]);
       }
-    } catch (error: any) {
+      } catch (error: unknown) {
       console.error("Failed to load product:", error);
       setProduct(null);
     } finally {
@@ -110,9 +110,35 @@ export default function ProductDetailPage() {
       .join(" ");
   };
 
+  const COLOR_MAP: Record<string, string> = {
+    red: "#ff0000",
+    blue: "#0000ff",
+    green: "#008000",
+    black: "#000000",
+    white: "#ffffff",
+    yellow: "#ffff00",
+    purple: "#800080",
+    orange: "#ffa500",
+    pink: "#ffc0cb",
+    gray: "#808080",
+    grey: "#808080",
+    brown: "#a52a2a",
+    cyan: "#00ffff",
+    magenta: "#ff00ff",
+    teal: "#008080",
+    violet: "#8a2be2",
+    indigo: "#4b0082",
+  };
+
+  const getColorValue = (color: string) => {
+    const c = (color || "").trim().toLowerCase();
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c)) return c;
+    return COLOR_MAP[c] || c || "transparent";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-6  lg:px-2">
         <Link
           href="/services/products"
           className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
@@ -182,10 +208,9 @@ export default function ProductDetailPage() {
                   
                   {/* Color Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">Color</label>
                     <div className="flex flex-wrap gap-2">
                       {Array.from(new Set(product.variants?.map((v) => v.color))).map((color) => {
-                        const variant = product.variants?.find((v) => v.color === color);
                         const isSelected = selectedVariant?.color === color;
                         return (
                           <button
@@ -197,13 +222,19 @@ export default function ProductDetailPage() {
                                 setSelectedImage(0);
                               }
                             }}
-                            className={`px-4 py-2 rounded-lg border-2 ${
+                            className={`px-4 py-2 rounded-lg border-2 text-black border-gray-400 ${
                               isSelected
                                 ? "border-green-600 bg-green-50"
-                                : "border-gray-200 hover:border-gray-300"
+                                : "border-gray-200 hover:border-gray-500"
                             }`}
                           >
-                            {color}
+                            <span className="inline-flex items-center gap-2">
+                              <span
+                                className="h-4 w-4 rounded-full border border-gray-300"
+                                style={{ backgroundColor: getColorValue(color) }}
+                              />
+                              {color}
+                            </span>
                           </button>
                         );
                       })}
@@ -227,12 +258,12 @@ export default function ProductDetailPage() {
                                   setSelectedImage(0);
                                 }}
                                 disabled={variant.stock === 0}
-                                className={`px-4 py-2 rounded-lg border-2 ${
+                                className={`px-4 py-2 rounded-lg border-2 text-black border-gray-400 ${
                                   variant.stock === 0
                                     ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
                                     : isSelected
                                     ? "border-green-600 bg-green-50"
-                                    : "border-gray-200 hover:border-gray-300"
+                                    : "border-gray-200 hover:border-gray-500"
                                 }`}
                               >
                                 {variant.size} {variant.stock === 0 && "(Out of Stock)"}

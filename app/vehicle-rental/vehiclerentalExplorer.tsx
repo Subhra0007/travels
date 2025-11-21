@@ -124,13 +124,13 @@ export const RentalCard = ({
             No image
           </div>
         )}
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-blue-700 shadow">
+        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
           {rental.category === "cars-rental" ? "Car" : "Bike"}
         </span>
         {hasDates && (
           <span
             className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
-              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-blue-100 text-blue-700"
+              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
             }`}
           >
             {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
@@ -143,7 +143,7 @@ export const RentalCard = ({
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{rental.name}</h3>
             <p className="mt-1 flex items-center text-sm text-gray-600">
-              <FaMapMarkerAlt className="mr-2 text-blue-600" />
+              <FaMapMarkerAlt className="mr-2 text-green-600" />
               {rental.location.city}, {rental.location.state}
             </p>
           </div>
@@ -159,7 +159,7 @@ export const RentalCard = ({
             {heroHighlights.map((h) => (
               <span
                 key={h}
-                className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700"
+                className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
               >
                 {h}
               </span>
@@ -185,7 +185,7 @@ export const RentalCard = ({
                   e.stopPropagation();
                   onSelectTag?.(tag);
                 }}
-                className="rounded-full border border-blue-200 px-3 py-1 text-blue-700 transition hover:border-blue-400 hover:bg-blue-50"
+                className="rounded-full border border-green-200 px-3 py-1 text-green-700 transition hover:border-green-400 hover:bg-green-50"
               >
                 {tag}
               </button>
@@ -204,7 +204,7 @@ export const RentalCard = ({
               <span className="text-xs text-gray-500">Pricing on request</span>
             )}
           </div>
-          <span className="rounded-full bg-blue-100 px-4 py-1 text-xs font-semibold text-blue-700">
+          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-semibold text-green-700">
             View details
           </span>
         </div>
@@ -364,11 +364,11 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 py-16 text-white">
+      <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
        
-        <div className="relative mx-auto max-w-6xl px-6">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-bold sm:text-4xl">Rent your ride</h1>
+            <h1 className="text-3xl font-bold sm:text-4xl">Rent your Ride</h1>
             <p className="mt-3 text-base text-white/80">
               Cars, bikes, and more — verified rentals with transparent pricing.
             </p>
@@ -381,7 +381,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
             >
               <div>
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Location</label>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-blue-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500">
                   <FaSearch className="text-gray-500" />
                   <input
                     type="text"
@@ -398,7 +398,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                   type="date"
                   value={pickupDate}
                   onChange={(e) => setPickupDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-green-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -407,13 +407,13 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                   type="date"
                   value={dropoffDate}
                   onChange={(e) => setDropoffDate(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-green-500 focus:outline-none"
                 />
               </div>
             </form>
             <div className="mt-4">
               <button
-                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                className="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700"
                 type="button"
                 onClick={() => {
                   const url = new URL("/vehicle-rental", window.location.origin);
@@ -435,7 +435,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
       </section>
 
       {/* Filters + Listings */}
-      <section className="mx-auto max-w-6xl px-6 py-12">
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-2">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Available rentals</h2>
@@ -446,30 +446,30 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
               categories={VEHICLE_RENTAL_CATEGORIES}
               activeValue={activeCategory}
               onChange={handleCategoryChange}
-              accent="blue"
+              accent="green"
               scrollable={false}
               className="flex flex-wrap gap-2"
             />
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-600">Sort:</span>
               <select
                 value={sortBy}
                 onChange={(e) =>
                   setSortBy(e.target.value as "rating-desc" | "price-asc" | "price-desc" | "location-asc")
                 }
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-800 focus:border-green-500 focus:outline-none"
               >
                 <option value="rating-desc">Highest Rating</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
                 <option value="location-asc">Location (A-Z)</option>
               </select>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Filters */}
-        <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-blue-100">
+        <div className="mt-6 flex flex-wrap gap-6 rounded-3xl bg-white p-6 shadow-xl ring-1 ring-green-100">
           <div className="flex flex-col">
             <label className="text-xs font-semibold uppercase tracking-wide text-gray-600">Price per day</label>
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -489,10 +489,10 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                       setPriceMax(p.max);
                     }}
                     className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                      active ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                      active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
                     }`}
                   >
-                    <FaRupeeSign className="text-blue-600" /> {p.label}
+                    <FaRupeeSign className="text-green-600" /> {p.label}
                   </button>
                 );
               })}
@@ -504,7 +504,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 value={priceMin}
                 onChange={(e) => setPriceMin(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
                 placeholder={priceBounds.min.toString()}
-                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500"
+                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500"
               />
               <span className="text-gray-500">to</span>
               <input
@@ -513,7 +513,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 value={priceMax}
                 onChange={(e) => setPriceMax(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
                 placeholder={priceBounds.max.toString()}
-                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-blue-500"
+                className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500"
               />
             </div>
           </div>
@@ -544,7 +544,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 type="button"
                 onClick={() => setRatingFilter("")}
                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                  ratingFilter === "" ? "border-blue-500 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                  ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
                 }`}
               >
                 All
@@ -567,8 +567,8 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                       }
                       className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                         active
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-200 text-gray-600 hover:border-blue-400 hover:bg-blue-50"
+                          ? "border-green-500 bg-green-50 text-green-700"
+                          : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
                       }`}
                     >
                       {tag}
@@ -591,7 +591,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
 
         {loading ? (
           <div className="mt-12 flex justify-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
           </div>
         ) : filteredRentals.length === 0 ? (
           <div className="mt-12 rounded-2xl bg-white p-10 text-center shadow">

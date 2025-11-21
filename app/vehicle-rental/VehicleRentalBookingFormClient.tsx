@@ -264,7 +264,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
             <button
               type="button"
               onClick={() => router.push(`/vehicle-rental/${rental._id}`)}
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-700"
             >
               <FaArrowLeft /> Back to vehicle list
             </button>
@@ -296,7 +296,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
               <button
                 type="button"
                 onClick={() => router.push("/bookings")}
-                className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700"
+                className="inline-flex items-center gap-2 rounded-full bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-700"
               >
                 Go to my bookings
               </button>
@@ -316,7 +316,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
               <button
                 type="button"
                 onClick={() => router.push(`/vehicle-rental/${rental._id}`)}
-                className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 transition hover:bg-green-100"
               >
                 <FaArrowLeft /> Back to vehicle selection
               </button>
@@ -327,7 +327,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
             </div>
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-700">
               <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1">
-                <FaCalendarAlt className="text-blue-500" />
+                <FaCalendarAlt className="text-green-500" />
                 {formatDateDisplay(pickup)} · {formatDateDisplay(dropoff)}
               </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1">
@@ -352,7 +352,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.fullName}
                   onChange={handleFieldChange("fullName")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   placeholder="As per driving licence"
                 />
               </label>
@@ -363,13 +363,13 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.email}
                   onChange={handleFieldChange("email")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   placeholder="you@example.com"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm text-gray-700">
                 Mobile number <span className="text-xs text-rose-500">*</span>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-blue-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 focus-within:border-green-500">
                   <FaPhoneAlt className="text-gray-400" />
                   <input
                     type="tel"
@@ -388,7 +388,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.licenceNumber}
                   onChange={handleFieldChange("licenceNumber")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   placeholder="Enter licence ID"
                 />
               </label>
@@ -402,7 +402,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.addressLine}
                   onChange={handleFieldChange("addressLine")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                   placeholder="Street address, apartment, suite, etc."
                 />
               </label>
@@ -413,7 +413,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.city}
                   onChange={handleFieldChange("city")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -423,7 +423,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.state}
                   onChange={handleFieldChange("state")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -433,7 +433,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.postalCode}
                   onChange={handleFieldChange("postalCode")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
               <label className="md:col-span-2 flex flex-col gap-1 text-sm text-gray-700">
@@ -443,7 +443,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                   required
                   value={formData.country}
                   onChange={handleFieldChange("country")}
-                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 />
               </label>
             </div>
@@ -454,7 +454,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                 rows={4}
                 value={formData.specialRequests}
                 onChange={handleFieldChange("specialRequests")}
-                className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                 placeholder="Mention additional drivers, preferred pickup window, or requests for helmets/child seats."
               />
             </label>
@@ -468,7 +468,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Processing booking…" : "Confirm booking"}
             </button>
@@ -490,10 +490,10 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
 
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
               <p className="flex items-center gap-2 text-gray-900">
-                <FaMapMarkerAlt className="text-blue-600" /> {rentalLocation}
+                <FaMapMarkerAlt className="text-green-600" /> {rentalLocation}
               </p>
               <p className="mt-2 flex items-center gap-2">
-                <FaCalendarAlt className="text-blue-600" />
+                <FaCalendarAlt className="text-green-600" />
                 {formatDateDisplay(pickup)} → {formatDateDisplay(dropoff)} ({calculateDays(pickup, dropoff)} day{calculateDays(pickup, dropoff) === 1 ? "" : "s"})
               </p>
             </div>

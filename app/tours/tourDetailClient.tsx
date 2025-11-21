@@ -301,8 +301,8 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
 
   return (
     <div className="min-h-screen bg-sky-50 text-black">
-      <header className="relative isolate overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-400 pb-20 pt-16 text-white">
-        <div className="relative mx-auto max-w-6xl px-6">
+      <header className="relative isolate overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 pb-20 pt-16 text-white">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm text-white backdrop-blur transition hover:bg-white/25"
@@ -392,7 +392,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                           setEndDate(formatDateInput(next));
                         }
                       }}
-                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -402,7 +402,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                       value={endDate}
                       min={startDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                     />
                   </label>
                   <label className="flex flex-col gap-1 text-sm text-gray-700">
@@ -412,7 +412,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                       min={1}
                       value={adults}
                       onChange={(e) => setAdults(Math.max(1, Number(e.target.value)))}
-                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+                      className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                     />
                   </label>
                   <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
@@ -423,7 +423,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                         min={0}
                         value={children}
                         onChange={(e) => setChildren(Math.max(0, Number(e.target.value)))}
-                        className="rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                       />
                     </label>
                     <label className="flex flex-col gap-1">
@@ -433,7 +433,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                         min={0}
                         value={infants}
                         onChange={(e) => setInfants(Math.max(0, Number(e.target.value)))}
-                        className="rounded-lg border border-gray-200 px-3 py-2 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
                       />
                     </label>
                   </div>
@@ -472,7 +472,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                     const target = document.getElementById("availability-section");
                     if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
-                  className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-indigo-700"
+                  className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-green-700"
                 >
                   View available options
                 </button>
@@ -482,7 +482,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
         </div>
       </header>
 
-      <main className="mx-auto mt-10 flex max-w-6xl flex-col gap-12 px-6 pb-16">
+      <main className="mx-auto mt-10 flex max-w-7xl flex-col gap-12 px-6 pb-16 lg:px-2">
         {/* Location Map */}
         <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="flex flex-col justify-between space-y-4">
@@ -494,14 +494,14 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
             </div>
             <div className="space-y-3 text-sm text-gray-700">
               <div className="flex items-center gap-2">
-                <FaMapMarkerAlt className="text-indigo-600" />
+                <FaMapMarkerAlt className="text-green-600" />
                 <span>{tour.location.city}, {tour.location.state}</span>
               </div>
               <a
                 href={mapDirectionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+                className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 transition hover:bg-green-100"
               >
                 <FaMapMarkerAlt /> Open in Google Maps
               </a>
@@ -575,7 +575,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
               {tourFacilities.map((badge) => (
                 <span
                   key={badge}
-                  className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1 text-sm font-medium text-indigo-700"
+                  className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1 text-sm font-medium text-green-700"
                 >
                   <span className="text-base leading-none">{getFacilityIcon(badge)}</span>
                   {badge}
@@ -591,11 +591,11 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
             <h2 className="text-xl font-semibold text-gray-900">Why guests love this tour</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {tour.curatedHighlights.map((item, idx) => (
-                <div key={item.title + idx} className="flex gap-3 rounded-2xl bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
-                  <div className="mt-1 text-lg text-indigo-600">{item.icon ? <i className={item.icon} /> : <FaCheck />}</div>
+                <div key={item.title + idx} className="flex gap-3 rounded-2xl bg-green-50 px-4 py-3 text-sm text-green-800">
+                  <div className="mt-1 text-lg text-green-600">{item.icon ? <i className={item.icon} /> : <FaCheck />}</div>
                   <div>
                     <p className="font-semibold">{item.title}</p>
-                    {item.description && <p className="mt-1 text-indigo-700/90">{item.description}</p>}
+                    {item.description && <p className="mt-1 text-green-700/90">{item.description}</p>}
                   </div>
                 </div>
               ))}
@@ -612,7 +612,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
               {tour.about.description}
             </p>
             {tour.vendorMessage && (
-              <div className="mt-4 rounded-2xl bg-indigo-50 p-4 text-sm text-indigo-800">
+              <div className="mt-4 rounded-2xl bg-green-50 p-4 text-sm text-green-800">
                 <p className="font-semibold">Vendor message</p>
                 <p className="mt-2 whitespace-pre-line">{tour.vendorMessage}</p>
               </div>
@@ -647,11 +647,11 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                 Pick your tour option for {days} day{days === 1 ? "" : "s"} — you can select multiple options.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs font-semibold text-indigo-700">
-              <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1">
+            <div className="flex flex-wrap gap-2 text-xs font-semibold text-green-700">
+              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1">
                 <FaCheck /> Instant confirmation
               </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1">
+              <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1">
                 <FaShieldAlt /> Secure booking
               </span>
             </div>
@@ -699,13 +699,13 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
 
                   return (
                     <Fragment key={optionKey}>
-                      <tr className={isSelected ? "bg-indigo-50/60 transition" : "transition hover:bg-gray-50/60"}>
+                      <tr className={isSelected ? "bg-green-50/60 transition" : "transition hover:bg-gray-50/60"}>
                         <td className="align-top px-4 py-4 text-sm text-gray-700">
                           <div className="flex flex-col gap-2">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="text-base font-semibold text-gray-900">{option.name}</span>
                               {isSelected && (
-                                <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+                                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
                                   Selected
                                 </span>
                               )}
@@ -788,8 +788,8 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                               disabled={optionUnavailable}
                               className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
                                 isSelected
-                                  ? "bg-indigo-600 text-white shadow hover:bg-indigo-700"
-                                  : "border border-indigo-600 text-indigo-700 hover:bg-indigo-50 disabled:border-gray-300 disabled:text-gray-400"
+                                  ? "bg-green-600 text-white shadow hover:bg-green-700"
+                                  : "border border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-400"
                               } ${optionUnavailable ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400" : ""}`}
                             >
                               {optionUnavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
@@ -834,7 +834,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                                     <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                                       {option.amenities.slice(0, 8).map((a) => (
                                         <span key={a} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm">
-                                          <span className="text-indigo-600">{getFacilityIcon(a)}</span>
+                                          <span className="text-green-600">{getFacilityIcon(a)}</span>
                                           <span>{a}</span>
                                         </span>
                                       ))}
@@ -938,7 +938,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
               type="button"
               onClick={handleBookNow}
               disabled={!pricing.totalOptions || soldOutForDates}
-              className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {soldOutForDates
                 ? "Unavailable for these dates"
@@ -948,7 +948,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
             </button>
           </div>
 
-          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-indigo-50 via-white to-indigo-100 p-5 text-sm text-gray-700 shadow-inner">
+          <div className="flex flex-col justify-between rounded-2xl bg-linear-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900">What happens next?</h3>
               <p>Clicking <strong>Book now</strong> will take you to a dedicated page where you can:</p>
@@ -975,7 +975,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                   <ul className="mt-3 space-y-2 text-sm text-gray-700">
                     {items.map((item, idx) => (
                       <li key={item + idx} className="flex items-start gap-3">
-                        <span className="mt-0.5 text-indigo-600">{getFacilityIcon(item)}</span>
+                        <span className="mt-0.5 text-green-600">{getFacilityIcon(item)}</span>
                         <span className="text-gray-700">{item}</span>
                       </li>
                     ))}
@@ -988,7 +988,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
 
         {/* Videos */}
         {(tour.videos?.inside?.length ?? 0) > 0 || (tour.videos?.outside?.length ?? 0) > 0 ? (
-          <section className="rounded-3xl bg-white p-6 shadow">
+          <section className="rounded-3xl bg-white p-6 shadow mt-10">
             <h2 className="text-xl font-semibold text-gray-900">Experience in motion</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {["inside", "outside"].map((key) => {
@@ -1097,7 +1097,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                   type="button"
                   key={image + idx}
                   onClick={() => setOptionImageIndex(idx)}
-                  className={`relative h-20 overflow-hidden rounded-lg ${optionImageIndex === idx ? "ring-2 ring-indigo-500" : ""}`}
+                  className={`relative h-20 overflow-hidden rounded-lg ${optionImageIndex === idx ? "ring-2 ring-green-500" : ""}`}
                 >
                   <Image src={image} alt={`thumb ${idx + 1}`} fill className="object-cover" />
                 </button>

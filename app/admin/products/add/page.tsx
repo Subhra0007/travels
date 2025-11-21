@@ -30,6 +30,9 @@ export default function AddProductPage() {
     tags: [] as string[],
   });
 
+  const [bulkColor, setBulkColor] = useState("");
+  const [bulkSizes, setBulkSizes] = useState<string[]>([]);
+
   const [tagInput, setTagInput] = useState("");
   const [categories, setCategories] = useState<Array<{ slug: string; name: string; requiresVariants: boolean }>>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -72,9 +75,10 @@ export default function AddProductPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data?.message || "Upload failed");
-      return data.uploads.map((u: any) => u.url);
-    } catch (err: any) {
-      setUploadError(err?.message || "Upload failed");
+      const uploads = (data.uploads ?? []) as Array<{ url: string }>;
+      return uploads.map((u) => u.url);
+    } catch (err: unknown) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
       throw err;
     } finally {
       setUploadingState((prev) => ({ ...prev, [folder]: false }));
@@ -122,12 +126,42 @@ export default function AddProductPage() {
     }));
   };
 
-  const updateVariant = (index: number, field: keyof Variant, value: any) => {
+  const updateVariant = <K extends keyof Variant>(
+    index: number,
+    field: K,
+    value: Variant[K]
+  ) => {
     setFormData((prev) => {
       const variants = [...prev.variants];
       variants[index] = { ...variants[index], [field]: value };
       return { ...prev, variants };
     });
+  };
+
+  const toggleBulkSize = (size: string) => {
+    setBulkSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
+  };
+
+  const addVariantsBulk = () => {
+    const color = bulkColor.trim();
+    if (!color || bulkSizes.length === 0) return;
+    setFormData((prev) => {
+      const existing = new Set(prev.variants.map((v) => `${v.color}|${v.size}`));
+      const toAdd = bulkSizes
+        .filter((sz) => !existing.has(`${color}|${sz}`))
+        .map((sz) => ({
+          color,
+          size: sz,
+          stock: 0,
+          photos: [],
+          price: prev.basePrice,
+        }));
+      return { ...prev, variants: [...prev.variants, ...toAdd] };
+    });
+    setBulkColor("");
+    setBulkSizes([]);
   };
 
   const handleVariantImages = async (
@@ -219,8 +253,9 @@ export default function AddProductPage() {
         throw new Error(data?.message || "Failed to create product");
       }
       router.push("/admin/products");
-    } catch (error: any) {
-      alert(error?.message || "Failed to save product");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to save product";
+      alert(message);
     } finally {
       setSubmitting(false);
     }
@@ -394,6 +429,49 @@ export default function AddProductPage() {
                   </button>
                 </div>
                 {errors.variants && <p className="text-red-600 text-sm">{errors.variants}</p>}
+
+                <div className="rounded-lg border border-gray-200 p-4 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">Color</label>
+                      <input
+                        type="text"
+                        value={bulkColor}
+                        onChange={(e) => setBulkColor(e.target.value)}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        placeholder="e.g., Red"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-900 mb-2">Sizes</label>
+                      <div className="flex flex-wrap gap-2">
+                        {fixedSizes.map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => toggleBulkSize(size)}
+                            className={`px-3 py-1 rounded-full border text-sm font-semibold ${
+                              bulkSizes.includes(size)
+                                ? "border-green-600 bg-green-50 text-green-700"
+                                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={addVariantsBulk}
+                      className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                    >
+                      <FaPlus /> Add Selected Sizes
+                    </button>
+                  </div>
+                </div>
 
                 <div className="space-y-6">
                   {formData.variants.map((variant, idx) => (

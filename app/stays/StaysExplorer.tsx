@@ -158,7 +158,7 @@ export const StayCard = ({
             No image
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-green-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-green-900/60 via-transparent to-transparent" />
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
           {stay.category}
         </span>
@@ -485,9 +485,9 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
        
-        <div className="relative mx-auto max-w-6xl px-6">
+        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect stay</h1>
+            <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect Stay</h1>
             <p className="mt-3 text-base text-white/80">
               Explore handpicked rooms, hotels, homestays, and cosy BnBs with verified amenities and
               detailed room insights—just like your favourite booking websites.
@@ -571,7 +571,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
       </section>
 
       {/* Main Content */}
-      <section className="mx-auto max-w-6xl px-6 py-12">
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-2">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Curated stays just for you</h2>
