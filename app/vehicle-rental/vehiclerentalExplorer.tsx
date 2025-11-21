@@ -88,11 +88,21 @@ export const RentalCard = ({
   const availability = useAvailability("vehicle", rental._id, pickupDate, dropoffDate);
   const availableOptionKeys = availability.availableOptionKeys ?? [];
   const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
+  const router = useRouter();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if the click wasn't on the wishlist button or tag buttons
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) {
+      return; // Don't navigate if clicking on a button
+    }
+    router.push(`/vehicle-rental/${rental._id}`);
+  };
 
   return (
-    <Link
-      href={`/vehicle-rental/${rental._id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+    <div
+      onClick={handleCardClick}
+      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl cursor-pointer"
     >
       <div className="relative h-56 w-full">
         <button
@@ -209,7 +219,7 @@ export const RentalCard = ({
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 
