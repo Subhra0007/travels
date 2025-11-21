@@ -34,7 +34,7 @@ export default function WishlistPage() {
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       <section className="bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
-        <div className="mx-auto max-w-5xl px-6 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto max-w-7xl px-6 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between lg:px-2">
           <div>
             <h1 className="text-3xl font-bold sm:text-4xl">Your wishlist</h1>
             <p className="mt-3 max-w-2xl text-white/80">
@@ -53,7 +53,7 @@ export default function WishlistPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-6 py-12">
+      <section className="mx-auto max-w-7xl px-6 py-12 lg:px-2">
         {error && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-600">
             {error}
@@ -70,7 +70,7 @@ export default function WishlistPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {wishlistEntries.map((entry) => {
               const itemId = entry.stay?._id || entry.id;
               const isWishlisted = wishlistIds.has(itemId);

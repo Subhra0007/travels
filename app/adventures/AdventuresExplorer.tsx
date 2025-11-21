@@ -616,7 +616,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <AdventureCard
                 key={adv._id}
                 adventure={adv}
-                isWishlisted={wishlistIds.has(adv._id)}
+                isWishlisted={isInWishlist(adv._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>

@@ -606,7 +606,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 rental={rental}
                 isWishlisted={isInWishlist(rental._id)}
                 wishlistDisabled={!wishlistLoaded}
-                onToggleWishlist={(id, state) => toggleWishlist(id, state, "vehicle-rental")}
+                onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) => setSelectedTags((p) => (p.includes(tag) ? p : [...p, tag]))}
                 pickupDate={pickupDate}
                 dropoffDate={dropoffDate}

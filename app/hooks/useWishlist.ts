@@ -100,14 +100,20 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
     setEntries((prev) => {
       // Double-check to avoid duplicates
       const existingIds = prev.map((entry) => {
+        // Extract entry ID from entry.stay (which contains the actual service object)
         const entryId = (entry.stay as any)?._id || (entry.stay as any)?.id || entry.id;
         return String(entryId);
       });
       if (existingIds.includes(normalizedId)) {
         return prev; // Already in wishlist
       }
-      // Add optimistically
-      return [...prev, { id: normalizedId, stay: { _id: normalizedId } as any, type: serviceType }];
+      // Add optimistically with correct structure (all entries use 'stay' property regardless of service type)
+      const newEntry: any = { 
+        id: normalizedId, 
+        stay: { _id: normalizedId } as any,
+        type: serviceType 
+      };
+      return [...prev, newEntry];
     });
     
     try {
@@ -142,6 +148,7 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
     } catch (err: any) {
       // Rollback optimistic update on error
       setEntries((prev) => prev.filter((entry) => {
+        // Extract entry ID from entry.stay (which contains the actual service object)
         const entryId = (entry.stay as any)?._id || (entry.stay as any)?.id || entry.id;
         return String(entryId) !== normalizedId;
       }));
@@ -149,7 +156,7 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
     }
   }, [refresh, isInWishlist]);
 
-  const removeFromWishlist = useCallback(async (serviceId: string) => {
+  const removeFromWishlist = useCallback(async (serviceId: string, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => {
     setError(null);
     const normalizedId = String(serviceId);
     
@@ -164,6 +171,7 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
     setEntries((prev) => {
       previousEntries = [...prev];
       return prev.filter((entry) => {
+        // Extract entry ID from entry.stay (which contains the actual service object)
         const entryId = (entry.stay as any)?._id || (entry.stay as any)?.id || entry.id;
         return String(entryId) !== normalizedId;
       });
@@ -199,7 +207,7 @@ export function useWishlist<TStay = any>({ autoLoad = false }: UseWishlistOption
       if (shouldAdd) {
         await addToWishlist(normalizedId, serviceType);
       } else {
-        await removeFromWishlist(normalizedId);
+        await removeFromWishlist(normalizedId, serviceType);
       }
     },
     [addToWishlist, removeFromWishlist, isInWishlist]

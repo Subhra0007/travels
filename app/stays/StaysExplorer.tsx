@@ -752,7 +752,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
               <StayCard
                 key={stay._id}
                 stay={stay}
-                isWishlisted={wishlistIds.has(stay._id)}
+                isWishlisted={isInWishlist(stay._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>

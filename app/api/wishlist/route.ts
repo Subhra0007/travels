@@ -14,53 +14,65 @@ export const GET = auth(async (req: NextRequest) => {
     await dbConnect();
     const userId = (req as any).user.id;
 
-    const items = await Wishlist.find({ userId }).lean();
+    const items = await Wishlist.find({ userId })
+      .populate({
+        path: "stayId",
+        match: { isActive: true },
+        select: "_id name category location images rating price",
+      })
+      .populate({
+        path: "tourId",
+        match: { isActive: true },
+        select: "_id name category location images rating",
+      })
+      .populate({
+        path: "adventureId",
+        match: { isActive: true },
+        select: "_id name category location images rating",
+      })
+      .populate({
+        path: "vehicleRentalId",
+        match: { isActive: true },
+        select: "_id name category location images rating",
+      })
+      .lean();
 
-    const populated = await Promise.all(
-      items.map(async (item: any) => {
+    const populated = items
+      .map((item: any) => {
         let serviceData: any = null;
         let type = "";
 
         if (item.stayId) {
-          const stay = await Stay.findById(item.stayId).lean();
-          if (stay && (stay as any).isActive) {
-            serviceData = stay;
-            type = "stay";
-          }
+          serviceData = item.stayId;
+          type = "stay";
         } else if (item.tourId) {
-          const tour = await Tour.findById(item.tourId).lean();
-          if (tour && (tour as any).isActive) {
-            serviceData = tour;
-            type = "tour";
-          }
+          serviceData = item.tourId;
+          type = "tour";
         } else if (item.adventureId) {
-          const adv = await Adventure.findById(item.adventureId).lean();
-          if (adv && (adv as any).isActive) {
-            serviceData = adv;
-            type = "adventure";
-          }
+          serviceData = item.adventureId;
+          type = "adventure";
         } else if (item.vehicleRentalId) {
-          const rental = await VehicleRental.findById(item.vehicleRentalId).lean();
-          if (rental && (rental as any).isActive) {
-            serviceData = rental;
-            type = "vehicle-rental";
-          }
+          serviceData = item.vehicleRentalId;
+          type = "vehicle-rental";
         }
 
-        if (!serviceData) return null;
+        // Filter out items where service was deleted or inactive
+        if (!serviceData || typeof serviceData !== "object" || !serviceData._id) {
+          return null;
+        }
 
         return {
           _id: item._id.toString(),
-          stay: serviceData,           // kept for backward compat
+          stay: serviceData, // kept for backward compat
           addedAt: item.createdAt,
           type,
         };
       })
-    );
+      .filter(Boolean);
 
     return NextResponse.json({
       success: true,
-      wishlist: populated.filter(Boolean),
+      wishlist: populated,
     });
   } catch (error: any) {
     console.error("Wishlist GET error:", error);
@@ -111,12 +123,27 @@ export const POST = auth(async (req: NextRequest) => {
       );
     }
 
-    // This works perfectly with your sparse unique indexes
-    const result = await Wishlist.findOneAndUpdate(
-      { userId: userObjectId, [field]: serviceObjectId },
-      { $setOnInsert: { userId: userObjectId, [field]: serviceObjectId } },
-      { upsert: true, new: true }
-    );
+    // Check if already in wishlist
+    const existing = await Wishlist.findOne({
+      userId: userObjectId,
+      [field]: serviceObjectId,
+    });
+
+    if (existing) {
+      return NextResponse.json({
+        success: true,
+        message: "Already in your wishlist",
+        itemId: existing._id.toString(),
+      });
+    }
+
+    // Create new wishlist entry with proper validation
+    const wishlistData: any = {
+      userId: userObjectId,
+      [field]: serviceObjectId,
+    };
+
+    const result = await Wishlist.create(wishlistData);
 
     return NextResponse.json({
       success: true,

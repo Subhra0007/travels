@@ -37,11 +37,36 @@ wishlistSchema.pre("save", function (next) {
   next();
 });
 
-// Sparse unique compound indexes — perfect for nullable fields
-wishlistSchema.index({ userId: 1, stayId: 1 }, { unique: true, sparse: true });
-wishlistSchema.index({ userId: 1, tourId: 1 }, { unique: true, sparse: true });
-wishlistSchema.index({ userId: 1, adventureId: 1 }, { unique: true, sparse: true });
-wishlistSchema.index({ userId: 1, vehicleRentalId: 1 }, { unique: true, sparse: true });
+// Unique compound indexes for each service type
+// Using partialFilterExpression to ensure indexes only apply when field is set
+wishlistSchema.index(
+  { userId: 1, stayId: 1 }, 
+  { 
+    unique: true, 
+    partialFilterExpression: { stayId: { $exists: true, $ne: null } } 
+  }
+);
+wishlistSchema.index(
+  { userId: 1, tourId: 1 }, 
+  { 
+    unique: true, 
+    partialFilterExpression: { tourId: { $exists: true, $ne: null } } 
+  }
+);
+wishlistSchema.index(
+  { userId: 1, adventureId: 1 }, 
+  { 
+    unique: true, 
+    partialFilterExpression: { adventureId: { $exists: true, $ne: null } } 
+  }
+);
+wishlistSchema.index(
+  { userId: 1, vehicleRentalId: 1 }, 
+  { 
+    unique: true, 
+    partialFilterExpression: { vehicleRentalId: { $exists: true, $ne: null } } 
+  }
+);
 
 // Fast lookup by user
 wishlistSchema.index({ userId: 1 });

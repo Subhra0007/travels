@@ -5,16 +5,16 @@ import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import Wishlist from "@/models/Wishlist";
 
-interface RouteContext {
-  params: Promise<{ id: string }>;
-}
-
-export const DELETE = auth(async (req: NextRequest, context: RouteContext) => {
+export const DELETE = auth(async (
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) => {
   try {
     await dbConnect();
     const userId = (req as any).user.id;
-    const params = await context.params;
-    const { id } = params;
+    
+    // Await params to get the id
+    const { id } = await context.params;
 
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
