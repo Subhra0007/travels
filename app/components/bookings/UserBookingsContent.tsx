@@ -171,7 +171,7 @@ const UserBookingsContent: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row  bg-sky-50 text-black  min-h-screen">
+    <div className="flex flex-col md:flex-row  bg-sky-50 text-black  h-screen">
         <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
          <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
       <ProfileSidebar
@@ -183,7 +183,7 @@ const UserBookingsContent: React.FC = () => {
       </div>
 </div>
       {/* Main Content */}
-      <div className="flex-1 p-4 md:p-10 pt-20 ">
+      <div className="flex-1 p-4 md:p-10 pt-20 overflow-y-auto min-h-screen">
         <div className="md:hidden mb-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
@@ -194,7 +194,7 @@ const UserBookingsContent: React.FC = () => {
           </button>
         </div>
 
-        <main className="flex-1 lg:pt-25 pt-5">
+        <main className="flex-1 lg:pt-15 pt-5">
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-800">My bookings</h1>
             <p className="text-sm text-gray-600">
@@ -339,4 +339,3 @@ const UserBookingsContent: React.FC = () => {
 };
 
 export default UserBookingsContent;
-

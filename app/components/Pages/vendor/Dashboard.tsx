@@ -97,7 +97,7 @@ export default function Dashboard({ locked }: { locked: boolean }) {
     }).format(n);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex relative ">
+    <div className="min-h-screen bg-gray-100 flex relative overflow-x-hidden w-full">
       {locked && (
         <div className="absolute inset-0 z-10 backdrop-blur-[2px] pointer-events-none" />
       )}
@@ -113,10 +113,10 @@ export default function Dashboard({ locked }: { locked: boolean }) {
         </div>
       )}
 
-      <div className="flex-1 my-20 overflow-y-auto">
+      <div className="flex-1  mt-5 overflow-y-auto overflow-x-hidden w-full">
         <div className="px-4 sm:px-6">
           {/* Mobile/sidebar toggle and refresh button */}
-          <div className="lg:hidden mb-4 flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-2">
             <button
               onClick={() => setMobileSidebarOpen(true)}
               className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
@@ -137,7 +137,7 @@ export default function Dashboard({ locked }: { locked: boolean }) {
             </button>
           </div>
           {/* Desktop refresh button */}
-          <div className="hidden lg:flex justify-end mb-4">
+          <div className="hidden lg:flex justify-end ">
             <button
               onClick={() => {
                 setLoading(true);
@@ -151,8 +151,8 @@ export default function Dashboard({ locked }: { locked: boolean }) {
             </button>
           </div>
         </div>
-        <div className={`p-4 sm:p-6 space-y-6 transition-all ${locked ? "blur-[1.5px] pointer-events-none" : ""}`}>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className={`p-4 sm:p-6 space-y-6 transition-all overflow-x-hidden ${locked ? "blur-[1.5px] pointer-events-none" : ""}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
             <StatCard
               title="Today's Bookings"
               value={loading ? "..." : formatNumber(stats.todayBookings)}
@@ -175,12 +175,12 @@ export default function Dashboard({ locked }: { locked: boolean }) {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
             <div className="lg:col-span-2"><SalesChart refreshKey={refreshKey} /></div>
             <div className="lg:col-span-1"><SalesDonutChart refreshKey={refreshKey} /></div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-6 w-full">
             <OrderTable refreshKey={refreshKey} />
           </div>
         </div>
@@ -190,10 +190,10 @@ export default function Dashboard({ locked }: { locked: boolean }) {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-90 bg-black/40 lg:hidden"
+            className=" inset-0 z-90 bg-black/40 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 p-0 lg:hidden overflow-y-auto">
+          <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-800">Menu</span>
               <button
@@ -204,7 +204,11 @@ export default function Dashboard({ locked }: { locked: boolean }) {
               </button>
             </div>
             {/* Render the same Sidebar inside drawer */}
+             
+         <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
             <Sidebar />
+            </div>
+            
           </div>
         </>
       )}

@@ -77,22 +77,27 @@ const VendorCancellationsPage = () => {
   if (!authorized) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-        <Sidebar />
-      </div>
+   <div className="flex h-screen bg-gray-50 relative ">
+            {/* Desktop sidebar */}
+               <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+              <Sidebar />
+            </div>
+   
+          <div className="flex-1 flex flex-col mt-15 overflow-hidden">
+           {/* Topbar with mobile trigger */}
+           <div className="sticky top-0 z-40 bg-sky-50">
+             <div className="flex items-center gap-3 p-3 border-b">
+               <button
+                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
+                 onClick={() => setMobileSidebarOpen(true)}
+                 aria-label="Open menu"
+               >
+                 ☰
+               </button>
+             </div>
+           </div>
 
-      <div className="flex flex-1 flex-col mt-15">
-        <header className="sticky top-0 z-40 bg-slate-50 px-4 pt-10 pb-4 shadow-sm lg:hidden">
-          <button
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"
-            onClick={() => setMobileSidebarOpen(true)}
-          >
-            ☰ Menu
-          </button>
-        </header>
-
-        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16  lg:max-w-6xl mx-auto max-w-3xl">
+        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10  w-full overflow-x-hidden">
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-900">Cancelled bookings</h1>
             <p className="text-sm text-gray-600">
@@ -113,12 +118,18 @@ const VendorCancellationsPage = () => {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto lg:max-w-6xl mx-auto max-w-3xl">
-              <BookingTable
-                bookings={bookings}
-                variant="vendor"
-                emptyMessage="Cancelled bookings will appear here instantly, so you can keep an eye on your calendar."
-              />
+            <div className="w-full">
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <div className="overflow-hidden">
+                    <BookingTable
+                      bookings={bookings}
+                      variant="vendor"
+                      emptyMessage="Cancelled bookings will appear here instantly, so you can keep an eye on your calendar."
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </main>
@@ -127,10 +138,19 @@ const VendorCancellationsPage = () => {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 z-50 w-72 overflow-y-auto bg-white shadow-2xl lg:hidden">
+          <div className="fixed inset-y-0 left-0 z-100 w-72 overflow-y-auto bg-white shadow-2xl lg:hidden">
+            <div className="p-4 border-b flex items-center justify-between">
+              <span className="text-lg font-semibold text-gray-800">Menu</span>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="px-3 py-1.5 rounded-md border text-gray-700"
+              >
+                Close
+              </button>
+            </div>
             <Sidebar />
           </div>
         </>

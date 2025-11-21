@@ -500,13 +500,12 @@ export default function AddAdventurePage() {
   return (
     <div className="flex h-screen bg-gray-50 text-black overflow-x-hidden">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-        <Sidebar />
-      </div>
-
+       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
+              <Sidebar />
+            </div>
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-sky-50 border-b">
+        <div className="sticky top-0 z-40 bg-sky-50 border-b pt-15">
           <div className="flex items-center gap-3 p-3">
             <button
               className="lg:hidden px-3 py-2 rounded border text-gray-700"
@@ -1237,10 +1236,10 @@ export default function AddAdventurePage() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 p-0 lg:hidden overflow-y-auto">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="text-lg font-semibold">Menu</span>
               <button

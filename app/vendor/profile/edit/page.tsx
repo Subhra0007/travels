@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 
 type Address = {
   street?: string;
@@ -23,6 +24,7 @@ export default function VendorProfileEditPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>("");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const [fullName, setFullName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
@@ -150,14 +152,29 @@ export default function VendorProfileEditPage() {
 
   if (loading)
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-sky-50 text-black">
-      <div className="max-w-3xl mx-auto px-4 pt-24 pb-12">
+    <div className="flex h-screen bg-gray-50 relative ">
+                 {/* Desktop sidebar */}
+                    <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+                   <Sidebar />
+                 </div>
+      <div className="flex-1  lg:pt-0 overflow-y-auto min-h-screen ">
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden sticky top-0 z-40 bg-sky-50 px-4 pt-15 pb-2">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
+          >
+            ☰ <span className="text-sm font-medium">Menu</span>
+          </button>
+        </div>
+        {/* main  */}
+      <div className="w-full px-4 pt-6 lg:pt-24 pb-12">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-800">Edit Vendor Profile</h1>
           <button
@@ -328,8 +345,29 @@ export default function VendorProfileEditPage() {
           </div>
         </form>
       </div>
+      </div>
+
+      {/* Mobile Sidebar Drawer */}
+      {mobileSidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 lg:hidden overflow-y-auto">
+            <div className="p-4 border-b flex items-center justify-between">
+              <span className="text-lg font-semibold text-gray-800">Menu</span>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="px-3 py-1.5 rounded-md border text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+            <Sidebar />
+          </div>
+        </>
+      )}
     </div>
   );
 }
-
-

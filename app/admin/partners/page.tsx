@@ -7,14 +7,14 @@ export default function PartnersAdminPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-sky-50 relative">
+    <div className="flex h-screen bg-sky-50 relative overflow-hidden">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col mt-15">
+      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
         {/* Top bar with mobile trigger */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center gap-3 p-3 border-b ">

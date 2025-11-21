@@ -83,7 +83,8 @@ const Sidebar: React.FC = () => {
   );
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col h-full overflow-y-auto">
+    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 overflow-y-auto">
+      <div className="p-4 flex-1 overflow-y-auto">
       <nav className="flex-1 space-y-2 text-sm mt-15 ">
         {/* Dashboard */}
         <button
@@ -357,6 +358,7 @@ const Sidebar: React.FC = () => {
         >
           <TbLogout size={14} /> Logout
         </button>
+      </div>
       </div>
     </aside>
   );

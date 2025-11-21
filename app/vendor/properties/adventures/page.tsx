@@ -144,7 +144,7 @@ export default function VendorAdventuresPage() {
             </div>
           )}
           <div className="absolute top-2 right-2">
-            <span className="rounded px-2 py-1 text-xs font-medium text-white bg-orange-600">
+            <span className="rounded px-2 py-1 text-xs font-medium text-white bg-green-600">
               {getCategoryLabel(adv.category)}
             </span>
           </div>
@@ -192,7 +192,7 @@ export default function VendorAdventuresPage() {
               {adv.heroHighlights.slice(0, 3).map((highlight) => (
                 <span
                   key={highlight}
-                  className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700"
+                  className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-green-700"
                 >
                   {highlight}
                 </span>
@@ -246,20 +246,20 @@ export default function VendorAdventuresPage() {
   if (loading) {
     return (
       <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 relative">
+    <div className="flex min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-        <Sidebar />
-      </div>
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+              <Sidebar />
+            </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col mt-15">
+      <div className=" lex-1 flex flex-col mt-15 overflow-hidde">
         {/* Top bar */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
@@ -278,10 +278,9 @@ export default function VendorAdventuresPage() {
             </div>
             <Link
               href="/vendor/adventures/add"
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition shadow-md flex items-center gap-2"
+              className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md flex items-center gap-2"
             >
-              <FaMountain className="text-sm" />
-              Add New Adventure
+              + Add New Adventure
             </Link>
           </div>
         </div>
@@ -293,13 +292,13 @@ export default function VendorAdventuresPage() {
               <p className="text-gray-600 mb-4">No adventures added yet.</p>
               <Link
                 href="/properties/adventures/add"
-                className="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition shadow-md"
+                className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
               >
                 List Your First Adventure
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {adventures.map(renderAdventureCard)}
             </div>
           )}
@@ -310,10 +309,10 @@ export default function VendorAdventuresPage() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden "
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden "
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl  p-0 lg:hidden overflow-y-auto z-50">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl  p-0 lg:hidden overflow-y-auto z-100">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-800">Menu</span>
               <button

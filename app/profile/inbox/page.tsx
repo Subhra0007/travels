@@ -122,20 +122,20 @@ export default function InboxPage() {
   if (!user) return <p className="text-center mt-20">No user found.</p>;
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-sky-50 text-black">
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+     <div className="flex flex-col md:flex-row  bg-sky-50 text-black  h-screen">
+        <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
          <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
-        <ProfileSidebar
-          user={user}
-          active="inbox"
-          onDeleteAccount={deleteAccount}
-          onLogout={handleLogout}
-        />
-        </div>
+      <ProfileSidebar
+        user={user}
+        active="inbox"
+        onDeleteAccount={deleteAccount}
+        onLogout={handleLogout}
+      />
       </div>
+</div>
 
       {/* Main Content */}
-      <div className="flex-1 p-4 md:p-10 pt-20">
+      <div className="flex-1 p-4 md:p-10 pt-20 overflow-y-auto min-h-screen">
         <div className="md:hidden mb-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
@@ -227,7 +227,7 @@ export default function InboxPage() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-90 bg-black/40 md:hidden"
+            className="fixed inset-0 z-100 bg-black/40 md:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
           <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 p-6 md:hidden overflow-y-auto">
@@ -339,4 +339,3 @@ export default function InboxPage() {
     </div>
   );
 }
-

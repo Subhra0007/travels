@@ -162,21 +162,20 @@ const handleLogout = async () => {
   if (!user) return <p className="text-center mt-20">No user found.</p>;
 
   return (
-    <div className="flex flex-col lg:flex-row  bg-sky-50 text-black">
-      {/* Desktop Sidebar - uses your reusable component */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+     <div className="flex flex-col md:flex-row  bg-sky-50 text-black  h-screen">
+        <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
          <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
-        <ProfileSidebar
-          user={user}
-          active="support"
-          onDeleteAccount={deleteAccount}
-          onLogout={logout}
-        />
-        </div>
+      <ProfileSidebar
+        user={user}
+        active="support"
+        onDeleteAccount={deleteAccount}
+        onLogout={handleLogout}
+      />
       </div>
+</div>
 
       {/* Main Content */}
-      <div className="flex-1 pt-20 lg:pt-0">
+      <div className="flex-1 pt-20 lg:pt-0 overflow-y-auto min-h-screen">
         {/* Mobile Menu Button */}
         <div className="lg:hidden fixed top-4 left-4 z-50 mt-15">
           <button

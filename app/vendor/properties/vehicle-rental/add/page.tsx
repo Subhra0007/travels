@@ -474,9 +474,10 @@ export default function AddVehicleRentalPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-black overflow-x-hidden">
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-        <Sidebar />
-      </div>
+       {/* Desktop Sidebar */}
+            <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
+                   <Sidebar />
+                 </div>
 
       <div className="flex-1 flex flex-col">
         <div className="sticky top-0 z-40 bg-sky-50 border-b mt-15 ">

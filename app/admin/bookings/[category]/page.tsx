@@ -129,12 +129,12 @@ const AdminBookingsCategoryPage = () => {
   if (!authorized) return null;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
-      <div className="hidden lg:block">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
+      <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
       </div>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-40 bg-slate-50 px-4 pt-6 pb-4 shadow-sm lg:hidden">
           <button
             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"

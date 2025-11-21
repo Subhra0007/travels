@@ -543,7 +543,7 @@ export default function AddTourPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-black relative">
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
         <Sidebar />
       </div>
 

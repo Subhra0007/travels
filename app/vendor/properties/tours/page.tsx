@@ -240,12 +240,12 @@ export default function VendorToursPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-        <Sidebar />
-      </div>
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+              <Sidebar />
+            </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col mt-15">
+      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
         {/* Top bar with mobile trigger */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
@@ -280,7 +280,7 @@ export default function VendorToursPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {tours.map(renderTourCard)}
             </div>
           )}
@@ -291,10 +291,10 @@ export default function VendorToursPage() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 p-0 lg:hidden overflow-y-auto">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-800">Menu</span>
               <button

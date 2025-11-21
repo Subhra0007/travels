@@ -678,7 +678,7 @@ export default function AddStayPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-black relative">
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+     <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
         <Sidebar />
       </div>
 
@@ -698,7 +698,7 @@ export default function AddStayPage() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto  p-4 sm:p-6 max-w-5xl mx-auto">
           <form onSubmit={handleSubmit} className="max-w-5xl mx-auto space-y-6">
             {uploadError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -707,7 +707,7 @@ export default function AddStayPage() {
             )}
 
             {/* Basic info */}
-            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+            <section className="bg-white rounded-xl shadow p-6 space-y-4 max-w-5xl mx-auto ">
               <h2 className="text-xl font-semibold text-gray-900">Basic information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -1425,7 +1425,7 @@ export default function AddStayPage() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden "
             onClick={() => setMobileSidebarOpen(false)}
           />
           <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">

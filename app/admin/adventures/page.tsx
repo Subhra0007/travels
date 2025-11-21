@@ -80,13 +80,13 @@ export default function AdminAdventuresPage() {
   };
 
   return (
-    <div className="flex h-screen bg-sky-50 text-black overflow-x-hidden">
+    <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">

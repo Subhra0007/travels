@@ -130,9 +130,9 @@ export default function Sidebar() {
   const anyPropertiesActive = filteredProperties.some((sub) => isActiveHref(sub.href));
 
   return (
-    <aside className="w-64 h-full overflow-y-auto bg-white border-r border-gray-200 flex flex-col px-4 py-6">
-
-      <nav className="space-y-3 mt-15">
+    <aside className="w-64 bg-white shadow-lg flex flex-col h-screen sticky top-0 overflow-y-auto">
+      <div className="p-6 flex-1 overflow-y-auto">
+      <nav className="space-y-3">
         {menu
           // If no allowed services, omit Properties menu entirely
           .filter((item) => !item.submenu || item.submenu.length > 0)
@@ -211,6 +211,7 @@ export default function Sidebar() {
           </div>
         ))}
       </nav>
+      </div>
     </aside>
   );
 }

@@ -12,6 +12,7 @@ export default function VendorPaymentsPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const verify = async () => {
@@ -161,12 +162,22 @@ export default function VendorPaymentsPage() {
   if (!authorized) return null;
 
   return (
-    <main className="flex h-screen bg-gray-50">
-      <div className="hidden lg:block">
-        <Sidebar />
-      </div>
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6">
+     <div className="flex h-screen bg-gray-50 relative ">
+                {/* Desktop sidebar */}
+                   <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+                  <Sidebar />
+                </div>
+      <div className="lg:pl-64 min-h-screen overflow-y-auto overflow-x-hidden">
+        {/* Mobile Menu Button */}
+        <div className="lg:hidden sticky top-0 z-40 bg-slate-50 px-4  pb-2 pt-15">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
+          >
+            ☰ <span className="text-sm font-medium">Menu</span>
+          </button>
+        </div>
+        <div className="p-6 lg:mt-20 mt-5 overflow-y-auto">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Payments & Transactions</h1>
             <p className="text-gray-600">View your transaction timeline for the last 3 days</p>
@@ -239,8 +250,30 @@ export default function VendorPaymentsPage() {
             </div>
           )}
         </div>
-      </main>
-    </main>
+      </div>
+
+      {/* Mobile Sidebar Drawer */}
+      {mobileSidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-90 bg-black/40 lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 lg:hidden overflow-y-auto">
+            <div className="p-4 border-b flex items-center justify-between">
+              <span className="text-lg font-semibold text-gray-800">Menu</span>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="px-3 py-1.5 rounded-md border text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+            <Sidebar />
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
