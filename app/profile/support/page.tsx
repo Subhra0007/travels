@@ -163,12 +163,14 @@ const handleLogout = async () => {
   return (
     <div className="flex flex-col lg:flex-row  bg-sky-50 text-black">
       {/* Desktop Sidebar - uses your reusable component */}
-      <ProfileSidebar
-        user={user}
-        active="support"
-        onDeleteAccount={deleteAccount}
-        onLogout={logout}
-      />
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:self-start">
+        <ProfileSidebar
+          user={user}
+          active="support"
+          onDeleteAccount={deleteAccount}
+          onLogout={logout}
+        />
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 pt-20 lg:pt-0">
@@ -221,7 +223,7 @@ const handleLogout = async () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium shadow-lg disabled:opacity-50"
+                className="w-full bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-xl font-medium shadow-lg disabled:opacity-50"
               >
                 {submitting ? "Submitting..." : "Submit Request"}
               </button>

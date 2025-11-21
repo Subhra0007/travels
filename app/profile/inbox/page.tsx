@@ -122,12 +122,14 @@ export default function InboxPage() {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-sky-50 text-black">
-      <ProfileSidebar
-        user={user}
-        active="inbox"
-        onDeleteAccount={deleteAccount}
-        onLogout={handleLogout}
-      />
+      <div className="hidden md:block h-full">
+        <ProfileSidebar
+          user={user}
+          active="inbox"
+          onDeleteAccount={deleteAccount}
+          onLogout={handleLogout}
+        />
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 p-4 md:p-10 pt-20">

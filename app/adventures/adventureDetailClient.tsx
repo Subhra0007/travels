@@ -156,7 +156,7 @@ interface AdventureDetailClientProps {
 
 const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure }) => {
   const router = useRouter();
-  const { wishlistIds, isInWishlist, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
+ const { wishlistIds, isInWishlist, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
   const isWishlisted = isInWishlist(adventure._id);
 
   const images = useMemo(() => {
@@ -330,7 +330,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                           <button
                             type="button"
                             aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-                            onClick={() => toggleWishlist(adventure._id, !isWishlisted, "tour")}
+                            onClick={() => toggleWishlist(adventure._id, !isWishlisted, "adventure")}
                             disabled={!wishlistLoaded}
                             className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
                               !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""
