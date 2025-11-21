@@ -175,7 +175,7 @@ const handleLogout = async () => {
       {/* Main Content */}
       <div className="flex-1 pt-20 lg:pt-0">
         {/* Mobile Menu Button */}
-        <div className="lg:hidden fixed top-4 left-4 z-50">
+        <div className="lg:hidden fixed top-4 left-4 z-50 mt-10">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white shadow-lg border text-gray-800 text-lg"
@@ -185,7 +185,7 @@ const handleLogout = async () => {
           </button>
         </div>
 
-        <div className="p-6 md:p-10 max-w-4xl mx-auto overflow-y-auto mt-10 ">
+        <div className="p-6 md:p-10 max-w-4xl mx-auto overflow-y-auto mt-5 ">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Contact Support</h1>
 
           {success && (
