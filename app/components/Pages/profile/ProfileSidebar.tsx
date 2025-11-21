@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { MdLogout } from "react-icons/md";
 import { useMemo,  type JSX } from "react";
 
 type SidebarSection = "profile" | "bookings" | "wishlist" | "inbox" | "support";
@@ -134,7 +135,7 @@ const ProfileSidebar = ({
 
   return (
    
-      <div className="w-64  bg-white shadow-lg p-6 flex flex-col pt-20 ">
+      <div className="w-64  bg-white shadow-lg p-6 flex flex-col pt-20  ">
         <div className="mb-8 flex flex-col items-center space-y-2">
           {Avatar}
           <h2 className="text-xl font-bold text-center text-gray-800 mb-2 truncate">
@@ -181,14 +182,8 @@ const ProfileSidebar = ({
               onClick={onLogout}
               className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L12 15.586l2.293-2.293zM9 11a1 1 0 000-2V7a1 1 0 012 0v2a1 1 0 100 2h2a1 1 0 100-2H9z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Logout
+             <MdLogout className="w-5 h-5" />
+               Logout
             </button>
           )}
         </div>

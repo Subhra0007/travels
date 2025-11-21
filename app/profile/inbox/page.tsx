@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { MdLogout } from "react-icons/md";
 import { FaBars } from "react-icons/fa";
 import PageLoader from "../../components/common/PageLoader";
 import ProfileSidebar from "../../components/Pages/profile/ProfileSidebar";
@@ -122,13 +123,15 @@ export default function InboxPage() {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-sky-50 text-black">
-      <div className="hidden md:block h-full">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+         <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
         <ProfileSidebar
           user={user}
           active="inbox"
           onDeleteAccount={deleteAccount}
           onLogout={handleLogout}
         />
+        </div>
       </div>
 
       {/* Main Content */}
@@ -143,7 +146,7 @@ export default function InboxPage() {
           </button>
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto lg:pt-15 pt-5">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Inbox</h1>
 
           {loadingMessages ? (
@@ -326,11 +329,8 @@ export default function InboxPage() {
                 setMobileSidebarOpen(false);
               }}
               className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L12 15.586l2.293-2.293zM9 11a1 1 0 000-2V7a1 1 0 012 0v2a1 1 0 100 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-              </svg>
-              Logout
+            ><MdLogout className="w-5 h-5" />
+  Logout
             </button>
           </div>
           </div>

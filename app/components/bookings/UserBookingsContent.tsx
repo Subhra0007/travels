@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FaBars } from "react-icons/fa";
 import ProfileSidebar from "../Pages/profile/ProfileSidebar";
+import { MdLogout } from "react-icons/md";
 import BookingTable, { type BookingRecord } from "./BookingTable";
 
 const UserBookingsContent: React.FC = () => {
@@ -171,13 +172,15 @@ const UserBookingsContent: React.FC = () => {
 
   return (
     <div className="flex flex-col md:flex-row  bg-sky-50 text-black  min-h-screen">
-        <div className="hidden lg:block lg:sticky lg:top-0 h-full overflow-y-auto">
+        <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+         <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
       <ProfileSidebar
         user={user}
         active="bookings"
         onDeleteAccount={deleteAccount}
         onLogout={handleLogout}
       />
+      </div>
 </div>
       {/* Main Content */}
       <div className="flex-1 p-4 md:p-10 pt-20 ">
@@ -191,7 +194,7 @@ const UserBookingsContent: React.FC = () => {
           </button>
         </div>
 
-        <main className="flex-1">
+        <main className="flex-1 lg:pt-25 pt-5">
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-800">My bookings</h1>
             <p className="text-sm text-gray-600">
@@ -324,9 +327,7 @@ const UserBookingsContent: React.FC = () => {
                 }}
                 className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L12 15.586l2.293-2.293zM9 11a1 1 0 000-2V7a1 1 0 012 0v2a1 1 0 100 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-                </svg>
+                 <MdLogout className="w-5 h-5" />
                 Logout
               </button>
             </nav>

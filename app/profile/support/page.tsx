@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaBars } from "react-icons/fa";
 import Image from "next/image";
+import { MdLogout } from "react-icons/md";
 import PageLoader from "../../components/common/PageLoader";
 import ProfileSidebar from "../../components/Pages/profile/ProfileSidebar"; // ← Adjust path as needed
 
@@ -163,19 +164,21 @@ const handleLogout = async () => {
   return (
     <div className="flex flex-col lg:flex-row  bg-sky-50 text-black">
       {/* Desktop Sidebar - uses your reusable component */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen lg:self-start">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
+         <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
         <ProfileSidebar
           user={user}
           active="support"
           onDeleteAccount={deleteAccount}
           onLogout={logout}
         />
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 pt-20 lg:pt-0">
         {/* Mobile Menu Button */}
-        <div className="lg:hidden fixed top-4 left-4 z-50 mt-10">
+        <div className="lg:hidden fixed top-4 left-4 z-50 mt-15">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white shadow-lg border text-gray-800 text-lg"
@@ -185,7 +188,7 @@ const handleLogout = async () => {
           </button>
         </div>
 
-        <div className="p-6 md:p-10 max-w-4xl mx-auto overflow-y-auto mt-5 ">
+        <div className="p-6 md:p-10 max-w-4xl mx-auto overflow-y-auto lg:pt-25 pt-15 ">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">Contact Support</h1>
 
           {success && (
@@ -333,7 +336,7 @@ const handleLogout = async () => {
                   router.push("/profile/inbox");
                   setMobileSidebarOpen(false);
                 }}
-                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
+                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M2.94 6.412A2 2 0 002 8.108V16a2 2 0 002 2h12a2 2 0 002-2V8.108a2 2 0 00-.94-1.696l-6-3.75a2 2 0 00-2.12 0l-6 3.75zm2.615 2.423a1 1 0 10-1.11 1.664l5 3.333a1 1 0 001.11 0l5-3.333a1 1 0 00-1.11-1.664L10 11.798 5.555 8.835z" clipRule="evenodd" />
@@ -345,7 +348,7 @@ const handleLogout = async () => {
                   router.push("/profile/support");
                   setMobileSidebarOpen(false);
                 }}
-                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 text-gray-700 hover:bg-green-50 hover:text-green-600"
+                className="w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
@@ -374,10 +377,8 @@ const handleLogout = async () => {
               }}
               className="w-full bg-linear-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-3 rounded-xl font-medium shadow-lg transition-all duration-200 flex items-center gap-3"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L12 15.586l2.293-2.293zM9 11a1 1 0 000-2V7a1 1 0 012 0v2a1 1 0 100 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-              </svg>
-              Logout
+             <MdLogout className="w-5 h-5" />
+  Logout
             </button>
           </div>
           </div>
