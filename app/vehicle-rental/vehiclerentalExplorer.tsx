@@ -99,128 +99,139 @@ export const RentalCard = ({
     router.push(`/vehicle-rental/${rental._id}`);
   };
 
-  return (
-    <div
-      onClick={handleCardClick}
-      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl cursor-pointer"
+ return (
+  <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl">
+    {/* Invisible overlay button that makes the whole card clickable */}
+    <button
+      type="button"
+      onClick={() => router.push(`/vehicle-rental/${rental._id}`)}
+      className="absolute inset-0 z-10 cursor-pointer rounded-2xl"
+      aria-label={`View details for ${rental.name}`}
+    />
+
+    {/* Wishlist button - higher z-index so it stays on top */}
+    <button
+      type="button"
+      aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
+      onClick={(e) => {
+        e.stopPropagation(); // This stops the card navigation
+        if (!wishlistDisabled) onToggleWishlist(rental._id, !isWishlisted, "vehicle-rental");
+      }}
+      disabled={wishlistDisabled}
+      className={`absolute right-3 top-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
+        wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
+      }`}
     >
-      <div className="relative h-56 w-full">
-        <button
-          type="button"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!wishlistDisabled) onToggleWishlist(rental._id, !isWishlisted, "vehicle-rental");
-          }}
-          disabled={wishlistDisabled}
-          className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
-            wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
+      <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
+    </button>
+
+    {/* Image + badges */}
+    <div className="relative h-56 w-full">
+      {rental.images?.[0] ? (
+        <Image
+          src={rental.images[0]}
+          alt={rental.name}
+          fill
+          className="object-cover transition duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-gray-200 text-gray-500">
+          No image
+        </div>
+      )}
+      <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
+        {rental.category === "cars-rental" ? "Car" : "Bike"}
+      </span>
+      {hasDates && (
+        <span
+          className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
+            soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
           }`}
         >
-          <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
-        </button>
-
-        {rental.images?.[0] ? (
-          <Image
-            src={rental.images[0]}
-            alt={rental.name}
-            fill
-            className="object-cover transition duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gray-200 text-gray-500">
-            No image
-          </div>
-        )}
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
-          {rental.category === "cars-rental" ? "Car" : "Bike"}
+          {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
         </span>
-        {hasDates && (
-          <span
-            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
-              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
-            }`}
-          >
-            {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
+      )}
+    </div>
+
+    {/* Card content */}
+    <div className="relative flex flex-1 flex-col gap-3 p-5 text-gray-900">
+      {/* Title, location, rating */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{rental.name}</h3>
+          <p className="mt-1 flex items-center text-sm text-gray-600">
+            <FaMapMarkerAlt className="mr-2 text-green-600" />
+            {rental.location.city}, {rental.location.state}
+          </p>
+        </div>
+        {ratingValue !== null && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+            <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5 text-gray-900">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{rental.name}</h3>
-            <p className="mt-1 flex items-center text-sm text-gray-600">
-              <FaMapMarkerAlt className="mr-2 text-green-600" />
-              {rental.location.city}, {rental.location.state}
-            </p>
-          </div>
-          {ratingValue !== null && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-              <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
+      {/* Hero highlights */}
+      {heroHighlights.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {heroHighlights.map((h) => (
+            <span
+              key={h}
+              className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
+            >
+              {h}
             </span>
+          ))}
+        </div>
+      )}
+
+      {/* Features */}
+      {!!primaryFeatures.length && (
+        <div className="text-xs text-gray-600">
+          <span className="font-semibold text-gray-800">Features:</span>{" "}
+          {primaryFeatures.join(", ")}
+        </div>
+      )}
+
+      {/* Tags - stop propagation */}
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 text-xs">
+          {tags.slice(0, 3).map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation(); // This stops the card navigation
+                onSelectTag?.(tag);
+              }}
+              className="rounded-full border border-green-200 px-3 py-1 text-green-700 transition hover:border-green-400 hover:bg-green-50"
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Bottom price + View details */}
+      <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3 text-sm">
+        <div className="text-gray-700">
+          <span className="block font-semibold text-gray-900">
+            {optionCount} vehicle{optionCount === 1 ? "" : "s"}
+          </span>
+          {startingPrice ? (
+            <span className="text-xs text-gray-500">From ₹{startingPrice}/day</span>
+          ) : (
+            <span className="text-xs text-gray-500">Pricing on request</span>
           )}
         </div>
-
-        {heroHighlights.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {heroHighlights.map((h) => (
-              <span
-                key={h}
-                className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
-              >
-                {h}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {!!primaryFeatures.length && (
-          <div className="text-xs text-gray-600">
-            <span className="font-semibold text-gray-800">Features:</span>{" "}
-            {primaryFeatures.join(", ")}
-          </div>
-        )}
-
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 text-xs">
-            {tags.slice(0, 3).map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onSelectTag?.(tag);
-                }}
-                className="rounded-full border border-green-200 px-3 py-1 text-green-700 transition hover:border-green-400 hover:bg-green-50"
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3 text-sm">
-          <div className="text-gray-700">
-            <span className="block font-semibold text-gray-900">
-              {optionCount} vehicle{optionCount === 1 ? "" : "s"}
-            </span>
-            {startingPrice ? (
-              <span className="text-xs text-gray-500">From ₹{startingPrice}/day</span>
-            ) : (
-              <span className="text-xs text-gray-500">Pricing on request</span>
-            )}
-          </div>
-          <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-semibold text-green-700">
-            View details
-          </span>
-        </div>
+        <span className="rounded-full bg-green-100 px-4 py-1 text-xs font-semibold text-green-700">
+          View details
+        </span>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default function VehicleRentalExplorer({ initialCategory = "all" }: VehicleRentalExplorerProps) {
