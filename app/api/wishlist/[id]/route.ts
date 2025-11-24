@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import Wishlist from "@/models/Wishlist";
+import { ensureWishlistIndexes } from "@/lib/db/ensureWishlistIndexes";
 
 export const DELETE = auth(async (
   req: NextRequest,
@@ -11,6 +12,7 @@ export const DELETE = auth(async (
 ) => {
   try {
     await dbConnect();
+    await ensureWishlistIndexes();
     const userId = (req as any).user.id;
     
     // Await params to get the id

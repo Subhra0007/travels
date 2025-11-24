@@ -203,7 +203,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-lime-500 outline-none text-gray-800 border-gray-400"
           />
           <div className="flex items-center justify-between p-3 bg-linear-to-r from-lime-100 to-green-100 rounded-xl">
-            <span className="text-black">Vendor?</span>
+            <span className="text-black">Are You a Vendor?</span>
             <button
               type="button"
               onClick={() => setIsVendor(!isVendor)}

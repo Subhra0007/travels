@@ -8,10 +8,12 @@ import Stay from "@/models/Stay";
 import Tour from "@/models/Tour";
 import Adventure from "@/models/Adventure";
 import VehicleRental from "@/models/VehicleRental";
+import { ensureWishlistIndexes } from "@/lib/db/ensureWishlistIndexes";
 
 export const GET = auth(async (req: NextRequest) => {
   try {
     await dbConnect();
+    await ensureWishlistIndexes();
     const userId = (req as any).user.id;
 
     const items = await Wishlist.find({ userId })
@@ -86,6 +88,7 @@ export const GET = auth(async (req: NextRequest) => {
 export const POST = auth(async (req: NextRequest) => {
   try {
     await dbConnect();
+    await ensureWishlistIndexes();
     const userId = (req as any).user.id;
     const body = await req.json();
 

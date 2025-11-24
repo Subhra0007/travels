@@ -6,6 +6,7 @@ import Stay from "@/models/Stay";
 import Tour from "@/models/Tour";
 import Adventure from "@/models/Adventure";
 import VehicleRental from "@/models/VehicleRental";
+import mongoose from "mongoose";
 
 export async function GET(req: NextRequest) {
   await dbConnect();
@@ -15,6 +16,13 @@ export async function GET(req: NextRequest) {
 
   // Single vendor lookup (used by vendor page polling)
   if (id) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid vendor id" },
+        { status: 400 }
+      );
+    }
+
     const vendor = await User.findById(id).select(
       "isVendorApproved isVendorLocked vendorServices fullName email contactNumber createdAt accountType"
     );
