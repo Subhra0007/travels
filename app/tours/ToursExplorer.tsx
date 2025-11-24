@@ -764,7 +764,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               <TourCard
                 key={tour._id}
                 tour={tour}
-                 isWishlisted={wishlistIds.has(tour._id)}
+                isWishlisted={isInWishlist(tour._id)}
                 wishlistDisabled={!wishlistLoaded}
                 onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>

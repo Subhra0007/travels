@@ -18,11 +18,11 @@ async function fetchRental(id: string): Promise<VehicleRentalDetailPayload | nul
 }
 
 interface PageParams {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default async function VehicleRentalDetailPage({ params }: PageParams) {
-  const { id } = await params;
+  const { id } = params;
   const rental = await fetchRental(id);
   if (!rental) notFound();
 

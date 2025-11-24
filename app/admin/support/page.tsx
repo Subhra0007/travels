@@ -126,7 +126,7 @@ export default function AdminSupportPage() {
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center gap-3 p-3 border-b">
             <button
-              className="lg:hidden px-3 py-2 rounded border text-gray-700"
+              className="lg:hidden px-3 py-2 rounded border text-gray-900"
               onClick={() => setMobileSidebarOpen(true)}
               aria-label="Open menu"
             >
@@ -137,12 +137,12 @@ export default function AdminSupportPage() {
         </div>
         <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-6">
           {/* Filter Buttons */}
-          <div className="mb-6 flex gap-2 flex-wrap">
+          <div className="mb-6 flex gap-2 flex-wrap text-black">
             <button
               onClick={() => setFilter("all")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === "all"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-indigo-600 text-black"
                   : "bg-white text-gray-700 hover:bg-gray-50"
               }`}
             >
@@ -150,10 +150,10 @@ export default function AdminSupportPage() {
             </button>
             <button
               onClick={() => setFilter("open")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium transition-colors text-black ${
                 filter === "open"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-50"
+                  ? "bg-indigo-600 text-black"
+                  : "bg-white text-gray-900 hover:bg-gray-50"
               }`}
             >
               Open
@@ -162,7 +162,7 @@ export default function AdminSupportPage() {
               onClick={() => setFilter("replied")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === "replied"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-indigo-600 text-black"
                   : "bg-white text-gray-700 hover:bg-gray-50"
               }`}
             >
@@ -172,7 +172,7 @@ export default function AdminSupportPage() {
               onClick={() => setFilter("closed")}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 filter === "closed"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-indigo-600 text-black"
                   : "bg-white text-gray-700 hover:bg-gray-50"
               }`}
             >
@@ -186,7 +186,7 @@ export default function AdminSupportPage() {
             </div>
           ) : messages.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-8 text-center">
-              <p className="text-gray-500">No support messages found.</p>
+              <p className="text-gray-800">No support messages found.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -201,7 +201,7 @@ export default function AdminSupportPage() {
                       <p className="text-sm text-gray-500">
                         From: {msg.userId && typeof msg.userId === "object" ? msg.userId.fullName : "Unknown"}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-gray-800 mt-1">
                         {new Date(msg.createdAt).toLocaleString()}
                       </p>
                     </div>
@@ -225,8 +225,8 @@ export default function AdminSupportPage() {
                   {msg.adminReply && (
                     <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-500 rounded-lg">
                       <p className="text-sm font-medium text-green-800 mb-1">Admin Reply:</p>
-                      <p className="text-sm text-gray-700">{msg.adminReply}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-sm text-gray-800">{msg.adminReply}</p>
+                      <p className="text-xs text-gray-800 mt-1">
                         Replied on {new Date(msg.repliedAt).toLocaleString()}
                         {msg.repliedBy && typeof msg.repliedBy === "object" && (
                           <span> by {msg.repliedBy.fullName}</span>
@@ -239,7 +239,7 @@ export default function AdminSupportPage() {
                     {!msg.adminReply && (
                       <button
                         onClick={() => setSelectedMessage(msg)}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-black px-4 py-2 rounded-lg font-medium transition-colors"
                       >
                         Reply
                       </button>
@@ -247,7 +247,7 @@ export default function AdminSupportPage() {
                     <select
                       value={msg.status}
                       onChange={(e) => handleStatusChange(msg._id, e.target.value)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-black"
                     >
                       <option value="open">Open</option>
                       <option value="replied">Replied</option>
@@ -272,7 +272,7 @@ export default function AdminSupportPage() {
             </div>
             <div className="mb-4">
               <p className="text-sm font-medium text-gray-700 mb-1">Original Message:</p>
-              <p className="text-gray-600">{selectedMessage.message}</p>
+              <p className="text-gray-800">{selectedMessage.message}</p>
             </div>
             <div className="mb-4">
               <label htmlFor="reply" className="block text-sm font-medium text-gray-700 mb-2">
@@ -301,7 +301,7 @@ export default function AdminSupportPage() {
               <button
                 onClick={() => handleReply(selectedMessage._id)}
                 disabled={submitting || !replyText.trim()}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-black rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? "Sending..." : "Send Reply"}
               </button>

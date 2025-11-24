@@ -14,7 +14,7 @@ import {
   FaMotorcycle,
   FaRupeeSign,
 } from "react-icons/fa";
-import { useWishlist } from "@/app/hooks/useWishlist";
+import { useWishlist } from "../hooks/useWishlist";
 import { useAvailability } from "@/app/hooks/useAvailability";
 import {
   VEHICLE_RENTAL_CATEGORIES,

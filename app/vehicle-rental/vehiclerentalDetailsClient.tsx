@@ -43,7 +43,7 @@ import {
   FaMountain,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { useWishlist } from "@/app/hooks/useWishlist";
+import { useWishlist } from "../hooks/useWishlist";
 import { useAvailability } from "../hooks/useAvailability";
 
 export type VehicleRentalDetailPayload = {
@@ -277,9 +277,13 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                   </p>
                 </div>
                 <button
+                  type="button"
+                  aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
                   onClick={() => toggleWishlist(rental._id, !isWishlisted, "vehicle-rental")}
                   disabled={!wishlistLoaded}
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25 ${!wishlistLoaded ? "opacity-60" : ""}`}
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
+                    !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""
+                  }`}
                 >
                   <FaHeart className={isWishlisted ? "text-red-400" : "text-white"} />
                 </button>
@@ -639,7 +643,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
             </button>
           </div>
 
-          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
+          <div className="flex flex-col justify-between rounded-2xl bg-linear-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900">What happens next?</h3>
               <p>Click <strong>Book now</strong> to complete your reservation on the next page:</p>
