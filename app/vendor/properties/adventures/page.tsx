@@ -259,7 +259,7 @@ export default function VendorAdventuresPage() {
             </div>
 
       {/* Main content */}
-      <div className=" lex-1 flex flex-col mt-15 overflow-hidde">
+      <div className=" flex-1 flex flex-col mt-20">
         {/* Top bar */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">

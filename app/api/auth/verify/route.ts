@@ -54,7 +54,10 @@ export async function GET(req: NextRequest) {
     }
 
     // ✅ Otherwise find user in DB
-    const user = await User.findById(userId).populate("additionalDetails");
+    const user = await User.findById(userId).populate({
+      path: "additionalDetails",
+      options: { strictPopulate: false }
+    });
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },

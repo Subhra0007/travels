@@ -8,7 +8,17 @@ import "@/models/Profile";
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
+    // Ensure database connection with better error handling
+    try {
+      await dbConnect();
+    } catch (dbError) {
+      console.error("Database connection error:", dbError);
+      return NextResponse.json(
+        { success: false, message: "Database connection failed" },
+        { status: 500 }
+      );
+    }
+    
     const { email, password } = await req.json();
 
     
@@ -36,7 +46,7 @@ export async function POST(req: NextRequest) {
           { email: ADMIN_EMAIL },
           { $inc: { loginCount: 1 }, $set: { lastLogin: new Date() } },
           { upsert: true }
-        );
+      );
       } catch (e) {
         console.error("Failed to update admin meta:", e);
       }
@@ -63,7 +73,18 @@ export async function POST(req: NextRequest) {
     }
 
     // ✅ 2. USER / VENDOR LOGIN (from MongoDB)
-    const user = await User.findOne({ email }).populate("additionalDetails");
+    // Add timeout handling for the database query
+    let user;
+    try {
+      user = await User.findOne({ email }).populate("additionalDetails").maxTimeMS(10000); // 10 second timeout
+    } catch (dbQueryError) {
+      console.error("Database query error:", dbQueryError);
+      return NextResponse.json(
+        { success: false, message: "Database query timeout" },
+        { status: 500 }
+      );
+    }
+    
     if (!user)
       return NextResponse.json(
         { success: false, message: "User not found" },

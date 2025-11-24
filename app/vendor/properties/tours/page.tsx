@@ -245,7 +245,7 @@ export default function VendorToursPage() {
             </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
+      <div className="flex-1 flex flex-col mt-20 overflow-hidden">
         {/* Top bar with mobile trigger */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">

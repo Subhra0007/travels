@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MdLogout } from "react-icons/md";
-import { useMemo,  type JSX } from "react";
+import { useMemo, type JSX } from "react";
 
 type SidebarSection = "profile" | "bookings" | "wishlist" | "inbox" | "support";
 
@@ -12,6 +12,7 @@ type ProfileSidebarProps = {
   active?: SidebarSection;
   onDeleteAccount?: () => void;
   onLogout?: () => void;
+  onNavigate?: (section: SidebarSection) => void; // Add onNavigate prop
 };
 
 const navItems: Array<{
@@ -37,7 +38,7 @@ const navItems: Array<{
   {
     id: "bookings",
     label: "Booking History",
-    href: "/bookings",
+    href: "/profile/bookings",
     icon: (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path
@@ -51,7 +52,7 @@ const navItems: Array<{
   {
     id: "wishlist",
     label: "Wishlist",
-    href: "/wishlist",
+    href: "/profile/wishlist",
     icon: (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
         <path
@@ -97,6 +98,7 @@ const ProfileSidebar = ({
   active = "profile",
   onDeleteAccount,
   onLogout,
+  onNavigate, // Destructure onNavigate prop
 }: ProfileSidebarProps) => {
   const router = useRouter();
 
@@ -134,7 +136,7 @@ const ProfileSidebar = ({
   if (!user) return null;
 
   return (
-   
+    
       <div className="w-64  bg-white shadow-lg p-6 flex flex-col pt-20  ">
         <div className="mb-8 flex flex-col items-center space-y-2">
           {Avatar}
@@ -148,7 +150,8 @@ const ProfileSidebar = ({
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => router.push(item.href)}
+              // Use onNavigate if provided, otherwise use router.push for backward compatibility
+              onClick={() => onNavigate ? onNavigate(item.id) : router.push(item.href)}
               className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${
                 active === item.id
                   ? "bg-linear-to-r from-green-500 to-green-600 text-white shadow-lg"
@@ -193,4 +196,3 @@ const ProfileSidebar = ({
 };
 
 export default ProfileSidebar;
-

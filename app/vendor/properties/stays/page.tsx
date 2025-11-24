@@ -222,7 +222,7 @@ export default function VendorStaysPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
+      <div className="flex-1 flex flex-col mt-20 overflow-hidden">
         {/* Topbar with mobile menu button */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">

@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-  <footer className="bg-[#061a23] text-gray-300 pt-12 pb-6 z-100">
+  <footer className="bg-[#061a23] text-gray-300 pt-12 pb-6 z-999">
     <motion.div
       initial={{ opacity: 0, y: 60 }}
       animate={{ opacity: 1, y: 0 }}

@@ -1,6 +1,5 @@
-import UserBookingsContent from "@/app/components/bookings/UserBookingsContent";
+import { redirect } from "next/navigation";
 
 export default function BookingsPage() {
-  return <UserBookingsContent />;
+  redirect("/profile/bookings");
 }
-
