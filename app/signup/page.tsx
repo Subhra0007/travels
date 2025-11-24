@@ -18,6 +18,7 @@ export default function SignUpPage() {
   const [isVendor, setIsVendor] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -67,8 +68,10 @@ export default function SignUpPage() {
       if (!res.ok) throw new Error(data.message);
       setOtpSent(true);
       setError("");
+      setStatusMessage("Otp is sended");
     } catch (e: any) {
       setError(e.message);
+      setStatusMessage("");
     }
   };
 
@@ -83,8 +86,10 @@ export default function SignUpPage() {
       if (!res.ok) throw new Error(data.message);
       setOtpVerified(true);
       setError("");
+      setStatusMessage("Otp is Verified");
     } catch (e: any) {
       setError(e.message);
+      setStatusMessage("");
     }
   };
 
@@ -138,7 +143,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     <div className="min-h-screen flex items-center justify-center p-4 ">
       <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-lime-400 mt-20">
         <h2 className="text-3xl font-bold text-center mb-6 text-black">Create Account</h2>
-        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
+            {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
+            {statusMessage && <p className="text-green-600 text-sm text-center mb-4">{statusMessage}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="name"

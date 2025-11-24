@@ -6,32 +6,43 @@ if (!MONGODB_URI) {
   throw new Error("Please define MONGODB_URI in environment variables");
 }
 
-let isConnected = false;
+let connectionPromise: Promise<void | mongoose.Connection> | null = null;
 
 export default async function dbConnect() {
-  // Check if we're already connected
-  if (isConnected) {
+  // Already connected
+  if (mongoose.connection.readyState === 1) {
     console.log("✅ Using existing MongoDB connection");
     return;
   }
 
-  // Check if mongoose is already connected
-  if (mongoose.connection.readyState === 1) {
-    isConnected = true;
-    console.log("✅ Using existing Mongoose connection");
+  // Connection in progress started elsewhere
+  if (mongoose.connection.readyState === 2 && connectionPromise === null) {
+    connectionPromise = mongoose.connection.asPromise().finally(() => {
+      connectionPromise = null;
+    });
+  }
+
+  if (connectionPromise) {
+    await connectionPromise;
     return;
   }
 
-  try {
-    const db = await mongoose.connect(MONGODB_URI, {
+  connectionPromise = mongoose
+    .connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
       bufferCommands: false, // Disable command buffering
+    })
+    .then(() => {
+      console.log("✅ MongoDB connected successfully");
+    })
+    .catch((error) => {
+      console.error("❌ MongoDB connection error:", error);
+      throw new Error("Failed to connect to MongoDB");
+    })
+    .finally(() => {
+      connectionPromise = null;
     });
-    isConnected = !!db.connections[0].readyState;
-    console.log("✅ MongoDB connected successfully");
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    throw new Error("Failed to connect to MongoDB");
-  }
+
+  await connectionPromise;
 }
