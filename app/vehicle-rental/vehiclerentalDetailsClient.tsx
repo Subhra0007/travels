@@ -1,7 +1,7 @@
 // app/vehicle-rental/vehicleRentalDetailClient.tsx
 "use client";
 
-import { Fragment, useMemo, useState, type JSX } from "react";
+import { Fragment, useMemo, useState,type JSX } from "react";
 import Image from "next/image";
 import {
   FaArrowLeft,
@@ -15,6 +15,7 @@ import {
   FaTag,
   FaVideo,
   FaCar,
+  FaMotorcycle,
   FaGasPump,
   FaCogs,
   FaSnowflake,
@@ -24,26 +25,9 @@ import {
   FaUsb,
   FaCamera,
   FaInfoCircle,
-  FaSwimmer,
-  FaWifi,
-  FaParking,
-  FaSpa,
-  FaUtensils,
-  FaGlassCheers,
-  FaCoffee,
-  FaDumbbell,
-  FaConciergeBell,
-  FaChild,
-  FaWheelchair,
-  FaAccessibleIcon,
-  FaBath,
-  FaShower,
-  FaTv,
-  FaHotjar,
-  FaMountain,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { useWishlist } from "../hooks/useWishlist";
+import { useWishlist } from "@/app/hooks/useWishlist";
 import { useAvailability } from "../hooks/useAvailability";
 
 export type VehicleRentalDetailPayload = {
@@ -92,7 +76,6 @@ export type VehicleRentalDetailPayload = {
   vendorMessage?: string;
 };
 
-// Unified icon map (same as adventure page + vehicle icons)
 const facilityIconMap: Record<string, JSX.Element> = {
   ac: <FaSnowflake />,
   "air conditioning": <FaSnowflake />,
@@ -104,53 +87,33 @@ const facilityIconMap: Record<string, JSX.Element> = {
   transmission: <FaCogs />,
   insurance: <FaShieldAlt />,
   keyless: <FaKey />,
-  pool: <FaSwimmer />,
-  wifi: <FaWifi />,
-  parking: <FaParking />,
-  spa: <FaSpa />,
-  restaurant: <FaUtensils />,
-  bar: <FaGlassCheers />,
-  breakfast: <FaCoffee />,
-  gym: <FaDumbbell />,
-  concierge: <FaConciergeBell />,
-  family: <FaChild />,
-  security: <FaShieldAlt />,
-  safety: <FaShieldAlt />,
-  wheelchair: <FaWheelchair />,
-  accessible: <FaAccessibleIcon />,
-  bathroom: <FaBath />,
-  shower: <FaShower />,
-  tv: <FaTv />,
-  heating: <FaHotjar />,
-  mountain: <FaMountain />,
 };
 
-const getFacilityIcon = (label: string) => {
+const getIcon = (label: string) => {
   const key = label.toLowerCase();
-  const match = Object.entries(facilityIconMap).find(([term]) => key.includes(term));
+  const match = Object.entries(facilityIconMap).find(([k]) => key.includes(k));
   return match ? match[1] : <FaCheck />;
 };
 
-const formatDateInput = (date: Date) => {
-  const y = date.getFullYear();
-  const m = `${date.getMonth() + 1}`.padStart(2, "0");
-  const d = `${date.getDate()}`.padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
+const formatDateInput = (date: Date) => `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}-${`${date.getDate()}`.padStart(2, "0")}`;
 
 const formatDateDisplay = (value: string) => {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 };
 
 const calculateDays = (start: string, end: string) => {
   if (!start || !end) return 1;
-  const a = new Date(start);
-  const b = new Date(end);
-  if (Number.isNaN(a.getTime()) || Number.isNaN(b.getTime()) || b <= a) return 1;
-  return Math.max(1, Math.ceil((b.getTime() - a.getTime()) / (1000 * 60 * 60 * 24)));
+  const pickup = new Date(start);
+  const dropoff = new Date(end);
+  if (Number.isNaN(pickup.getTime()) || Number.isNaN(dropoff.getTime()) || dropoff <= pickup) return 1;
+  return Math.max(1, Math.ceil((dropoff.getTime() - pickup.getTime()) / (1000 * 60 * 60 * 24)));
 };
 
 const getDefaultDates = () => {
@@ -180,8 +143,8 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
 
   const initialSelections = useMemo(() => {
     const map: Record<string, number> = {};
-    rental.options.forEach((v) => {
-      const key = v._id?.toString() || v.model;
+    rental.options.forEach((vehicle) => {
+      const key = vehicle._id?.toString() || vehicle.model;
       map[key] = 0;
     });
     return map;
@@ -195,26 +158,37 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
   const availability = useAvailability("vehicle", rental._id, pickupDate, dropoffDate);
   const availableVehicleKeys = availability.availableOptionKeys ?? [];
   const bookedSummaries = availability.bookedRanges.slice(0, 3);
-  const soldOutForDates = !availability.loading && rental.options.length > 0 && availableVehicleKeys.length === 0;
-  const isVehicleUnavailable = (key: string) => {
+  const soldOutForDates =
+    !availability.loading && rental.options.length > 0 && availableVehicleKeys.length === 0;
+  const isVehicleUnavailable = (vehicleKey: string) => {
     if (availability.loading) return false;
     if (availableVehicleKeys.length === 0) return soldOutForDates;
-    return !availableVehicleKeys.includes(key);
+    return !availableVehicleKeys.includes(vehicleKey);
   };
 
   const pricing = useMemo(() => {
-    const selectedVehicles = rental.options.reduce(
-      (acc, v) => {
-        const key = v._id?.toString() || v.model;
-        const qty = vehicleSelections[key] || 0;
-        if (qty > 0) acc.push({ vehicle: v, qty });
-        return acc;
-      },
-      [] as Array<{ vehicle: typeof rental.options[number]; qty: number }>
-    );
-    const subtotal = selectedVehicles.reduce((sum, { vehicle, qty }) => sum + vehicle.pricePerDay * qty * days, 0);
-    const taxes = selectedVehicles.reduce((sum, { vehicle, qty }) => sum + (vehicle.taxes ?? 0) * qty * days, 0);
-    return { subtotal, taxes, total: subtotal + taxes, selectedVehicles };
+    let subtotal = 0;
+    let taxes = 0;
+    const vehicles = rental.options.map((vehicle) => {
+      const vehicleKey = vehicle._id?.toString() || vehicle.model;
+      const quantity = vehicleSelections[vehicleKey] || 0;
+      if (!quantity) return null;
+      const taxPerDay = vehicle.taxes ?? 0;
+      subtotal += vehicle.pricePerDay * quantity * days;
+      taxes += taxPerDay * quantity * days;
+      return { vehicle, quantity, taxPerDay };
+    });
+
+    return {
+      subtotal,
+      taxes,
+      total: subtotal + taxes,
+      selectedVehicles: vehicles.filter(Boolean) as Array<{
+        vehicle: VehicleRentalDetailPayload["options"][number];
+        quantity: number;
+        taxPerDay: number;
+      }> ,
+    };
   }, [vehicleSelections, rental.options, days]);
 
   const platformFee = pricing.selectedVehicles.length ? 15 : 0;
@@ -222,101 +196,138 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
 
   const locationString = useMemo(
     () => [rental.location.address, rental.location.city, rental.location.state, rental.location.country].filter(Boolean).join(", "),
-    [rental.location]
+    [rental.location.address, rental.location.city, rental.location.state, rental.location.country]
   );
 
-  const mapEmbedUrl = useMemo(() => `https://www.google.com/maps?q=${encodeURIComponent(locationString)}&output=embed`, [locationString]);
-  const mapDirectionsUrl = useMemo(() => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(locationString)}`, [locationString]);
+  const mapEmbedUrl = useMemo(
+    () => `https://www.google.com/maps?q=${encodeURIComponent(locationString)}&output=embed`,
+    [locationString]
+  );
 
-  const toggleSelection = (key: string, available: number) => {
-    if (available <= 0 || isVehicleUnavailable(key)) return;
-    setVehicleSelections((prev) => ({ ...prev, [key]: prev[key] ? 0 : 1 }));
+  const mapDirectionsUrl = useMemo(
+    () => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(locationString)}`,
+    [locationString]
+  );
+
+  const toggleVehicleSelection = (vehicleKey: string, available: number) => {
+    if (available <= 0 || isVehicleUnavailable(vehicleKey)) return;
+    setVehicleSelections((prev) => {
+      const current = prev[vehicleKey] || 0;
+      if (available <= 0) {
+        return { ...prev, [vehicleKey]: 0 };
+      }
+      return { ...prev, [vehicleKey]: current > 0 ? 0 : 1 };
+    });
   };
 
-  const stepQuantity = (key: string, delta: number, max: number) => {
-    if (isVehicleUnavailable(key)) return;
+  const stepVehicleQuantity = (vehicleKey: string, delta: number, maxAvailable: number) => {
+    if (isVehicleUnavailable(vehicleKey)) return;
     setVehicleSelections((prev) => {
-      const curr = prev[key] || 0;
-      const next = Math.min(Math.max(curr + delta, 0), max ?? 0);
-      return { ...prev, [key]: next };
+      const allowedMax = Math.max(0, maxAvailable ?? 0);
+      const current = prev[vehicleKey] || 0;
+      const next = Math.min(Math.max(current + delta, 0), allowedMax);
+      return { ...prev, [vehicleKey]: next };
     });
   };
 
   const handleBookNow = () => {
     if (!pricing.selectedVehicles.length || soldOutForDates) return;
-    const params = new URLSearchParams({ pickup: pickupDate, dropoff: dropoffDate });
-    pricing.selectedVehicles.forEach(({ vehicle, qty }) => {
-      const key = vehicle._id?.toString() || vehicle.model;
-      params.append("vehicles", `${key}:${qty}`);
+
+    const params = new URLSearchParams({
+      pickup: pickupDate,
+      dropoff: dropoffDate,
     });
+
+    pricing.selectedVehicles.forEach(({ vehicle, quantity }) => {
+      const vehicleKey = vehicle._id?.toString() || vehicle.model;
+      params.append("vehicles", `${vehicleKey}:${quantity}`);
+    });
+
     router.push(`/vehicle-rental/${rental._id}/book?${params.toString()}`);
   };
 
-  const facilities = rental.popularFacilities || [];
-  const hasRating = rental.rating?.average != null;
   return (
     <div className="min-h-screen bg-sky-50 text-black">
-   {/* Header */}
-      <header className="relative isolate overflow-hidden  bg-linear-to-br from-green-600 via-green-500 to-lime-400 pb-20 pt-16 text-white">
-        <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
-          <button onClick={() => router.back()} className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm backdrop-blur hover:bg-white/25">
+      <header className="relative isolate overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 pb-20 pt-16 text-white">
+        {/* <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: rental.images?.length ? `url(${rental.images[0]})` : "url('/placeholder.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        /> */}
+        <div className="relative mx-auto max-w-6xl px-6">
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm backdrop-blur transition hover:bg-white/25"
+          >
             <FaArrowLeft /> Back to rentals
           </button>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)]">
-            <div className="space-y-6">
+            <div className="max-w-3xl">
               <div className="flex items-start justify-between gap-6">
-                <div className="max-w-2xl">
+                <div className="max-w-xl">
                   <p className="uppercase tracking-wide text-white/80">
                     {rental.category === "cars-rental" ? "Car Rental" : "Bike Rental"}
                   </p>
-                  <h1 className="mt-2 text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">{rental.name}</h1>
+                  <div className="mt-2 flex items-center gap-3">
+                    <h1 className="text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">{rental.name}</h1>
+                    <button
+                      type="button"
+                      onClick={() => toggleWishlist(rental._id, !isWishlisted, "vehicle-rental")}
+                      disabled={!wishlistLoaded}
+                      className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-white/25 ${
+                        !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""
+                      }`}
+                    >
+                      <FaHeart className={isWishlisted ? "text-red-400" : "text-white"} />
+                    </button>
+                  </div>
                   <p className="mt-3 flex items-center text-base text-white/90">
                     <FaMapMarkerAlt className="mr-2" />
                     {locationString}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-                  onClick={() => toggleWishlist(rental._id, !isWishlisted, "vehicle-rental")}
-                  disabled={!wishlistLoaded}
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
-                    !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""
-                  }`}
+                <a
+                  href={mapDirectionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/25 md:flex md:items-center md:gap-2"
                 >
-                  <FaHeart className={isWishlisted ? "text-red-400" : "text-white"} />
-                </button>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
-                {hasRating && (
-                  <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold">
-                    <FaStar className="text-yellow-300" /> {rental.rating!.average.toFixed(1)} · {rental.rating!.count} reviews
-                  </span>
-                )}
-                <a href={mapDirectionsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold hover:bg-white/25">
-                  <FaMapMarkerAlt /> View on map
+                  View on map
                 </a>
-                {rental.tags?.slice(0, 3).map((tag) => (
-                  <span key={tag} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                    <FaTag /> {tag}
-                  </span>
-                ))}
               </div>
 
+              {rental.tags && rental.tags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {rental.tags.slice(0, 4).map((tag) => (
+                    <span key={tag} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">
+                      <FaTag /> {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {rental.rating?.count && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold">
+                  <FaStar className="text-yellow-300" /> {rental.rating.average.toFixed(1)} · {rental.rating.count} reviews
+                </div>
+              )}
               {rental.heroHighlights?.length > 0 && (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {rental.heroHighlights.slice(0, 3).map((h) => (
-                    <div key={h} className="rounded-2xl bg-white/15 px-4 py-3 text-sm font-medium shadow-sm backdrop-blur">
-                      {h}
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {rental.heroHighlights.slice(0, 3).map((highlight) => (
+                    <div
+                      key={highlight}
+                      className="rounded-2xl bg-white/15 px-4 py-3 text-sm font-medium text-white shadow-sm backdrop-blur"
+                    >
+                      {highlight}
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Plan Card */}
             <div className="w-full max-w-xl rounded-2xl bg-white/95 p-6 text-gray-900 shadow-lg backdrop-blur">
               <h2 className="text-lg font-semibold">Plan your ride</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -326,15 +337,15 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                     type="date"
                     value={pickupDate}
                     onChange={(e) => {
-                      const v = e.target.value;
-                      setPickupDate(v);
-                      if (new Date(v) >= new Date(dropoffDate)) {
-                        const next = new Date(v);
-                        next.setDate(next.getDate() + 1);
-                        setDropoffDate(formatDateInput(next));
+                      const value = e.target.value;
+                      setPickupDate(value);
+                      if (new Date(value) >= new Date(dropoffDate)) {
+                        const fallback = new Date(value);
+                        fallback.setDate(fallback.getDate() + 1);
+                        setDropoffDate(formatDateInput(fallback));
                       }
                     }}
-                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
+                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                   />
                 </label>
                 <label className="flex flex-col gap-1 text-sm">
@@ -344,82 +355,147 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                     min={pickupDate}
                     value={dropoffDate}
                     onChange={(e) => setDropoffDate(e.target.value)}
-                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-green-500 focus:outline-none"
+                    className="rounded-lg border border-gray-200 px-3 py-2 focus:border-blue-500 focus:outline-none"
                   />
                 </label>
               </div>
-              <p className="mt-3 text-sm text-gray-600">Rental duration: {days} day{days > 1 ? "s" : ""}</p>
-              <div className={`mt-3 rounded-2xl border px-4 py-3 text-sm ${soldOutForDates ? "border-rose-200 bg-rose-50 text-rose-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
-                {availability.loading ? "Checking…" : soldOutForDates ? "Sold out for these dates" : "Available"}
+              <p className="mt-3 text-sm text-gray-600">Rental duration: {days} day{days === 1 ? "" : "s"}</p>
+              <div
+                className={`rounded-2xl border px-4 py-3 text-sm ${
+                  soldOutForDates
+                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                }`}
+              >
+                {availability.loading && "Checking availability…"}
+                {!availability.loading && !availability.error && (
+                  <span>
+                    {soldOutForDates
+                      ? "These dates are sold out. Pick different dates."
+                      : "These dates are available."}
+                  </span>
+                )}
+                {availability.error && (
+                  <span className="text-rose-600">Unable to check availability. Please refresh.</span>
+                )}
+                {!availability.loading && bookedSummaries.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-600">
+                    Upcoming booked dates:{" "}
+                    {bookedSummaries
+                      .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                      .join(", ")}
+                  </p>
+                )}
               </div>
-              <button onClick={() => document.getElementById("vehicle-availability")?.scrollIntoView({ behavior: "smooth" })} className="mt-4 w-full rounded-lg bg-green-600 py-3 font-semibold text-white hover:bg-green-700">
+              <button
+                onClick={() => {
+                  const target = document.getElementById("vehicle-availability");
+                  if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700"
+              >
                 View available vehicles
               </button>
+              <a
+                href={mapDirectionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 flex w-full items-center justify-center gap-2 text-sm font-medium text-blue-50 transition hover:text-white"
+              >
+                <FaMapMarkerAlt /> Open in Google Maps
+              </a>
             </div>
           </div>
         </div>
       </header>
 
-   <main className="mx-auto max-w-7xl px-6 pb-16 lg:px-2 mt-10">
-        {/* Location Map */}
-        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[1.4fr_1fr]">
-          <div>
-            <h2 className="text-xl font-semibold">Rental location</h2>
-            <p className="mt-2 text-sm text-gray-600">Find the exact pickup point and plan your route.</p>
-            <a href={mapDirectionsUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 hover:bg-green-100">
-              <FaMapMarkerAlt /> Open in Google Maps
-            </a>
+      <main className="mx-auto -mt-12 max-w-6xl px-6 pb-16">
+        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="flex flex-col justify-between space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Rental location</h2>
+              <p className="mt-2 text-sm text-gray-600">
+                Explore the pickup spot, nearby fuel stations, and navigation routes before you arrive.
+              </p>
+            </div>
+            <div className="space-y-3 text-sm text-gray-700">
+              <div className="flex items-center gap-2">
+                <FaMapMarkerAlt className="text-blue-600" />
+                <span>{rental.location.city}, {rental.location.state}</span>
+              </div>
+              <a
+                href={mapDirectionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+              >
+                <FaMapMarkerAlt /> Open in Google Maps
+              </a>
+            </div>
           </div>
-          <div className="h-72 overflow-hidden rounded-2xl border border-gray-100">
-            <iframe src={mapEmbedUrl} title="Map" className="h-full w-full" loading="lazy" allowFullScreen />
+          <div className="h-72 w-full overflow-hidden rounded-2xl border border-gray-100 shadow-inner">
+            <iframe src={mapEmbedUrl} title={`${rental.name} map`} loading="lazy" className="h-full w-full" allowFullScreen />
           </div>
         </section>
 
-        {/* Gallery */}
-        <section className="mt-10 grid gap-4 rounded-3xl bg-white p-6 shadow-xl md:grid-cols-5">
+        <section className="grid gap-4 rounded-3xl bg-white p-6 shadow-xl md:grid-cols-5">
           <div className="relative h-64 overflow-hidden rounded-2xl md:col-span-3">
-            {images.length ? <Image src={images[galleryIdx]} alt={rental.name} fill className="object-cover" /> : <div className="flex h-full items-center justify-center bg-gray-100">No photos</div>}
+            {images.length ? (
+              <Image src={images[galleryIdx]} alt={rental.name} fill className="object-cover" />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-gray-100 text-gray-500">No photos</div>
+            )}
             {images.length > 0 && (
-              <button onClick={() => setGalleryOpen(true)} className="absolute bottom-4 right-4 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold shadow">
-                View all
+              <button
+                type="button"
+                onClick={() => setGalleryOpen(true)}
+                className="absolute bottom-4 right-4 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-gray-800 shadow"
+              >
+                View all photos
               </button>
             )}
           </div>
           <div className="grid gap-4 md:col-span-2">
-            {images.slice(1, 4).map((src, i) => (
-              <div key={i} className="relative h-32 overflow-hidden rounded-2xl">
-                <Image src={src} alt="" fill className="object-cover" />
+            {images.slice(1, 4).map((img, idx) => (
+              <div key={img + idx} className="relative h-32 overflow-hidden rounded-2xl">
+                <Image src={img} alt={`${rental.name} photo ${idx + 2}`} fill className="object-cover" />
               </div>
             ))}
+            {images.length <= 1 && (
+              <div className="flex h-32 items-center justify-center rounded-2xl bg-gray-100 text-gray-500">
+                More images coming soon
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Popular Facilities */}
-        {facilities.length > 0 && (
-          <section className="mt-10 rounded-3xl bg-white p-6 shadow">
-            <h2 className="text-xl font-semibold text-gray-900">Popular facilities</h2>
+        {rental.popularFacilities.length > 0 && (
+          <section className="rounded-3xl bg-white p-6 shadow">
+            <h2 className="text-xl font-semibold">Popular facilities</h2>
             <div className="mt-4 flex flex-wrap gap-3">
-              {facilities.map((f) => (
-                <span key={f} className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-1 text-sm font-medium text-green-700">
-                  <span className="text-base">{getFacilityIcon(f)}</span>
-                  {f}
+              {rental.popularFacilities.map((facility) => (
+                <span
+                  key={facility}
+                  className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-4 py-1 text-sm font-medium text-blue-700"
+                >
+                  <span className="text-base leading-none">{getIcon(facility)}</span>
+                  {facility}
                 </span>
               ))}
             </div>
           </section>
         )}
 
-        {/* Curated Highlights */}
         {rental.curatedHighlights && rental.curatedHighlights.length > 0 && (
-          <section className="mt-10 rounded-3xl bg-white p-6 shadow">
-            <h2 className="text-xl font-semibold text-gray-900">Why guests love it</h2>
+          <section className="rounded-3xl bg-white p-6 shadow">
+            <h2 className="text-xl font-semibold">Why guests love this rental</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              {rental.curatedHighlights.map((item, i) => (
-                <div key={i} className="flex gap-3 rounded-2xl bg-green-50 px-4 py-3 text-sm text-green-800">
-                  <div className="mt-1 text-lg text-green-600">{item.icon ? <i className={item.icon} /> : <FaCheck />}</div>
+              {rental.curatedHighlights.map((item, idx) => (
+                <div key={item.title + idx} className="flex gap-3 rounded-2xl bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                  <div className="mt-1 text-lg text-blue-600">{item.icon ? <i className={item.icon} /> : <FaCheck />}</div>
                   <div>
                     <p className="font-semibold">{item.title}</p>
-                    {item.description && <p className="mt-1 text-green-700/90">{item.description}</p>}
+                    {item.description && <p className="mt-1 text-blue-700/90">{item.description}</p>}
                   </div>
                 </div>
               ))}
@@ -427,50 +503,85 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
           </section>
         )}
 
-        {/* About + Rules */}
-        <section className="mt-10 grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-2">
+        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-2">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">About this rental</h2>
+            <h2 className="text-xl font-semibold">About this rental</h2>
             <h3 className="mt-2 text-lg font-semibold text-gray-800">{rental.about.heading}</h3>
             <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-gray-700">{rental.about.description}</p>
             {rental.vendorMessage && (
-              <div className="mt-4 rounded-2xl bg-green-50 p-4 text-sm text-green-800">
+              <div className="mt-4 rounded-2xl bg-blue-50 p-4 text-sm text-blue-800">
                 <p className="font-semibold">Vendor message</p>
                 <p className="mt-2 whitespace-pre-line">{rental.vendorMessage}</p>
               </div>
             )}
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Pickup & Drop-off</h2>
+            <h2 className="text-xl font-semibold">Pickup & Drop-off</h2>
             <div className="mt-3 space-y-3 rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
               <p><strong>Pickup:</strong> {rental.checkInOutRules.pickup}</p>
               <p><strong>Drop-off:</strong> {rental.checkInOutRules.dropoff}</p>
               {rental.checkInOutRules.rules?.length > 0 && (
-                <ul className="mt-3 list-disc space-y-1 pl-5">
-                  {rental.checkInOutRules.rules.map((r, i) => <li key={i}>{r}</li>)}
-                </ul>
+                <div className="mt-2">
+                  <p className="font-semibold text-gray-900 mb-1">Additional Rules:</p>
+                  <ul className="list-disc space-y-1 pl-5">
+                    {rental.checkInOutRules.rules.map((rule, idx) => (
+                      <li key={idx}>{rule}</li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
             {rental.defaultCancellationPolicy && (
-              <div className="mt-4 rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
-                <p className="font-semibold">Cancellation policy</p>
+              <div className="mt-3 rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
+                <p className="font-semibold text-gray-900">Cancellation policy</p>
                 <p className="mt-2 whitespace-pre-line">{rental.defaultCancellationPolicy}</p>
               </div>
             )}
           </div>
         </section>
-{/* Vehicle Availability Table */}
-        <section id="vehicle-availability" className="mt-10 space-y-5 rounded-3xl bg-white p-6 shadow">
+
+        <section id="vehicle-availability" className="space-y-5 rounded-3xl bg-white p-6 shadow">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">Vehicle availability</h2>
-              <p className="text-sm text-gray-600">Choose one or more vehicles for {days} day{days > 1 ? "s" : ""}.</p>
+              <p className="text-sm text-gray-600">
+                Choose one or more vehicles for {days} day{days === 1 ? "" : "s"}. You can mix different models.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs font-semibold text-blue-700">
+              <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1">
+                <FaCheck /> Verified fleet
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1">
+                <FaInfoCircle /> Flexible pickup
+              </span>
             </div>
           </div>
 
-          <div className={`rounded-2xl border px-4 py-3 text-sm ${soldOutForDates ? "border-rose-200 bg-rose-50 text-rose-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              soldOutForDates
+                ? "border-rose-200 bg-rose-50 text-rose-700"
+                : "border-emerald-200 bg-emerald-50 text-emerald-800"
+            }`}
+          >
             {availability.loading && "Checking availability…"}
-            {!availability.loading && !availability.error && (soldOutForDates ? "Sold out for these dates." : "Available for these dates.")}
+            {!availability.loading && !availability.error && (
+              <span>
+                {soldOutForDates ? "Sold out for these dates." : "Available for the selected dates."}
+              </span>
+            )}
+            {availability.error && (
+              <span className="text-rose-600">Unable to load availability. Please try again.</span>
+            )}
+            {!availability.loading && bookedSummaries.length > 0 && (
+              <span className="mt-1 block text-xs text-gray-600">
+                Booked:{" "}
+                {bookedSummaries
+                  .map((range) => `${formatDateDisplay(range.start)} – ${formatDateDisplay(range.end)}`)
+                  .join(", ")}
+              </span>
+            )}
           </div>
 
           <div className={`overflow-x-auto rounded-2xl border border-gray-200 ${soldOutForDates ? "pointer-events-none opacity-60" : ""}`}>
@@ -485,100 +596,198 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {rental.options.map((vehicle, idx) => {
-                  const key = vehicle._id?.toString() || vehicle.model;
-                  const qty = vehicleSelections[key] || 0;
-                  const isSelected = qty > 0;
-                  const isExpanded = expandedVehicleKey === key;
+                  const vehicleKey = vehicle._id?.toString() || vehicle.model;
+                  const quantity = vehicleSelections[vehicleKey] || 0;
+                  const isSelected = quantity > 0;
+                  const isExpanded = expandedVehicleKey === vehicleKey;
                   const available = vehicle.available ?? 0;
                   const taxesNote = vehicle.taxes ? `Taxes ₹${vehicle.taxes.toLocaleString()} extra` : "Taxes included";
-                  const unavailable = available <= 0 || isVehicleUnavailable(key);
+                  const vehicleUnavailable = available <= 0 || isVehicleUnavailable(vehicleKey);
 
                   return (
-                    <Fragment key={key}>
-                      <tr className={isSelected ? "bg-green-50/50" : "hover:bg-gray-50"}>
-                        <td className="px-4 py-4 text-sm">
+                    <Fragment key={vehicleKey}>
+                      <tr className={isSelected ? "bg-blue-50/50 transition" : "transition hover:bg-gray-50/60"}>
+                        <td className="align-top px-4 py-4 text-sm text-gray-700">
                           <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <span className="text-base font-semibold text-gray-900">{vehicle.model}</span>
-                              {isSelected && <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">Selected</span>}
-                              {unavailable && <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">Sold out</span>}
+                              {isSelected && (
+                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                  Selected
+                                </span>
+                              )}
+                              {vehicleUnavailable && (
+                                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                                  Sold out
+                                </span>
+                              )}
                             </div>
-                            <p className="text-xs text-gray-500">{vehicle.type}</p>
+                            <p className="text-xs text-gray-500">
+                              {vehicle.type}
+                              {typeof vehicle.available === "number" && ` · Available: ${vehicle.available}`}
+                            </p>
                             {vehicle.description && (
                               <p className="text-sm text-gray-600">{vehicle.description}</p>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-sm text-gray-700">
-                          <div className="flex flex-wrap gap-1">
-                            {vehicle.features?.slice(0, 3).map((f) => (
-                              <span key={f} className="rounded-full bg-gray-100 px-2 py-0.5 text-xs">{f}</span>
-                            ))}
+                        <td className="align-top px-4 py-4 text-sm text-gray-700">
+                          <div className="flex flex-col gap-2">
+                            {vehicle.features?.length ? (
+                              <div className="flex flex-wrap gap-1 text-xs text-gray-500">
+                                {vehicle.features.slice(0, 3).map((feature) => (
+                                  <span key={feature} className="rounded-full bg-gray-100 px-2 py-0.5">
+                                    {feature}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400">Highlights coming soon</span>
+                            )}
+                            {vehicle.amenities?.length ? (
+                              <div className="flex flex-wrap gap-1 text-xs text-gray-500">
+                                {vehicle.amenities.slice(0, 3).map((amenity) => (
+                                  <span key={amenity} className="rounded-full bg-gray-100 px-2 py-0.5">
+                                    {amenity}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null}
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-sm">
-                          <span className="text-lg font-semibold">₹{vehicle.pricePerDay.toLocaleString()}</span>
-                          <p className="text-xs text-gray-500">{taxesNote}</p>
+                        <td className="align-top px-4 py-4 text-sm text-gray-700">
+                          <div className="flex flex-col">
+                            <span className="text-lg font-semibold text-gray-900">
+                              ₹{vehicle.pricePerDay.toLocaleString()}
+                            </span>
+                            <span className="text-xs text-gray-500">{taxesNote}</span>
+                          </div>
                         </td>
-                        <td className="px-4 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button onClick={() => setExpandedVehicleKey(isExpanded ? null : key)} className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold hover:bg-gray-50">
-                              {isExpanded ? "Hide" : "Details"}
-                            </button>
-                            <div className="flex items-center gap-1">
-                              <button onClick={() => stepQuantity(key, -1, available)} disabled={qty <= 0 || unavailable} className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 disabled:opacity-50">−</button>
-                              <span className="w-8 text-center font-semibold">{qty}</span>
-                              <button onClick={() => stepQuantity(key, 1, available)} disabled={unavailable || qty >= available} className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 disabled:opacity-50">+</button>
-                            </div>
+                        <td className="align-top px-4 py-4">
+                          <div className="flex flex-col items-stretch gap-3 text-sm sm:flex-row sm:items-center sm:justify-end">
                             <button
-                              onClick={() => toggleSelection(key, available)}
-                              disabled={unavailable}
-                              className={`rounded-full px-4 py-2 font-semibold transition ${isSelected ? "bg-green-600 text-white" : "border border-green-600 text-green-600 hover:bg-green-50"} disabled:opacity-50`}
+                              type="button"
+                              onClick={() => setExpandedVehicleKey(isExpanded ? null : vehicleKey)}
+                              className="inline-flex items-center justify-center rounded-full border border-gray-200 px-4 py-2 font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-50"
                             >
-                              {unavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
+                              {isExpanded ? "Hide details" : "Show details"}
+                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => stepVehicleQuantity(vehicleKey, -1, available)}
+                                disabled={quantity <= 0 || vehicleUnavailable}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                –
+                              </button>
+                              <span className="min-w-[2ch] text-center text-sm font-semibold text-gray-900">{quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() => stepVehicleQuantity(vehicleKey, 1, available)}
+                                disabled={available <= 0 || quantity >= available || vehicleUnavailable}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-lg font-semibold text-gray-600 transition hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                +
+                              </button>
+                            </div>
+                              <button
+                              type="button"
+                              onClick={() => toggleVehicleSelection(vehicleKey, available)}
+                                disabled={vehicleUnavailable}
+                              className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
+                                isSelected
+                                  ? "bg-blue-600 text-white shadow hover:bg-blue-700"
+                                  : "border border-blue-600 text-blue-700 hover:bg-blue-50 disabled:border-gray-300 disabled:text-gray-400"
+                                } ${
+                                  vehicleUnavailable
+                                    ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
+                                    : ""
+                                }`}
+                            >
+                              {vehicleUnavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
                             </button>
                           </div>
                         </td>
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan={4} className="bg-gray-50 px-6 py-6">
-                            <div className="grid gap-6 lg:grid-cols-2">
-                              <div className="grid grid-cols-3 gap-3">
-                                {vehicle.images?.slice(0, 3).map((img, i) => (
-                                  <div key={i} className="relative h-32 overflow-hidden rounded-xl">
-                                    <Image src={img} alt="" fill className="object-cover" />
-                                  </div>
-                                ))}
-                                {vehicle.images && vehicle.images.length > 3 && (
-                                  <button onClick={() => { setActiveVehicleIdx(idx); setVehicleImageIdx(0); }} className="flex h-32 items-center justify-center rounded-xl border border-dashed border-gray-400 text-xs font-semibold">
-                                    +{vehicle.images.length - 3} more
-                                  </button>
+                          <td colSpan={4} className="bg-gray-50 px-4 py-6">
+                            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]">
+                              <div className="space-y-4">
+                                <div className="grid gap-3 sm:grid-cols-3">
+                                  {vehicle.images?.slice(0, 3).map((image, imageIdx) => (
+                                    <div key={image + imageIdx} className="relative h-28 overflow-hidden rounded-xl">
+                                      <Image src={image} alt={`${vehicle.model} photo ${imageIdx + 1}`} fill className="object-cover" />
+                                    </div>
+                                  ))}
+                                  {vehicle.images && vehicle.images.length > 3 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveVehicleIdx(idx);
+                                        setVehicleImageIdx(0);
+                                      }}
+                                      className="flex h-28 items-center justify-center rounded-xl border border-dashed border-gray-300 text-xs font-semibold text-gray-600 transition hover:border-gray-400 hover:text-gray-800"
+                                    >
+                                      View {vehicle.images.length - 3} more photos
+                                    </button>
+                                  )}
+                                </div>
+                                {vehicle.description && (
+                                  <p className="text-sm text-gray-600">{vehicle.description}</p>
                                 )}
                               </div>
-                              <div className="space-y-4 text-sm">
-                                {Array.isArray(vehicle.amenities) && vehicle.amenities.length > 0 && (
+
+                              <div className="space-y-4 text-sm text-gray-700">
+                                {vehicle.amenities?.length ? (
                                   <div>
-                                    <p className="font-semibold uppercase text-xs text-gray-500">Amenities</p>
-                                    <div className="mt-2 flex flex-wrap gap-2">
-                                      {vehicle.amenities.map((a) => (
-                                        <span key={a} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm">
-                                          {getFacilityIcon(a)} {a}
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Amenities</p>
+                                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-600">
+                                      {vehicle.amenities.map((amenity) => (
+                                        <span key={amenity} className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm">
+                                          <span className="text-blue-600">{getIcon(amenity)}</span>
+                                          {amenity}
                                         </span>
                                       ))}
                                     </div>
                                   </div>
-                                )}
-                                {vehicle.driver && (
+                                ) : null}
+
+                                {vehicle.features?.length ? (
                                   <div>
-                                    <p className="font-semibold uppercase text-xs text-gray-500">Driver</p>
-                                    <ul className="mt-2 space-y-1 text-gray-700">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Highlights</p>
+                                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-600">
+                                      {vehicle.features.map((feature) => (
+                                        <span key={feature} className="rounded-full bg-gray-100 px-3 py-1">
+                                          {feature}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ) : null}
+                                {rental.category === "cars-rental" &&
+                                vehicle.driver &&
+                                (vehicle.driver.name || vehicle.driver.age || vehicle.driver.experienceYears) ? (
+                                  <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                      Chauffer details
+                                    </p>
+                                    <ul className="mt-2 space-y-1 text-xs text-gray-600">
                                       {vehicle.driver.name && <li>Name: {vehicle.driver.name}</li>}
-                                      {vehicle.driver.age && <li>Age: {vehicle.driver.age} years</li>}
-                                      {vehicle.driver.experienceYears && <li>Experience: {vehicle.driver.experienceYears} years</li>}
+                                      {typeof vehicle.driver.age === "number" && vehicle.driver.age > 0 && (
+                                        <li>Age: {vehicle.driver.age} yrs</li>
+                                      )}
+                                      {typeof vehicle.driver.experienceYears === "number" &&
+                                        vehicle.driver.experienceYears >= 0 && (
+                                          <li>
+                                            Experience: {vehicle.driver.experienceYears} yr
+                                            {vehicle.driver.experienceYears === 1 ? "" : "s"}
+                                          </li>
+                                        )}
                                     </ul>
                                   </div>
-                                )}
+                                ) : null}
                               </div>
                             </div>
                           </td>
@@ -592,7 +801,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
           </div>
         </section>
 
-        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mt-10">
+        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Booking summary</h2>
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
@@ -633,7 +842,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
               type="button"
               onClick={handleBookNow}
               disabled={!pricing.selectedVehicles.length || soldOutForDates}
-              className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {soldOutForDates
                 ? "Unavailable for these dates"
@@ -643,7 +852,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
             </button>
           </div>
 
-          <div className="flex flex-col justify-between rounded-2xl bg-linear-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
+          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-blue-50 via-white to-blue-100 p-5 text-sm text-gray-700 shadow-inner">
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900">What happens next?</h3>
               <p>Click <strong>Book now</strong> to complete your reservation on the next page:</p>
@@ -660,7 +869,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
         </section>
 
         {rental.amenities && Object.keys(rental.amenities).length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow mt-10">
+          <section className="rounded-3xl bg-white p-6 shadow">
             <h2 className="text-xl font-semibold">Amenities & Features</h2>
             <div className="mt-4 grid gap-6 md:grid-cols-2">
               {Object.entries(rental.amenities).map(([sectionKey, items]) => (
@@ -672,7 +881,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                         key={item}
                         className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700"
                       >
-                        <FaCheck className="text-green-600" /> {item}
+                        <FaCheck className="text-blue-600" /> {item}
                       </span>
                     ))}
                   </div>
@@ -682,37 +891,29 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
           </section>
         )}
 
-       {(rental.videos?.inside?.length ?? 0) > 0 || (rental.videos?.outside?.length ?? 0) > 0 ? (
-                <section className="rounded-3xl bg-white p-6 shadow mt-10">
-                  <h2 className="text-xl font-semibold text-gray-900">Experience in motion</h2>
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    {["inside", "outside"].map((key) => {
-                      const videos = rental.videos?.[key as keyof typeof rental.videos] ?? [];
-                      return (
-                        <div key={key} className="space-y-3">
-                          <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-600">
-                            <FaVideo /> {key === "inside" ? "Inside" : "Outside"} walk-through
-                          </h3>
-                          {videos.length > 0 ? (
-                            videos.map((videoUrl: string, idx: number) => (
-                              <video
-                                key={videoUrl + idx}
-                                controls
-                                className="h-48 w-full overflow-hidden rounded-2xl bg-black object-cover"
-                              >
-                                <source src={videoUrl} type="video/mp4" />
-                                Your browser does not support the video tag.
-                              </video>
-                            ))
-                          ) : (
-                            <p className="text-sm text-gray-500">No video available.</p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              ) : null}
+        {(rental.videos?.inside?.length || rental.videos?.outside?.length) && (
+          <section className="rounded-3xl bg-white p-6 shadow">
+            <h2 className="text-xl font-semibold">Videos</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {(["inside", "outside"] as const).map((key) => (
+                <div key={key} className="space-y-3">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">
+                    <FaVideo className="mr-2 inline" /> {key === "inside" ? "Interior" : "Exterior"}
+                  </h3>
+                  {(rental.videos as any)?.[key]?.length ? (
+                    (rental.videos as any)[key].map((videoUrl: string, idx: number) => (
+                      <video key={videoUrl + idx} controls className="h-48 w-full rounded-2xl bg-black">
+                        <source src={videoUrl} />
+                      </video>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">Video coming soon.</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       {galleryOpen && images.length > 0 && (
@@ -787,7 +988,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                   key={img + idx}
                   type="button"
                   onClick={() => setVehicleImageIdx(idx)}
-                  className={`relative h-20 overflow-hidden rounded-lg ${vehicleImageIdx === idx ? "ring-2 ring-green-500" : ""}`}
+                  className={`relative h-20 overflow-hidden rounded-lg ${vehicleImageIdx === idx ? "ring-2 ring-blue-500" : ""}`}
                 >
                   <Image src={img} alt={`${rental.options[activeVehicleIdx].model} thumb ${idx + 1}`} fill className="object-cover" />
                 </button>
