@@ -2,13 +2,13 @@
 import { notFound } from "next/navigation";
 import VehicleRental from "@/models/VehicleRental";
 import dbConnect from "@/lib/config/database";
-import VehicleRentalDetailClient, {
-  type VehicleRentalDetailPayload,
-} from "../vehiclerentalDetailsClient";
 import mongoose from "mongoose";
 
+import VehicleRentalDetailClient, {
+  type VehicleRentalDetailPayload,
+} from "../vehiclerentalDetailsClient"; // <= Correct, case-sensitive
+
 async function fetchRental(id: string): Promise<VehicleRentalDetailPayload | null> {
-  // ---- Guard: invalid ObjectId or blocked words ----
   if (
     !id ||
     !mongoose.Types.ObjectId.isValid(id) ||
@@ -25,7 +25,6 @@ async function fetchRental(id: string): Promise<VehicleRentalDetailPayload | nul
 
     if (!doc || !(doc as any).isActive) return null;
 
-    // Remove MongoDB ObjectId serialization issues
     return JSON.parse(JSON.stringify(doc)) as VehicleRentalDetailPayload;
   } catch (err) {
     console.error("fetchRental error:", err);
@@ -33,13 +32,12 @@ async function fetchRental(id: string): Promise<VehicleRentalDetailPayload | nul
   }
 }
 
-interface PageParams {
-  params: Promise<{ id: string }>;
-}
-
-export default async function VehicleRentalDetailPage({ params }: PageParams) {
-  const { id } = await params;
-  const rental = await fetchRental(id);
+export default async function VehicleRentalDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const rental = await fetchRental(params.id);
 
   if (!rental) notFound();
 
