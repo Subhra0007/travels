@@ -352,34 +352,42 @@ export default function SellerEditProductPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-black">
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+      {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
         <Sidebar />
-      </div>
+      </div> */}
 
       <div className="flex-1 flex flex-col mt-20 overflow-y-auto">
-        <div className="sticky top-0 z-40 bg-sky-50 border-b p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button
-                className="lg:hidden px-3 py-2 rounded border text-gray-700"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                ☰
-              </button>
-              <h1 className="text-2xl font-semibold text-gray-900">Edit Product</h1>
-            </div>
-            <button
-              onClick={() => router.back()}
-              className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+       <div className="sticky top-0 z-40 bg-sky-50 border-b p-4">
+  <div className="flex items-center justify-between">
+    
+    {/* Left Side: Menu + Title */}
+    <div className="flex items-center gap-3">
+      <button
+        className="lg:hidden px-3 py-2 rounded border text-gray-700"
+        onClick={() => setMobileSidebarOpen(true)}
+        aria-label="Open menu"
+      >
+        ☰
+      </button>
+
+      <h1 className="text-2xl font-semibold text-gray-900">
+        Edit Product
+      </h1>
+    </div>
+
+    {/* Right Side: Cancel */}
+    <button
+      onClick={() => router.back()}
+      className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+    >
+      Cancel
+    </button>
+
+  </div>
+</div>
 
         <form onSubmit={handleSubmit} className="flex-1 p-6">
-          <div className="mx-auto max-w-4xl space-y-6">
+          <div className="mx-auto max-w-6xl space-y-6">
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
 

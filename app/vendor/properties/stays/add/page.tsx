@@ -678,9 +678,9 @@ export default function AddStayPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-black relative">
-     <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
+     {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
         <Sidebar />
-      </div>
+      </div> */}
 
       <div className="flex-1 flex flex-col mt-15">
         <div className="sticky top-0 z-40 bg-sky-50">
@@ -1425,10 +1425,10 @@ export default function AddStayPage() {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden "
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden "
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 p-0 lg:hidden overflow-y-auto">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-900">Menu</span>
               <button

@@ -79,9 +79,7 @@ export default function VendorCategoriesPage() {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
-        <Sidebar />
-      </div>
+     
 
       <div className="flex-1 flex flex-col mt-15 overflow-hidden">
         <div className="sticky top-0 z-40 bg-sky-50">
@@ -258,7 +256,7 @@ export default function VendorCategoriesPage() {
 
       {/* Add/Edit Category Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-sky-50 bg-opacity-50">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">

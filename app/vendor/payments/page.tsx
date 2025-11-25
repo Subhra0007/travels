@@ -13,6 +13,9 @@ export default function VendorPaymentsPage() {
   const [loadingTransactions, setLoadingTransactions] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   useEffect(() => {
     const verify = async () => {
@@ -154,7 +157,7 @@ export default function VendorPaymentsPage() {
 
   if (loading)
     return (
-      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -164,9 +167,9 @@ export default function VendorPaymentsPage() {
   return (
      <div className="flex h-screen bg-gray-50 relative ">
                 {/* Desktop sidebar */}
-                   <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+                   {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
                   <Sidebar />
-                </div>
+                </div> */}
       <div className="lg:pl-64 min-h-screen overflow-y-auto overflow-x-hidden">
         {/* Mobile Menu Button */}
         <div className="lg:hidden sticky top-0 z-40 bg-slate-50 px-4  pb-2 pt-15">

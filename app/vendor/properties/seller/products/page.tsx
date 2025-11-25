@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import { FaPlus, FaEdit, FaTrash, FaEye, FaShoppingCart } from "react-icons/fa";
 
@@ -32,10 +32,14 @@ interface Category {
 }
 
 const VendorProductsPage: React.FC = () => {
+  const router = useRouter();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   const loadProducts = async () => {
     setLoading(true);
@@ -84,34 +88,48 @@ const VendorProductsPage: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
+      {/* <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
-      </div>
+      </div> */}
 
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
-        <div className="sticky top-0 z-40 bg-sky-50">
-          <div className="flex items-center justify-between gap-3 p-3 border-b">
-            <div className="flex items-center gap-3">
-              <button
-                className="lg:hidden px-3 py-2 rounded border text-gray-700"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                ☰
-              </button>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">My Products</h1>
-            </div>
-            <div className="flex items-center gap-3">
-              <p className="hidden sm:block text-sm text-gray-600">Manage your products and variants.</p>
-              <Link
-                href="/vendor/properties/seller/products/add"
-                className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
-              >
-                <FaPlus /> Add Product
-              </Link>
-            </div>
-          </div>
-        </div>
+      <div className="flex-1 flex flex-col pt-15 overflow-hidden">
+     <div className="sticky top-0 z-40 bg-sky-50">
+
+  {/* Top Bar — only menu button */}
+  <div className="p-3  flex items-center">
+    <button
+      className="lg:hidden px-3 py-2 rounded border text-gray-700"
+      onClick={() => setMobileSidebarOpen(true)}
+      aria-label="Open menu"
+    >
+      ☰
+    </button>
+  </div>
+
+  {/* Title + Add Product */}
+  <div className="flex items-center justify-between gap-3 p-3 border-b">
+    <div className="flex items-center gap-3">
+      <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">My Products</h1>
+    </div>
+
+    <div className="flex items-center gap-3">
+      <p className="hidden sm:block text-sm text-gray-600">Manage your products and variants.</p>
+      
+      <button
+        onClick={() =>
+          navigate
+            ? navigate("/vendor/properties/seller/products/add")
+            : router.push("/vendor/properties/seller/products/add")
+        }
+        className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+      >
+        <FaPlus /> Add Product
+      </button>
+    </div>
+  </div>
+
+</div>
+
 
         <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
           {loading ? (
@@ -124,12 +142,12 @@ const VendorProductsPage: React.FC = () => {
             <div className="rounded-xl bg-white p-8 text-center shadow">
               <FaShoppingCart className="mx-auto mb-4 text-4xl text-gray-400" />
               <p className="text-gray-600 mb-4">You have not added any products yet.</p>
-              <Link
-                href="/vendor/properties/seller/products/add"
+              <button
+                onClick={() => navigate ? navigate("/vendor/properties/seller/products/add") : router.push("/vendor/properties/seller/products/add")}
                 className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
               >
                 <FaPlus /> Add First Product
-              </Link>
+              </button>
             </div>
           ) : (
             <div className="overflow-hidden rounded-xl bg-white shadow">
@@ -197,18 +215,18 @@ const VendorProductsPage: React.FC = () => {
                           </td>
                           <td className="px-4 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <Link
-                                href={`/products/${product._id}`}
+                              <button
+                                onClick={() => navigate ? navigate(`/products/${product._id}`) : router.push(`/products/${product._id}`)}
                                 className="inline-flex items-center gap-1 rounded-full bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-600"
                               >
                                 <FaEye /> View
-                              </Link>
-                              <Link
-                                href={`/vendor/properties/seller/products/edit/${product._id}`}
+                              </button>
+                              <button
+                                onClick={() => navigate ? navigate(`/vendor/properties/seller/products/edit/${product._id}`) : router.push(`/vendor/properties/seller/products/edit/${product._id}`)}
                                 className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-yellow-600"
                               >
                                 <FaEdit /> Edit
-                              </Link>
+                              </button>
                               <button
                                 onClick={() => handleDelete(product._id)}
                                 className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600"
@@ -270,18 +288,18 @@ const VendorProductsPage: React.FC = () => {
                               )}
                             </div>
                             <div className="flex gap-2">
-                              <Link
-                                href={`/products/${product._id}`}
+                              <button
+                                onClick={() => navigate ? navigate(`/products/${product._id}`) : router.push(`/products/${product._id}`)}
                                 className="inline-flex items-center gap-1 rounded-full bg-blue-500 px-2 py-1 text-xs font-semibold text-white hover:bg-blue-600"
                               >
                                 <FaEye size={10} />
-                              </Link>
-                              <Link
-                                href={`/vendor/properties/seller/products/edit/${product._id}`}
+                              </button>
+                              <button
+                                onClick={() => navigate ? navigate(`/vendor/properties/seller/products/edit/${product._id}`) : router.push(`/vendor/properties/seller/products/edit/${product._id}`)}
                                 className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-2 py-1 text-xs font-semibold text-white hover:bg-yellow-600"
                               >
                                 <FaEdit size={10} />
-                              </Link>
+                              </button>
                               <button
                                 onClick={() => handleDelete(product._id)}
                                 className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-1 text-xs font-semibold text-white hover:bg-red-600"
@@ -305,10 +323,10 @@ const VendorProductsPage: React.FC = () => {
       {mobileSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
             onClick={() => setMobileSidebarOpen(false)}
           />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 p-0 lg:hidden overflow-y-auto">
             <div className="p-4 border-b flex items-center justify-between">
               <span className="text-lg font-semibold text-gray-800">Menu</span>
               <button

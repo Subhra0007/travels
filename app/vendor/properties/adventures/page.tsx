@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
-import Link from "next/link";
 import Image from "next/image";
 import { FaEdit, FaTrash, FaMapMarkerAlt, FaClock, FaEye, FaMountain, FaUsers } from "react-icons/fa";
 
@@ -43,6 +42,9 @@ export default function VendorAdventuresPage() {
   const [adventures, setAdventures] = useState<Adventure[]>([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [vendorId, setVendorId] = useState<string | null>(null);
+
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   useEffect(() => {
     const loadAdventures = async () => {
@@ -219,14 +221,14 @@ export default function VendorAdventuresPage() {
           {/* Actions */}
           <div className="mt-4 flex gap-2">
             <button
-              onClick={() => router.push(`/adventures/${adv._id}`)}
+              onClick={() => navigate ? navigate(`/adventures/${adv._id}`) : router.push(`/adventures/${adv._id}`)}
               className="flex-1 rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-600 flex items-center justify-center gap-1"
             >
               <FaEye className="text-xs" />
               View
             </button>
             <button
-              onClick={() => router.push(`/vendor/properties/adventures/add?editId=${adv._id}`)}
+              onClick={() => navigate ? navigate(`/vendor/properties/adventures/add?editId=${adv._id}`) : router.push(`/vendor/properties/adventures/add?editId=${adv._id}`)}
               className="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-yellow-600"
             >
               <FaEdit />
@@ -245,7 +247,7 @@ export default function VendorAdventuresPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -254,48 +256,62 @@ export default function VendorAdventuresPage() {
   return (
     <div className="flex min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+      {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
               <Sidebar />
-            </div>
+            </div> */}
 
       {/* Main content */}
-      <div className=" flex-1 flex flex-col mt-20">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 bg-sky-50">
-          <div className="flex items-center justify-between gap-3 p-3 border-b">
-            <div className="flex items-center gap-3">
-              <button
-                className="lg:hidden px-3 py-2 rounded border text-gray-700"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                Menu
-              </button>
-              <h1 className="text-xl sm:text-2xl font-semibold text-black flex items-center gap-2">
-               
-                My Adventures
-              </h1>
-            </div>
-            <Link
-              href="/vendor/adventures/add"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md flex items-center gap-2"
-            >
-              + Add New Adventure
-            </Link>
-          </div>
-        </div>
+      <div className=" flex-1 flex flex-col">
+       <div className="sticky top-0 z-40 bg-sky-50 border-b pt-13">
+   {/* Mobile menu button */}
+    <button
+      className="lg:hidden px-3 py-2 rounded border text-gray-700 "
+      onClick={() => setMobileSidebarOpen(true)}
+      aria-label="Open menu"
+    >
+      ☰
+    </button>
+
+  <div className="flex items-center justify-between ">
+    
+   
+    {/* Title */}
+    <h1 className="text-xl sm:text-2xl font-semibold text-black">
+      My Adventures
+    </h1>
+
+    {/* Empty spacer for alignment on mobile */}
+    <div className="w-8 lg:hidden" />
+    {/* Content below the topbar */}
+<div className="p-4 flex flex-col items-center gap-4">
+
+  {/* Add New Stay button */}
+  <button
+    onClick={() =>
+      navigate
+        ? navigate("/vendor/properties/adventures/add")
+        : router.push("/vendor/properties/adventures/add")
+    }
+    className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
+  >
+    + Add New Adventures
+  </button>
+
+</div>
+  </div>
+</div>
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {adventures.length === 0 ? (
             <div className="bg-white rounded-xl shadow p-8 text-center">
               <FaMountain className="mx-auto text-5xl text-gray-400 mb-4" />
               <p className="text-gray-600 mb-4">No adventures added yet.</p>
-              <Link
-                href="/properties/adventures/add"
+              <button
+                onClick={() => navigate ? navigate("/vendor/properties/adventures/add") : router.push("/vendor/properties/adventures/add")}
                 className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
               >
                 List Your First Adventure
-              </Link>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">

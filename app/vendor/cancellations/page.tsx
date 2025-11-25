@@ -68,7 +68,7 @@ const VendorCancellationsPage = () => {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -79,9 +79,9 @@ const VendorCancellationsPage = () => {
   return (
    <div className="flex h-screen bg-gray-50 relative ">
             {/* Desktop sidebar */}
-               <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+               {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
               <Sidebar />
-            </div>
+            </div> */}
    
           <div className="flex-1 flex flex-col mt-15 overflow-hidden">
            {/* Topbar with mobile trigger */}

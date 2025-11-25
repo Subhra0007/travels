@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
-import Link from "next/link";
 import Image from "next/image";
 import { FaEdit, FaTrash, FaMapMarkerAlt, FaBed, FaEye } from "react-icons/fa";
 
@@ -44,6 +43,9 @@ export default function VendorStaysPage() {
   const [stays, setStays] = useState<Stay[]>([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [vendorId, setVendorId] = useState<string | null>(null);
+  
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   useEffect(() => {
     const loadStays = async () => {
@@ -182,13 +184,13 @@ export default function VendorStaysPage() {
 
           <div className="mt-4 flex gap-2">
             <button
-              onClick={() => router.push(`/stays/${stay._id}`)}
+              onClick={() => navigate ? navigate(`/stays/${stay._id}`) : router.push(`/stays/${stay._id}`)}
               className="flex-1 rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium text-white hover:bg-blue-600 flex items-center justify-center gap-1"
             >
               <FaEye /> View
             </button>
             <button
-              onClick={() => router.push(`/vendor/properties/stays/add?editId=${stay._id}`)}
+              onClick={() => navigate ? navigate(`/vendor/properties/stays/add?editId=${stay._id}`) : router.push(`/vendor/properties/stays/add?editId=${stay._id}`)}
               className="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-medium text-white hover:bg-yellow-600"
             >
               <FaEdit />
@@ -207,7 +209,7 @@ export default function VendorStaysPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -217,46 +219,67 @@ export default function VendorStaysPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
+      {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
         <Sidebar />
-      </div>
+      </div> */}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col mt-20 overflow-hidden">
+      
         {/* Topbar with mobile menu button */}
         <div className="sticky top-0 z-40 bg-sky-50">
-          <div className="flex items-center justify-between gap-3 p-3 border-b">
-            <div className="flex items-center gap-3">
-              <button
-                className="lg:hidden px-3 py-2 rounded border text-gray-700"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                ☰
-              </button>
-              <h1 className="text-xl sm:text-2xl font-semibold text-black">My Stays</h1>
-            </div>
+       {/* Topbar with mobile menu button */}
+<div className="sticky top-0 z-40 bg-sky-50 border-b pt-13">
+   {/* Mobile menu button */}
+    <button
+      className="lg:hidden px-3 py-2 rounded border text-gray-700 "
+      onClick={() => setMobileSidebarOpen(true)}
+      aria-label="Open menu"
+    >
+      ☰
+    </button>
 
-            <Link
-              href="/vendor/properties/stays/add"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
-            >
-              + Add New Stay
-            </Link>
-          </div>
-        </div>
+  <div className="flex items-center justify-between ">
+    
+   
+    {/* Title */}
+    <h1 className="text-xl sm:text-2xl font-semibold text-black">
+      My Stays
+    </h1>
+
+    {/* Empty spacer for alignment on mobile */}
+    <div className="w-8 lg:hidden" />
+    {/* Content below the topbar */}
+<div className="p-4 flex flex-col items-center gap-4">
+
+  {/* Add New Stay button */}
+  <button
+    onClick={() =>
+      navigate
+        ? navigate("/vendor/properties/stays/add")
+        : router.push("/vendor/properties/stays/add")
+    }
+    className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
+  >
+    + Add New Stay
+  </button>
+
+</div>
+  </div>
+</div>
+
+
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-10">
           {stays.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full bg-white rounded-xl shadow p-10 text-center">
               <p className="text-gray-600 mb-6">No stays added yet.</p>
-              <Link
-                href="/vendor/properties/stays/add"
+              <button
+                onClick={() => navigate ? navigate("/vendor/properties/stays/add") : router.push("/vendor/properties/stays/add")}
                 className="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 shadow-md"
               >
                 Add Your First Stay
-              </Link>
+              </button>
             </div>
           ) : (
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">

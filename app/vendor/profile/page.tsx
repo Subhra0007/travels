@@ -34,6 +34,9 @@ export default function VendorProfilePage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<VendorUser | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   // Verify vendor session and hydrate profile
   useEffect(() => {
@@ -90,7 +93,7 @@ export default function VendorProfilePage() {
 
   if (loading)
     return (
-      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -122,9 +125,9 @@ export default function VendorProfilePage() {
   return (
         <div className="flex h-screen bg-gray-50 relative ">
              {/* Desktop sidebar */}
-                <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+                {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
                <Sidebar />
-             </div>
+             </div> */}
       <div className="flex-1 lg:pt-0 overflow-y-auto min-h-screen">
         {/* Mobile Menu Button */}
         <div className="lg:hidden sticky top-0 z-40 bg-sky-50 px-4 pt-4 pb-2">
@@ -140,13 +143,13 @@ export default function VendorProfilePage() {
           <h1 className="text-3xl font-bold text-gray-800">Vendor Profile</h1>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.push("/vendor/profile/edit")}
+              onClick={() => navigate ? navigate("/vendor/profile/edit") : router.push("/vendor/profile/edit")}
               className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all duration-200"
             >
               Edit Profile
             </button>
             <button
-              onClick={() => router.push("/vendor")}
+              onClick={() => navigate ? navigate("/vendor") : router.push("/vendor")}
               className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all duration-200"
             >
               Back to Dashboard

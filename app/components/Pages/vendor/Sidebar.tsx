@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -19,9 +19,12 @@ import {
   FaShoppingCart,
   FaTag,
 } from "react-icons/fa";
-import Link from "next/link";
+interface SidebarProps {
+  onNavigate?: (href: string) => void;
+  onLogout?: () => void;
+}
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate, onLogout }: SidebarProps) {
   const pathname = usePathname();
   const [openProperties, setOpenProperties] = useState(false);
   const [allowedServices, setAllowedServices] = useState<string[]>([]);
@@ -82,15 +85,28 @@ export default function Sidebar() {
 
   // ✅ Logout Method
   const handleLogout = async () => {
+    if (onLogout) {
+      onLogout();
+      return;
+    }
+    // Fallback if onLogout not provided
     try {
       await fetch("/api/logout", { method: "POST" });
       localStorage.removeItem("user");
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("auth:changed", { detail: null }));
       }
-      window.location.href = "/login"; // ✅ redirect
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout error:", error);
+    }
+  };
+
+  const handleNavClick = (event: MouseEvent<HTMLButtonElement>, href: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (onNavigate) {
+      onNavigate(href);
     }
   };
 
@@ -108,23 +124,23 @@ export default function Sidebar() {
   );
   
   // For sellers, show simplified menu with just Products and Categories
-  const sellerLinks = isSeller
-    ? [
-        {
-          id: "seller-products",
-          name: "Products",
-          icon: <FaShoppingCart size={16} />,
-          href: "/vendor/properties/seller/products",
-        },
-        {
-          id: "seller-categories",
-          name: "Categories",
-          icon: <FaTag size={16} />,
-          href: "/vendor/properties/seller/categories",
-        },
-      ]
-    : [];
-  const hasPropertyEntries = filteredProperties.length > 0 || sellerLinks.length > 0;
+  // const sellerLinks = isSeller
+  //   ? [
+  //       {
+  //         id: "seller-products",
+  //         name: "Products",
+  //         icon: <FaShoppingCart size={16} />,
+  //         href: "/vendor/properties/seller/products",
+  //       },
+  //       {
+  //         id: "seller-categories",
+  //         name: "Categories",
+  //         icon: <FaTag size={16} />,
+  //         href: "/vendor/properties/seller/categories",
+  //       },
+  //     ]
+  //   : [];
+  const hasPropertyEntries = filteredProperties.length > 0 ;
 
   const menu = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, href: "/vendor" },
@@ -141,19 +157,19 @@ export default function Sidebar() {
     ),
     
     // Show seller products/categories for sellers
-    // ...(isSeller 
-    //   ? [{
-    //       name: "Products",
-    //       icon: <FaShoppingCart size={18} />,
-    //       href: "/vendor/properties/seller/products",
-    //     },
-    //     {
-    //       name: "Categories",
-    //       icon: <FaTag size={18} />,
-    //       href: "/vendor/properties/seller/categories",
-    //     }]
-    //   : []
-    // ),
+    ...(isSeller 
+      ? [{
+          name: "Products",
+          icon: <FaShoppingCart size={18} />,
+          href: "/vendor/properties/seller/products",
+        },
+        {
+          name: "Categories",
+          icon: <FaTag size={18} />,
+          href: "/vendor/properties/seller/categories",
+        }]
+      : []
+    ),
 
     { name: "Booking", icon: <CalendarCheck size={18} />, href: "/vendor/bookings" },
     { name: "Cancellations", icon: <CalendarCheck size={18} />, href: "/vendor/cancellations" },
@@ -173,11 +189,11 @@ export default function Sidebar() {
   };
 
   const anyPropertiesActive =
-    filteredProperties.some((sub) => isActiveHref(sub.href)) ||
-    sellerLinks.some((sub) => isActiveHref(sub.href));
+    filteredProperties.some((sub) => isActiveHref(sub.href)) ;
+   
 
   return (
-    <aside className="w-64 bg-white shadow-lg flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <aside className="w-64 bg-white shadow-lg flex flex-col h-screen sticky top-0 overflow-y-auto lg:pt-20 pt-5">
       <div className="p-6 flex-1 overflow-y-auto">
       <nav className="space-y-3">
         {menu
@@ -212,10 +228,11 @@ export default function Sidebar() {
                 {openProperties && (
                   <div className="ml-8 mt-2 space-y-4">
                     {filteredProperties.map((sub) => (
-                      <Link
+                      <button
+                        type="button"
                         key={sub.name}
-                        href={sub.href}
-                        className={`flex items-center gap-2 p-2 rounded-md transition ${
+                        onClick={(event) => handleNavClick(event, sub.href)}
+                        className={`flex items-center gap-2 p-2 rounded-md transition w-full text-left ${
                           isActiveHref(sub.href)
                             ? "text-indigo-600 bg-indigo-50"
                             : "text-gray-700 hover:text-indigo-600"
@@ -223,31 +240,41 @@ export default function Sidebar() {
                       >
                         {sub.icon}
                         {sub.name}
-                      </Link>
+                      </button>
                     ))}
-                    {sellerLinks.length > 0 && (
+                    {/* {isSeller && (
                       <div>
                         <p className="text-xs font-semibold uppercase text-gray-500 tracking-wide mb-1">
                           Seller
                         </p>
                         <div className="space-y-2">
-                          {sellerLinks.map((sub) => (
-                            <Link
-                              key={sub.id}
-                              href={sub.href}
-                              className={`flex items-center gap-2 p-2 rounded-md transition ${
-                                isActiveHref(sub.href)
-                                  ? "text-indigo-600 bg-indigo-50"
-                                  : "text-gray-700 hover:text-indigo-600"
-                              }`}
-                            >
-                              {sub.icon}
-                              {sub.name}
-                            </Link>
-                          ))}
+                          <button
+                            type="button"
+                            onClick={(event) => handleNavClick(event, "/vendor/properties/seller/products")}
+                            className={`flex items-center gap-2 p-2 rounded-md transition w-full text-left ${
+                              isActiveHref("/vendor/properties/seller/products")
+                                ? "text-indigo-600 bg-indigo-50"
+                                : "text-gray-700 hover:text-indigo-600"
+                            }`}
+                          >
+                            <FaShoppingCart size={16} />
+                            Products
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(event) => handleNavClick(event, "/vendor/properties/seller/categories")}
+                            className={`flex items-center gap-2 p-2 rounded-md transition w-full text-left ${
+                              isActiveHref("/vendor/properties/seller/categories")
+                                ? "text-indigo-600 bg-indigo-50"
+                                : "text-gray-700 hover:text-indigo-600"
+                            }`}
+                          >
+                            <FaTag size={16} />
+                            Categories
+                          </button>
                         </div>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 )}
               </>
@@ -265,9 +292,10 @@ export default function Sidebar() {
             ) : (
               
               /* ✅ NORMAL MENU ITEM */
-              <Link
-                href={item.href!}
-                className={`flex items-center gap-2 p-2 rounded-md transition ${
+              <button
+                type="button"
+                onClick={(event) => handleNavClick(event, item.href!)}
+                className={`flex items-center gap-2 p-2 rounded-md transition w-full text-left ${
                   isActiveHref(item.href)
                     ? "text-indigo-600 bg-indigo-50"
                     : "text-gray-700 hover:text-indigo-600"
@@ -275,7 +303,7 @@ export default function Sidebar() {
               >
                 {item.icon}
                 <span>{item.name}</span>
-              </Link>
+              </button>
             )}
           </div>
         ))}

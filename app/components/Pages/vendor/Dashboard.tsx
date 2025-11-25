@@ -3,13 +3,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import Sidebar from "./Sidebar";
 import StatCard from "./StatCard";
 import SalesChart from "./SalesChart";
 import OrderTable from "./OrderTable";
 import SalesDonutChart from "./SalesDonutChart";
 import { CreditCard, Wallet, Clock, CheckCircle } from "lucide-react";
-import { FaBars } from "react-icons/fa";
 
 type DashboardProps = {
   locked: boolean;
@@ -17,7 +15,6 @@ type DashboardProps = {
 };
 
 export default function Dashboard({ locked, isSeller = false }: DashboardProps) {
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [stats, setStats] = useState({
     todayBookings: 0,
     totalBookings: 0,
@@ -140,61 +137,22 @@ export default function Dashboard({ locked, isSeller = false }: DashboardProps) 
     }).format(n);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex relative overflow-x-hidden w-full">
-      {locked && (
-        <div className="absolute inset-0 z-10 backdrop-blur-[2px] pointer-events-none" />
-      )}
-
-      {locked && (
-        <div className="absolute inset-0 z-40 flex items-center justify-center">
-          <div className="bg-white/90 shadow-xl p-6 rounded-xl border text-center max-w-sm">
-            <h2 className="text-2xl font-bold text-gray-800">Vendor Dashboard Locked</h2>
-            <p className="mt-2 text-gray-600">
-              Your account has been locked by the administrator. Please contact support for assistance.
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="flex-1  mt-5 overflow-y-auto overflow-x-hidden w-full">
-        <div className="px-4 sm:px-6">
-          {/* Mobile/sidebar toggle and refresh button */}
-          <div className="lg:hidden flex items-center gap-2">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
-            >
-              <FaBars />
-              <span className="text-sm font-medium">Menu</span>
-            </button>
-            <button
-              onClick={() => {
-                setLoading(true);
-                setRefreshKey((prev) => prev + 1);
-              }}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800 disabled:opacity-50"
-              title="Refresh data"
-            >
-              <span className="text-sm font-medium">🔄 Refresh</span>
-            </button>
-          </div>
-          {/* Desktop refresh button */}
-          <div className="hidden lg:flex justify-end ">
-            <button
-              onClick={() => {
-                setLoading(true);
-                setRefreshKey((prev) => prev + 1);
-              }}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800 disabled:opacity-50 hover:bg-gray-50"
-              title="Refresh data"
-            >
-              <span className="text-sm font-medium">🔄 Refresh</span>
-            </button>
-          </div>
-        </div>
-        <div className={`p-4 sm:p-6 space-y-6 transition-all overflow-x-hidden ${locked ? "blur-[1.5px] pointer-events-none" : ""}`}>
+    <div className="space-y-6 pt-15">
+      <div className="flex justify-end">
+        
+        <button
+          onClick={() => {
+            setLoading(true);
+            setRefreshKey((prev) => prev + 1);
+          }}
+          disabled={loading}
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800 disabled:opacity-50 hover:bg-gray-50"
+          title="Refresh data"
+        >
+          <span className="text-sm font-medium">🔄 Refresh</span>
+        </button>
+      </div>
+      <div className={`space-y-6 transition-all ${locked ? "blur-[1.5px] pointer-events-none" : ""}`}>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
             <StatCard
               title="Today's Bookings"
@@ -271,34 +229,6 @@ export default function Dashboard({ locked, isSeller = false }: DashboardProps) 
             </section>
           )}
         </div>
-      </div>
-
-      {/* Mobile Sidebar Drawer */}
-      {mobileSidebarOpen && (
-        <>
-          <div
-            className=" inset-0 z-90 bg-black/40 lg:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-            <div className="p-4 border-b flex items-center justify-between">
-              <span className="text-lg font-semibold text-gray-800">Menu</span>
-              <button
-                onClick={() => setMobileSidebarOpen(false)}
-                className="px-3 py-1.5 rounded-md border text-gray-700"
-              >
-                Close
-              </button>
-            </div>
-            {/* Render the same Sidebar inside drawer */}
-             
-         <div className="w-64 h-full bg-white shadow-lg  flex flex-col overflow-y-auto overflow-x-hidden">
-            <Sidebar />
-            </div>
-            
-          </div>
-        </>
-      )}
     </div>
   );
 }
@@ -315,24 +245,36 @@ const SellerActionCard = ({
   description: string;
   cta: string;
   href: string;
-}) => (
-  <Link
-    href={href}
-    className="group rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-5 shadow-sm hover:shadow-md transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500"
-  >
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-sm uppercase tracking-wide text-gray-500">{title}</p>
-        <p className="mt-1 text-3xl font-bold text-gray-900">{count}</p>
+}) => {
+  // Get the navigation function from context
+  const context = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__ : null;
+  
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (context && context.navigate) {
+      context.navigate(href);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="group rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-5 shadow-sm hover:shadow-md transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 text-left w-full"
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm uppercase tracking-wide text-gray-500">{title}</p>
+          <p className="mt-1 text-3xl font-bold text-gray-900">{count}</p>
+        </div>
+        <span className="text-gray-300 text-2xl group-hover:text-green-500 transition">↗</span>
       </div>
-      <span className="text-gray-300 text-2xl group-hover:text-green-500 transition">↗</span>
-    </div>
-    <p className="mt-4 text-sm text-gray-600">{description}</p>
-    <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-green-700">
-      {cta}
-      <span aria-hidden className="transition group-hover:translate-x-1">
-        →
+      <p className="mt-4 text-sm text-gray-600">{description}</p>
+      <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-green-700">
+        {cta}
+        <span aria-hidden className="transition group-hover:translate-x-1">
+          →
+        </span>
       </span>
-    </span>
-  </Link>
-);
+    </button>
+  );
+};

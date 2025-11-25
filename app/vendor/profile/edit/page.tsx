@@ -25,6 +25,9 @@ export default function VendorProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>("");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   const [fullName, setFullName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
@@ -142,7 +145,7 @@ export default function VendorProfileEditPage() {
         // ignore
       }
 
-      router.replace("/vendor/profile");
+      navigate ? navigate("/vendor/profile") : router.replace("/vendor/profile");
     } catch (err: any) {
       setError(err.message || "Failed to save");
     } finally {
@@ -152,7 +155,7 @@ export default function VendorProfileEditPage() {
 
   if (loading)
     return (
-      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -160,9 +163,9 @@ export default function VendorProfileEditPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative ">
                  {/* Desktop sidebar */}
-                    <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+                    {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
                    <Sidebar />
-                 </div>
+                 </div> */}
       <div className="flex-1  lg:pt-0 overflow-y-auto min-h-screen ">
         {/* Mobile Menu Button */}
         <div className="lg:hidden sticky top-0 z-40 bg-sky-50 px-4 pt-15 pb-2">
@@ -178,7 +181,7 @@ export default function VendorProfileEditPage() {
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-800">Edit Vendor Profile</h1>
           <button
-            onClick={() => router.push("/vendor/profile")}
+            onClick={() => navigate ? navigate("/vendor/profile") : router.push("/vendor/profile")}
             className="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-md transition-all duration-200"
           >
             Cancel
@@ -330,7 +333,7 @@ export default function VendorProfileEditPage() {
           <div className="flex items-center justify-end gap-3">
             <button
               type="button"
-              onClick={() => router.push("/vendor/profile")}
+              onClick={() => navigate ? navigate("/vendor/profile") : router.push("/vendor/profile")}
               className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
             >
               Cancel
@@ -338,36 +341,36 @@ export default function VendorProfileEditPage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2.5 rounded-xl bg-green-600 text-white font-medium shadow hover:bg-green-700 transition disabled:opacity-60"
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium shadow-md transition disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>
       </div>
-      </div>
-
-      {/* Mobile Sidebar Drawer */}
-      {mobileSidebarOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 lg:hidden overflow-y-auto">
-            <div className="p-4 border-b flex items-center justify-between">
-              <span className="text-lg font-semibold text-gray-800">Menu</span>
-              <button
-                onClick={() => setMobileSidebarOpen(false)}
-                className="px-3 py-1.5 rounded-md border text-gray-700"
-              >
-                Close
-              </button>
-            </div>
-            <Sidebar />
-          </div>
-        </>
-      )}
     </div>
-  );
+
+    {/* Mobile Sidebar Drawer */}
+    {mobileSidebarOpen && (
+      <>
+        <div
+          className="fixed inset-0 z-90 bg-black/40 lg:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+        <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 lg:hidden overflow-y-auto">
+          <div className="p-4 border-b flex items-center justify-between">
+            <span className="text-lg font-semibold text-gray-800">Menu</span>
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              className="px-3 py-1.5 rounded-md border text-gray-700"
+            >
+              Close
+            </button>
+          </div>
+          <Sidebar />
+        </div>
+      </>
+    )}
+  </div>
+);
 }

@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
-import Link from "next/link";
 import Image from "next/image";
 import { FaEdit, FaTrash, FaMapMarkerAlt, FaClock, FaUsers, FaEye } from "react-icons/fa";
 
@@ -42,6 +41,9 @@ export default function VendorToursPage() {
   const [tours, setTours] = useState<Tour[]>([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [vendorId, setVendorId] = useState<string | null>(null);
+  
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   useEffect(() => {
     const loadTours = async () => {
@@ -205,14 +207,14 @@ export default function VendorToursPage() {
           {/* Actions */}
           <div className="mt-4 flex gap-2">
             <button
-              onClick={() => router.push(`/tours/${tour._id}`)}
+              onClick={() => navigate ? navigate(`/tours/${tour._id}`) : router.push(`/tours/${tour._id}`)}
               className="flex-1 rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-600"
             >
               <FaEye className="mr-1 inline" />
               View
             </button>
             <button
-              onClick={() => router.push(`/vendor/properties/tours/add?editId=${tour._id}`)}
+              onClick={() => navigate ? navigate(`/vendor/properties/tours/add?editId=${tour._id}`) : router.push(`/vendor/properties/tours/add?editId=${tour._id}`)}
               className="rounded-lg bg-yellow-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-yellow-600"
             >
               <FaEdit />
@@ -231,7 +233,7 @@ export default function VendorToursPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
@@ -240,44 +242,61 @@ export default function VendorToursPage() {
   return (
     <div className="flex h-screen bg-gray-50 relative">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
+      {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
               <Sidebar />
-            </div>
+            </div> */}
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col mt-20 overflow-hidden">
-        {/* Top bar with mobile trigger */}
-        <div className="sticky top-0 z-40 bg-sky-50">
-          <div className="flex items-center justify-between gap-3 p-3 border-b">
-            <div className="flex items-center gap-3">
-              <button
-                className="lg:hidden px-3 py-2 rounded border text-gray-700"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                Menu
-              </button>
-              <h1 className="text-xl sm:text-2xl font-semibold text-black">My Tours</h1>
-            </div>
-            <Link
-              href="/vendor/tours/add"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
-            >
-              + Add New Tour
-            </Link>
-          </div>
-        </div>
+      <div className="flex-1 flex flex-col  overflow-hidden">
+     <div className="sticky top-0 z-40 bg-sky-50 border-b pt-13">
+   {/* Mobile menu button */}
+    <button
+      className="lg:hidden px-3 py-2 rounded border text-gray-700 "
+      onClick={() => setMobileSidebarOpen(true)}
+      aria-label="Open menu"
+    >
+      ☰
+    </button>
+
+  <div className="flex items-center justify-between ">
+    
+   
+    {/* Title */}
+    <h1 className="text-xl sm:text-2xl font-semibold text-black">
+      My Tours
+    </h1>
+
+    {/* Empty spacer for alignment on mobile */}
+    <div className="w-8 lg:hidden" />
+    {/* Content below the topbar */}
+<div className="p-4 flex flex-col items-center gap-4">
+
+  {/* Add New Stay button */}
+  <button
+    onClick={() =>
+      navigate
+        ? navigate("/vendor/properties/tours/add")
+        : router.push("/vendor/properties/tours/add")
+    }
+    className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
+  >
+    + Add New Tours
+  </button>
+
+</div>
+  </div>
+</div>
 
         <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
           {tours.length === 0 ? (
             <div className="bg-white rounded-xl shadow p-8 text-center">
               <p className="text-gray-600 mb-4">No tours added yet.</p>
-              <Link
-                href="/vendor/tours/add"
+              <button
+                onClick={() => navigate ? navigate("/vendor/tours/add") : router.push("/vendor/tours/add")}
                 className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
               >
                 Add Your First Tour
-              </Link>
+              </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
