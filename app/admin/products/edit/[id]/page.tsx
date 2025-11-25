@@ -53,10 +53,14 @@ export default function EditProductPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("/api/categories");
+      const res = await fetch("/api/categories?all=true");
       const data = await res.json();
       if (data.success && data.categories) {
-        setCategories(data.categories);
+        // Filter to show only admin categories (no owner or ownerType is admin)
+        const adminCategories = data.categories.filter((category: any) => 
+          !category.ownerType || category.ownerType === "admin"
+        );
+        setCategories(adminCategories);
       }
     } catch (error) {
       console.error("Failed to fetch categories:", error);

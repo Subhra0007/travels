@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Sidebar from "@/app/components/Pages/admin/Sidebar";
+import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import { FaPlus, FaEdit, FaTrash, FaEye, FaShoppingCart } from "react-icons/fa";
 
 interface Product {
@@ -14,12 +14,24 @@ interface Product {
   variants: any[];
   tags: string[];
   isActive: boolean;
-  sellerId: string | null;
+  sellerId: string;
   createdAt: string;
   updatedAt: string;
 }
 
-const AdminProductsPage: React.FC = () => {
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  requiresVariants: boolean;
+  image?: string;
+  displayOrder: number;
+  isActive: boolean;
+  ownerType?: string;
+  owner?: string;
+}
+
+const VendorProductsPage: React.FC = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,17 +41,12 @@ const AdminProductsPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch only admin-created products (products with no sellerId)
-      const res = await fetch("/api/products?all=true", { 
-        cache: "no-store",
+      const res = await fetch("/api/products?mine=true", {
         credentials: "include",
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data?.message || "Failed to fetch products");
-      
-      // Filter to show only admin products (sellerId is null)
-      const adminProducts = data.products.filter((product: Product) => !product.sellerId);
-      setProducts(adminProducts);
+      setProducts(data.products || []);
     } catch (err: any) {
       setError(err?.message || "Unable to fetch products");
     } finally {
@@ -92,12 +99,12 @@ const AdminProductsPage: React.FC = () => {
               >
                 ☰
               </button>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Products Catalogue</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">My Products</h1>
             </div>
             <div className="flex items-center gap-3">
-              <p className="hidden sm:block text-sm text-gray-600">Manage products and variants.</p>
+              <p className="hidden sm:block text-sm text-gray-600">Manage your products and variants.</p>
               <Link
-                href="/admin/products/add"
+                href="/vendor/properties/seller/products/add"
                 className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
               >
                 <FaPlus /> Add Product
@@ -116,9 +123,9 @@ const AdminProductsPage: React.FC = () => {
           ) : products.length === 0 ? (
             <div className="rounded-xl bg-white p-8 text-center shadow">
               <FaShoppingCart className="mx-auto mb-4 text-4xl text-gray-400" />
-              <p className="text-gray-600 mb-4">No products have been added yet.</p>
+              <p className="text-gray-600 mb-4">You have not added any products yet.</p>
               <Link
-                href="/admin/products/add"
+                href="/vendor/properties/seller/products/add"
                 className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
               >
                 <FaPlus /> Add First Product
@@ -197,7 +204,7 @@ const AdminProductsPage: React.FC = () => {
                                 <FaEye /> View
                               </Link>
                               <Link
-                                href={`/admin/products/edit/${product._id}`}
+                                href={`/vendor/properties/seller/products/edit/${product._id}`}
                                 className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-yellow-600"
                               >
                                 <FaEdit /> Edit
@@ -270,7 +277,7 @@ const AdminProductsPage: React.FC = () => {
                                 <FaEye size={10} />
                               </Link>
                               <Link
-                                href={`/admin/products/edit/${product._id}`}
+                                href={`/vendor/properties/seller/products/edit/${product._id}`}
                                 className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-2 py-1 text-xs font-semibold text-white hover:bg-yellow-600"
                               >
                                 <FaEdit size={10} />
@@ -319,4 +326,4 @@ const AdminProductsPage: React.FC = () => {
   );
 };
 
-export default AdminProductsPage;
+export default VendorProductsPage;

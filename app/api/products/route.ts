@@ -2,32 +2,37 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/config/database";
 import Product from "@/models/Product";
 import { auth } from "@/lib/middlewares/auth";
-import jwt from "jsonwebtoken";
 
-export async function GET(req: NextRequest, context: any) {
+export const GET = auth(async (req: NextRequest) => {
+  await dbConnect();
+  
+  const { searchParams } = new URL(req.url);
+  const all = searchParams.get("all") === "true";
+  const mine = searchParams.get("mine") === "true";
+  const category = searchParams.get("category");
+  const search = searchParams.get("search");
+  const sellerId = searchParams.get("sellerId");
+
   try {
-    await dbConnect();
-    const { searchParams } = new URL(req.url);
-    const category = searchParams.get("category");
-    const search = searchParams.get("search");
-    const all = searchParams.get("all") === "true";
-
-    let isAdmin = false;
-    try {
-      const authHeader = req.headers.get("authorization");
-      const tokenFromHeader = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
-      const tokenFromCookie = req.cookies.get("token")?.value;
-      const token = tokenFromHeader || tokenFromCookie;
-      
-      if (token && process.env.JWT_SECRET) {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as any;
-        isAdmin = decoded.accountType === "admin";
-      }
-    } catch {}
-
     const query: any = {};
+    const user = (req as any).user;
 
-    if (!isAdmin || !all) query.isActive = true;
+    // If sellerId is provided, filter by that seller
+    if (sellerId) {
+      query.sellerId = sellerId;
+    } else if (mine) {
+      // For vendor's own products
+      const isSeller = user.accountType === "vendor" && user.isSeller;
+      if (!isSeller) {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 403 }
+        );
+      }
+      query.sellerId = user.id || user._id;
+    } else if (!all) {
+      query.isActive = true;
+    }
 
     if (category && category !== "all") query.category = category;
 
@@ -48,7 +53,7 @@ export async function GET(req: NextRequest, context: any) {
       { status: 500 }
     );
   }
-}
+});
 
 export const POST = auth(async (req: NextRequest, context: any) => {
   try {
@@ -56,9 +61,12 @@ export const POST = auth(async (req: NextRequest, context: any) => {
     const body = await req.json();
     const user = (req as any).user;
 
-    if (user.accountType !== "admin") {
+    const isAdmin = user.accountType === "admin";
+    const isSeller = user.accountType === "vendor" && user.isSeller;
+
+    if (!isAdmin && !isSeller) {
       return NextResponse.json(
-        { success: false, message: "Only admin can create products" },
+        { success: false, message: "Unauthorized" },
         { status: 403 }
       );
     }
@@ -116,6 +124,7 @@ export const POST = auth(async (req: NextRequest, context: any) => {
       variants: variants || [],
       tags: tags || [],
       isActive: true,
+      sellerId: isSeller ? user.id || user._id : null,
     });
 
     return NextResponse.json(

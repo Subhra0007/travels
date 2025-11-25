@@ -14,10 +14,12 @@ export const PUT = auth(async (
     const body = await req.json();
     const user = (req as any).user;
 
-    // Only admin can update categories
-    if (user.accountType !== "admin") {
+    const isAdmin = user.accountType === "admin";
+    const isSeller = user.accountType === "vendor" && user.isSeller;
+
+    if (!isAdmin && !isSeller) {
       return NextResponse.json(
-        { success: false, message: "Only admin can update categories" },
+        { success: false, message: "Unauthorized" },
         { status: 403 }
       );
     }
@@ -45,6 +47,18 @@ export const PUT = auth(async (
       return NextResponse.json(
         { success: false, message: "Category not found" },
         { status: 404 }
+      );
+    }
+
+    const ownsCategory =
+      category.ownerType === "vendor" &&
+      category.owner &&
+      category.owner.toString() === (user.id || user._id);
+
+    if (!isAdmin && !ownsCategory) {
+      return NextResponse.json(
+        { success: false, message: "You are not allowed to edit this category" },
+        { status: 403 }
       );
     }
 
@@ -96,11 +110,12 @@ export const DELETE = auth(async (
   try {
     await dbConnect();
     const user = (req as any).user;
+    const isAdmin = user.accountType === "admin";
+    const isSeller = user.accountType === "vendor" && user.isSeller;
 
-    // Only admin can delete categories
-    if (user.accountType !== "admin") {
+    if (!isAdmin && !isSeller) {
       return NextResponse.json(
-        { success: false, message: "Only admin can delete categories" },
+        { success: false, message: "Unauthorized" },
         { status: 403 }
       );
     }
@@ -131,8 +146,24 @@ export const DELETE = auth(async (
       );
     }
 
+    const ownsCategory =
+      category.ownerType === "vendor" &&
+      category.owner &&
+      category.owner.toString() === (user.id || user._id);
+
+    if (!isAdmin && !ownsCategory) {
+      return NextResponse.json(
+        { success: false, message: "You are not allowed to delete this category" },
+        { status: 403 }
+      );
+    }
+
     // Check if any products use this category
-    const productCount = await Product.countDocuments({ category: category.slug });
+    const productFilter: any = { category: category.slug };
+    if (category.ownerType === "vendor" && category.owner) {
+      productFilter.sellerId = category.owner;
+    }
+    const productCount = await Product.countDocuments(productFilter);
     if (productCount > 0) {
       return NextResponse.json(
         { success: false, message: `Cannot delete category. ${productCount} product(s) are using this category.` },

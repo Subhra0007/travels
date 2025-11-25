@@ -13,6 +13,7 @@ interface Vendor {
   isVendorApproved: boolean;
   isVendorLocked?: boolean;
   accountType?: string;
+  isSeller?: boolean;
 }
 
 interface VendorDetails {
@@ -163,6 +164,7 @@ const VendorTable: React.FC = () => {
               <th>Email</th>
               <th>Mobile</th>
               <th>Services</th>
+              <th>Seller?</th>
               <th>Signup Date</th>
               <th>Status</th>
               <th className="text-right">Actions</th>
@@ -171,7 +173,7 @@ const VendorTable: React.FC = () => {
           <tbody>
             {vendors.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-500">
+                <td colSpan={8} className="text-center py-8 text-gray-500">
                   No accepted vendors found
                 </td>
               </tr>
@@ -186,6 +188,17 @@ const VendorTable: React.FC = () => {
                       {v.vendorServices && v.vendorServices.length > 0
                         ? v.vendorServices.join(", ")
                         : "—"}
+                    </td>
+                    <td>
+                      {v.isSeller ? (
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">
+                          Yes
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                          No
+                        </span>
+                      )}
                     </td>
                     <td>{new Date(v.createdAt).toLocaleString("en-IN")}</td>
                     <td>
@@ -258,7 +271,7 @@ const VendorTable: React.FC = () => {
 
                   {selectedVendor?._id === v._id && (
                     <tr>
-                      <td colSpan={7} className="bg-gray-50">
+                      <td colSpan={8} className="bg-gray-50">
                         <div className="p-4">
                           <div className="flex items-center justify-between mb-3">
                             <h3 className="text-base font-semibold text-gray-800">Vendor details</h3>

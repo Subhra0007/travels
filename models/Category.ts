@@ -7,6 +7,8 @@ export interface ICategory extends Document {
   image?: string; // Optional image for navbar
   displayOrder: number; // For ordering in UI
   isActive: boolean;
+  ownerType?: "admin" | "vendor";
+  owner?: mongoose.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,6 +21,8 @@ const categorySchema = new Schema<ICategory>(
     image: { type: String },
     displayOrder: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
+    ownerType: { type: String, enum: ["admin", "vendor"], default: "admin" },
+    owner: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   { timestamps: true }
 );

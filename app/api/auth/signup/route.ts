@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       accountType,
       otp,
       vendorServices,
+      isSeller = false,
     } = body;
 
     if (
@@ -64,7 +65,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const normalizedAccountType = accountType ?? "user";
+    const sellerSelected = Boolean(isSeller);
+    const normalizedAccountType =
+      sellerSelected || accountType === "vendor" ? "vendor" : "user";
     const normalizedVendorServices =
       normalizedAccountType === "vendor" ? vendorServices || [] : [];
 
@@ -80,6 +83,7 @@ export async function POST(req: NextRequest) {
       additionalDetails: profile._id,
       vendorServices: normalizedVendorServices,
       isVendorApproved: false, // default locked until admin approves
+      isSeller: sellerSelected,
     });
 
     // Return a normalized user object (no password)
@@ -91,6 +95,7 @@ export async function POST(req: NextRequest) {
       accountType: userDoc.accountType,
       vendorServices: userDoc.vendorServices,
       isVendorApproved: userDoc.isVendorApproved,
+      isSeller: userDoc.isSeller,
       createdAt: userDoc.createdAt,
     };
 

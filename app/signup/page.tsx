@@ -16,6 +16,7 @@ export default function SignUpPage() {
     otp: "",
   });
   const [isVendor, setIsVendor] = useState(false);
+  const [isSeller, setIsSeller] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -93,6 +94,7 @@ export default function SignUpPage() {
     }
   };
 
+
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -120,11 +122,12 @@ const handleSubmit = async (e: React.FormEvent) => {
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         contactNumber: formData.mobile,
-        accountType: isVendor ? "vendor" : "user",
+        accountType: isVendor || isSeller ? "vendor" : "user",
         otp: formData.otp,
 
         // ✅ FIX — SEND SERVICES TO BACKEND
-        vendorServices: selectedServices,
+        vendorServices: isVendor ? selectedServices : [],
+        isSeller,
       }),
     });
 
@@ -233,6 +236,18 @@ const handleSubmit = async (e: React.FormEvent) => {
               ))}
             </div>
           )}
+          <label className="flex items-center gap-3 p-3 border rounded-xl text-black">
+            <input
+              type="checkbox"
+              checked={isSeller}
+              onChange={(e) => setIsSeller(e.target.checked)}
+              className="h-5 w-5 rounded border-gray-400"
+            />
+            <div>
+              <p className="font-semibold">Are you a seller?</p>
+              <p className="text-sm text-gray-600">Check to sell physical products on SafarHub.</p>
+            </div>
+          </label>
           {otpVerified && (
             <>
               <div className="relative">

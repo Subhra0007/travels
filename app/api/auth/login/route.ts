@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
         id: user._id,
         email: user.email,
         accountType: user.accountType,
+        isSeller: user.isSeller ?? false,
       },
       JWT_SECRET,
       { expiresIn: "24h" }
@@ -117,6 +118,10 @@ export async function POST(req: NextRequest) {
         email: user.email,
         accountType: user.accountType,
         isVendorSetupComplete: user.isVendorSetupComplete,
+        vendorServices: user.vendorServices || [],
+        isVendorApproved: user.isVendorApproved ?? false,
+        isVendorLocked: user.isVendorLocked ?? false,
+        isSeller: user.isSeller ?? false,
       },
     });
 

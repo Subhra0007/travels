@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar from "@/app/components/Pages/admin/Sidebar";
+import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import { useRouter } from "next/navigation";
 import { FaPlus, FaEdit, FaTrash, FaTag, FaTimes } from "react-icons/fa";
 
@@ -13,11 +13,9 @@ interface Category {
   image?: string;
   displayOrder: number;
   isActive: boolean;
-  ownerType?: string;
-  owner?: string;
 }
 
-export default function AdminCategoriesPage() {
+export default function VendorCategoriesPage() {
   const router = useRouter();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -26,23 +24,20 @@ export default function AdminCategoriesPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
   const loadCategories = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch all categories (including inactive) for admin
-      const res = await fetch("/api/categories?all=true", {
-        cache: "no-store",
+      const res = await fetch("/api/categories?mine=true", {
         credentials: "include",
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data?.message || "Failed to fetch categories");
-      
-      // Filter to show only admin categories (no owner or ownerType is admin)
-      const adminCategories = data.categories.filter((category: Category) => 
-        !category.ownerType || category.ownerType === "admin"
-      );
-      setCategories(adminCategories);
+      setCategories(data.categories || []);
     } catch (err: any) {
       setError(err?.message || "Unable to fetch categories");
     } finally {
@@ -82,10 +77,6 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
-
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
       <div className="hidden lg:block lg:flex-shrink-0">
@@ -103,10 +94,10 @@ export default function AdminCategoriesPage() {
               >
                 ☰
               </button>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Product Categories</h1>
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">My Categories</h1>
             </div>
             <div className="flex items-center gap-3">
-              <p className="hidden sm:block text-sm text-gray-600">Manage product categories.</p>
+              <p className="hidden sm:block text-sm text-gray-600">Manage your product categories.</p>
               <button
                 onClick={() => {
                   setEditingCategory(null);
@@ -130,7 +121,7 @@ export default function AdminCategoriesPage() {
           ) : categories.length === 0 ? (
             <div className="rounded-xl bg-white p-8 text-center shadow">
               <FaTag className="mx-auto mb-4 text-4xl text-gray-400" />
-              <p className="text-gray-600 mb-4">No categories have been created yet.</p>
+              <p className="text-gray-600 mb-4">You have not created any categories yet.</p>
               <button
                 onClick={() => {
                   setEditingCategory(null);
@@ -150,7 +141,6 @@ export default function AdminCategoriesPage() {
                       <th className="px-4 py-3">Category</th>
                       <th className="px-4 py-3">Slug</th>
                       <th className="px-4 py-3">Requires Variants</th>
-                      <th className="px-4 py-3">Display Order</th>
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3 text-right">Actions</th>
                     </tr>
@@ -159,21 +149,12 @@ export default function AdminCategoriesPage() {
                     {categories.map((category) => (
                       <tr key={category._id} className="hover:bg-gray-50">
                         <td className="px-4 py-4">
-                          <div className="flex items-center gap-3">
-                            {category.image && (
-                              <img
-                                src={category.image}
-                                alt={category.name}
-                                className="h-12 w-12 rounded-lg object-cover"
-                              />
-                            )}
-                            <div>
-                              <p className="font-semibold text-gray-900">{category.name}</p>
-                            </div>
-                          </div>
+                          <p className="font-semibold text-gray-900">{category.name}</p>
                         </td>
                         <td className="px-4 py-4">
-                          <code className="text-xs bg-gray-100 px-2 py-1 rounded">{category.slug}</code>
+                          <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                            {category.slug}
+                          </code>
                         </td>
                         <td className="px-4 py-4">
                           <span
@@ -186,7 +167,6 @@ export default function AdminCategoriesPage() {
                             {category.requiresVariants ? "Yes" : "No"}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-sm text-gray-700">{category.displayOrder}</td>
                         <td className="px-4 py-4">
                           <button
                             onClick={() => handleToggleActive(category)}
@@ -228,59 +208,45 @@ export default function AdminCategoriesPage() {
               <div className="grid gap-4 p-4 lg:hidden">
                 {categories.map((category) => (
                   <div key={category._id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-start gap-3">
-                      {category.image && (
-                        <img
-                          src={category.image}
-                          alt={category.name}
-                          className="h-16 w-16 rounded-lg object-cover"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <p className="text-base font-semibold text-gray-900">{category.name}</p>
-                        <code className="text-xs bg-gray-100 px-2 py-1 rounded mt-1 inline-block">
-                          {category.slug}
-                        </code>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              category.requiresVariants
-                                ? "bg-blue-50 text-blue-700"
-                                : "bg-gray-50 text-gray-700"
-                            }`}
-                          >
-                            {category.requiresVariants ? "Requires Variants" : "No Variants"}
-                          </span>
-                          <button
-                            onClick={() => handleToggleActive(category)}
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              category.isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
-                            }`}
-                          >
-                            {category.isActive ? "Active" : "Inactive"}
-                          </button>
-                        </div>
-                        <div className="mt-3 text-xs text-gray-600">
-                          Display Order: {category.displayOrder}
-                        </div>
-                        <div className="mt-4 flex gap-2">
-                          <button
-                            onClick={() => {
-                              setEditingCategory(category);
-                              setShowAddModal(true);
-                            }}
-                            className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-yellow-600"
-                          >
-                            <FaEdit size={12} /> Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(category._id)}
-                            className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600"
-                          >
-                            <FaTrash size={12} /> Delete
-                          </button>
-                        </div>
-                      </div>
+                    <p className="text-base font-semibold text-gray-900">{category.name}</p>
+                    <code className="text-xs bg-gray-100 px-2 py-1 rounded mt-1 inline-block">
+                      {category.slug}
+                    </code>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          category.requiresVariants
+                            ? "bg-blue-50 text-blue-700"
+                            : "bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        {category.requiresVariants ? "Requires Variants" : "No Variants"}
+                      </span>
+                      <button
+                        onClick={() => handleToggleActive(category)}
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          category.isActive ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+                        }`}
+                      >
+                        {category.isActive ? "Active" : "Inactive"}
+                      </button>
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingCategory(category);
+                          setShowAddModal(true);
+                        }}
+                        className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-yellow-600"
+                      >
+                        <FaEdit size={12} /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(category._id)}
+                        className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-600"
+                      >
+                        <FaTrash size={12} /> Delete
+                      </button>
                     </div>
                   </div>
                 ))}

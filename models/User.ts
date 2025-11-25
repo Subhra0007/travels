@@ -19,6 +19,7 @@ export interface IUser extends Document {
   vendorServices?: string[];
   isVendorApproved?: boolean;
   isVendorLocked?: boolean;
+  isSeller?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   comparePassword?: (candidate: string) => Promise<boolean>;
@@ -37,6 +38,7 @@ const userSchema = new Schema<IUser>(
     vendorServices: { type: [String], default: [] }, // <-- simple array of service ids
     isVendorApproved: { type: Boolean, default: false },
     isVendorLocked: { type: Boolean, default: false }, // Lock vendor dashboard after approval
+    isSeller: { type: Boolean, default: false },
 
     age: Number,
     avatar: String,

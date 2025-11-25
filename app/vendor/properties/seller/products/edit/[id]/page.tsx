@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Sidebar from "@/app/components/Pages/admin/Sidebar";
+import { useRouter, useParams } from "next/navigation";
+import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import { FaUpload, FaTimes, FaPlus, FaTrash } from "react-icons/fa";
 
 type Variant = {
+  _id?: string;
   color: string;
   size: string;
   stock: number;
@@ -13,12 +14,28 @@ type Variant = {
   price?: number;
 };
 
-export default function AddProductPage() {
+type CategoryOption = {
+  slug: string;
+  name: string;
+  requiresVariants: boolean;
+  owned: boolean;
+};
+
+export default function SellerEditProductPage() {
   const router = useRouter();
+  const params = useParams();
+  const productId = params.id as string;
+
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,37 +45,94 @@ export default function AddProductPage() {
     images: [] as string[],
     variants: [] as Variant[],
     tags: [] as string[],
+    isActive: true,
   });
 
   const [bulkColor, setBulkColor] = useState("");
   const [bulkSizes, setBulkSizes] = useState<string[]>([]);
-
   const [tagInput, setTagInput] = useState("");
-  const [categories, setCategories] = useState<Array<{ slug: string; name: string; requiresVariants: boolean }>>([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    const verify = async () => {
+      try {
+        const res = await fetch("/api/auth/verify", { credentials: "include" });
+        if (res.status !== 200) {
+          router.replace("/login");
+          return;
+        }
+        const data = await res.json().catch(() => null);
+        const user = data?.user;
+        if (!user || user.accountType !== "vendor" || !user.isSeller) {
+          router.replace("/vendor");
+          return;
+        }
+        setAuthorized(true);
+        fetchCategories();
+        loadProduct();
+      } catch {
+        router.replace("/login");
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    verify();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, productId]);
 
   const fetchCategories = async () => {
+    setLoadingCategories(true);
     try {
-      const res = await fetch("/api/categories?all=true");
+      // Only fetch vendor's own categories
+      const res = await fetch("/api/categories?mine=true", { credentials: "include" });
       const data = await res.json();
-      if (data.success && data.categories) {
-        // Filter to show only admin categories (no owner or ownerType is admin)
-        const adminCategories = data.categories.filter((category: any) => 
-          !category.ownerType || category.ownerType === "admin"
+      const vendorCategories: CategoryOption[] = [];
+      
+      if (data?.success) {
+        vendorCategories.push(
+          ...(data.categories || []).map((cat: any) => ({
+            slug: cat.slug,
+            name: cat.name,
+            requiresVariants: cat.requiresVariants,
+            owned: true,
+          }))
         );
-        setCategories(adminCategories);
-        if (adminCategories.length > 0 && !formData.category) {
-          setFormData((prev) => ({ ...prev, category: adminCategories[0].slug }));
-        }
       }
+      
+      setCategories(vendorCategories);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
     } finally {
       setLoadingCategories(false);
+    }
+  };
+
+  const loadProduct = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data?.message || "Failed to load product");
+      }
+      const product = data.product;
+      setFormData({
+        name: product.name || "",
+        category: product.category || "",
+        description: product.description || "",
+        basePrice: product.basePrice || 0,
+        images: product.images || [],
+        variants: product.variants || [],
+        tags: product.tags || [],
+        isActive: product.isActive !== undefined ? product.isActive : true,
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to load product";
+      alert(message);
+      router.push("/vendor/properties/seller/products");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,25 +197,6 @@ export default function AddProductPage() {
     }));
   };
 
-  const removeVariant = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.filter((_, i) => i !== index),
-    }));
-  };
-
-  const updateVariant = <K extends keyof Variant>(
-    index: number,
-    field: K,
-    value: Variant[K]
-  ) => {
-    setFormData((prev) => {
-      const variants = [...prev.variants];
-      variants[index] = { ...variants[index], [field]: value };
-      return { ...prev, variants };
-    });
-  };
-
   const toggleBulkSize = (size: string) => {
     setBulkSizes((prev) =>
       prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
@@ -162,10 +217,26 @@ export default function AddProductPage() {
           photos: [],
           price: prev.basePrice,
         }));
-      return { ...prev, variants: [...prev.variants, ...toAdd] };
+      const next = { ...prev, variants: [...prev.variants, ...toAdd] };
+      return next;
     });
     setBulkColor("");
     setBulkSizes([]);
+  };
+
+  const removeVariant = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index),
+    }));
+  };
+
+  const updateVariant = <K extends keyof Variant>(index: number, field: K, value: Variant[K]) => {
+    setFormData((prev) => {
+      const variants = [...prev.variants];
+      variants[index] = { ...variants[index], [field]: value };
+      return { ...prev, variants };
+    });
   };
 
   const handleVariantImages = async (
@@ -246,19 +317,19 @@ export default function AddProductPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/products", {
-        method: "POST",
+      const res = await fetch(`/api/products/${productId}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data?.message || "Failed to create product");
+        throw new Error(data?.message || "Failed to update product");
       }
-      router.push("/admin/products");
+      router.push("/vendor/properties/seller/products");
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to save product";
+      const message = error instanceof Error ? error.message : "Failed to update product";
       alert(message);
     } finally {
       setSubmitting(false);
@@ -269,16 +340,35 @@ export default function AddProductPage() {
   const needsVariants = selectedCategory?.requiresVariants || false;
   const fixedSizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
+  if (checkingAuth || loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!authorized) return null;
+
   return (
-    <div className="flex h-screen bg-sky-50 text-black">
-      <div className="hidden lg:block">
+    <div className="flex h-screen bg-gray-50 text-black">
+      <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
         <Sidebar />
       </div>
 
-      <div className="flex-1 flex flex-col mt-15 overflow-y-auto">
+      <div className="flex-1 flex flex-col mt-20 overflow-y-auto">
         <div className="sticky top-0 z-40 bg-sky-50 border-b p-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-gray-900">Add New Product</h1>
+            <div className="flex items-center gap-3">
+              <button
+                className="lg:hidden px-3 py-2 rounded border text-gray-700"
+                onClick={() => setMobileSidebarOpen(true)}
+                aria-label="Open menu"
+              >
+                ☰
+              </button>
+              <h1 className="text-2xl font-semibold text-gray-900">Edit Product</h1>
+            </div>
             <button
               onClick={() => router.back()}
               className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -290,7 +380,6 @@ export default function AddProductPage() {
 
         <form onSubmit={handleSubmit} className="flex-1 p-6">
           <div className="mx-auto max-w-4xl space-y-6">
-            {/* Basic Information */}
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
 
@@ -333,14 +422,10 @@ export default function AddProductPage() {
                     {categories.map((cat) => (
                       <option key={cat.slug} value={cat.slug}>
                         {cat.name}
+                        {cat.owned ? " (My Category)" : ""}
                       </option>
                     ))}
                   </select>
-                )}
-                {!formData.category && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    No categories available. Please create categories first.
-                  </p>
                 )}
               </div>
 
@@ -355,33 +440,50 @@ export default function AddProductPage() {
                   }
                   rows={4}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Enter product description"
+                  placeholder="Describe your product"
                 />
                 {errors.description && (
                   <p className="text-red-600 text-sm mt-1">{errors.description}</p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
-                  Base Price (₹) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.basePrice}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, basePrice: parseFloat(e.target.value) || 0 }))
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="0.00"
-                />
-                {errors.basePrice && <p className="text-red-600 text-sm mt-1">{errors.basePrice}</p>}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Base Price (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.basePrice}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        basePrice: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="0.00"
+                  />
+                  {errors.basePrice && (
+                    <p className="text-red-600 text-sm mt-1">{errors.basePrice}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium text-gray-900">Product is active</label>
+                  <input
+                    type="checkbox"
+                    checked={formData.isActive}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, isActive: e.target.checked }))
+                    }
+                    className="h-5 w-5 rounded border-gray-300"
+                  />
+                </div>
               </div>
             </section>
 
-            {/* Main Images */}
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Product Images</h2>
               <div>
@@ -416,10 +518,10 @@ export default function AddProductPage() {
                     ))}
                   </div>
                 )}
+                {uploadError && <p className="text-sm text-red-500 mt-2">{uploadError}</p>}
               </div>
             </section>
 
-            {/* Variants (for jacket and t-shirt) */}
             {needsVariants && (
               <section className="bg-white rounded-xl shadow p-6 space-y-4">
                 <div className="flex items-center justify-between">
@@ -501,10 +603,12 @@ export default function AddProductPage() {
                             value={variant.color}
                             onChange={(e) => updateVariant(idx, "color", e.target.value)}
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            placeholder="e.g., Red, Blue"
+                            placeholder="e.g., Red"
                           />
                           {errors[`variant-${idx}-color`] && (
-                            <p className="text-red-600 text-sm mt-1">{errors[`variant-${idx}-color`]}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors[`variant-${idx}-color`]}
+                            </p>
                           )}
                         </div>
 
@@ -525,7 +629,9 @@ export default function AddProductPage() {
                             ))}
                           </select>
                           {errors[`variant-${idx}-size`] && (
-                            <p className="text-red-600 text-sm mt-1">{errors[`variant-${idx}-size`]}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors[`variant-${idx}-size`]}
+                            </p>
                           )}
                         </div>
 
@@ -537,18 +643,22 @@ export default function AddProductPage() {
                             type="number"
                             min="0"
                             value={variant.stock}
-                            onChange={(e) => updateVariant(idx, "stock", parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              updateVariant(idx, "stock", parseInt(e.target.value) || 0)
+                            }
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
                           />
                           {errors[`variant-${idx}-stock`] && (
-                            <p className="text-red-600 text-sm mt-1">{errors[`variant-${idx}-stock`]}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors[`variant-${idx}-stock`]}
+                            </p>
                           )}
                         </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Variant Price (₹) - Optional (defaults to base price)
+                          Variant Price (₹) - Optional
                         </label>
                         <input
                           type="number"
@@ -556,7 +666,11 @@ export default function AddProductPage() {
                           step="0.01"
                           value={variant.price || ""}
                           onChange={(e) =>
-                            updateVariant(idx, "price", e.target.value ? parseFloat(e.target.value) : undefined)
+                            updateVariant(
+                              idx,
+                              "price",
+                              e.target.value ? parseFloat(e.target.value) : undefined
+                            )
                           }
                           className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
                           placeholder="Leave empty to use base price"
@@ -604,7 +718,6 @@ export default function AddProductPage() {
               </section>
             )}
 
-            {/* Tags */}
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Tags</h2>
               <div className="flex gap-2">
@@ -612,7 +725,7 @@ export default function AddProductPage() {
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
                       addTag();
@@ -650,14 +763,13 @@ export default function AddProductPage() {
               )}
             </section>
 
-            {/* Submit */}
             <div className="flex gap-4">
               <button
                 type="submit"
                 disabled={submitting}
                 className="flex-1 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? "Creating..." : "Create Product"}
+                {submitting ? "Updating..." : "Update Product"}
               </button>
               <button
                 type="button"
@@ -670,6 +782,29 @@ export default function AddProductPage() {
           </div>
         </form>
       </div>
+
+      {mobileSidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-100 lg:hidden overflow-y-auto">
+            <div className="p-4 border-b flex items-center justify-between">
+              <span className="text-lg font-semibold text-gray-800">Menu</span>
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="px-3 py-1.5 rounded-md border text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+            <Sidebar />
+          </div>
+        </>
+      )}
     </div>
   );
 }
+
+

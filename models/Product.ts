@@ -17,6 +17,7 @@ export interface IProduct extends Document {
   variants?: IVariant[]; // For products with variants (jacket, t-shirt)
   tags?: string[];
   isActive: boolean;
+  sellerId?: mongoose.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -46,6 +47,7 @@ const productSchema = new Schema<IProduct>(
     variants: { type: [variantSchema], default: [] },
     tags: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
+    sellerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   { timestamps: true }
 );
@@ -54,6 +56,7 @@ const productSchema = new Schema<IProduct>(
 productSchema.index({ category: 1, isActive: 1 });
 productSchema.index({ tags: 1 });
 productSchema.index({ name: "text", description: "text" });
+productSchema.index({ sellerId: 1 });
 
 export default mongoose.models.Product || mongoose.model<IProduct>("Product", productSchema);
 

@@ -1,4 +1,3 @@
-// app/api/admin/vendors/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/config/database";
 import User from "@/models/User";
@@ -10,7 +9,7 @@ import mongoose from "mongoose";
 
 export async function GET(req: NextRequest) {
   await dbConnect();
-
+  
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
@@ -24,7 +23,7 @@ export async function GET(req: NextRequest) {
     }
 
     const vendor = await User.findById(id).select(
-      "isVendorApproved isVendorLocked vendorServices fullName email contactNumber createdAt accountType"
+      "isVendorApproved isVendorLocked vendorServices fullName email contactNumber createdAt accountType isSeller"
     );
     return NextResponse.json({ success: !!vendor, vendor: vendor || null });
   }
@@ -32,17 +31,21 @@ export async function GET(req: NextRequest) {
   // Check if we need only newly added vendors (for dashboard) or all accepted vendors (for partners page)
   const limit = searchParams.get("limit");
   const onlyApproved = searchParams.get("onlyApproved") === "true";
+  const onlySellers = searchParams.get("onlySellers") === "true";
 
   let query: any = { accountType: "vendor" };
   
-  if (onlyApproved) {
+  if (onlySellers) {
+    // For /admin/sellers - show all vendors who are sellers
+    query.isSeller = true;
+  } else if (onlyApproved) {
     // For /admin/partners - show all accepted and unlocked vendors
     query.isVendorApproved = true;
     query.isVendorLocked = false;
   }
 
   let vendorsQuery = User.find(query).select(
-    "fullName email contactNumber vendorServices isVendorApproved isVendorLocked createdAt accountType"
+    "fullName email contactNumber vendorServices isVendorApproved isVendorLocked createdAt accountType isSeller"
   ).sort({ createdAt: -1 });
 
   if (limit) {
@@ -94,7 +97,7 @@ export async function PUT(req: NextRequest) {
 
   // return the updated vendor document
   const updatedVendor = await User.findById(vendorId).select(
-    "_id fullName email contactNumber vendorServices isVendorApproved isVendorLocked createdAt accountType"
+    "_id fullName email contactNumber vendorServices isVendorApproved isVendorLocked createdAt accountType isSeller"
   );
 
   return NextResponse.json({ success: true, vendor: updatedVendor });

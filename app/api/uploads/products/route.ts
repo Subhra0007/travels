@@ -8,13 +8,16 @@ export const POST = auth(async (req: NextRequest) => {
   cloudinaryConnect();
 
   const user = (req as any).user;
-  if (!user || user.accountType !== "admin") {
+  // Allow both admin and vendor sellers to upload product images
+  if (!user || (user.accountType !== "admin" && !(user.accountType === "vendor" && user.isSeller))) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 });
   }
 
   const form = await req.formData();
   const files = form.getAll("files") as File[];
-  const folder = form.get("folder")?.toString() ?? `products/admin`;
+  // Update folder path to include vendor ID for vendors
+  const baseFolder = user.accountType === "admin" ? "products/admin" : `products/vendor/${user.id || user._id}`;
+  const folder = form.get("folder")?.toString() ?? baseFolder;
 
   if (!files.length) {
     return NextResponse.json({ success: false, message: "No files received" }, { status: 400 });
@@ -49,4 +52,3 @@ export const POST = auth(async (req: NextRequest) => {
 
   return NextResponse.json({ success: true, uploads });
 });
-

@@ -6,6 +6,19 @@ import { useRouter } from "next/navigation";
 import Dashboard from "@/app/components/Pages/vendor/Dashboard";
 import Sidebar from "../components/Pages/vendor/Sidebar";
 import { FaLock } from "react-icons/fa";
+
+const shouldLockVendor = (account: any) => {
+  if (!account) return true;
+  if (account.isVendorLocked) return true;
+
+  const hasVendorServices =
+    Array.isArray(account.vendorServices) && account.vendorServices.length > 0;
+  const sellerOnly = Boolean(account.isSeller) && !hasVendorServices;
+
+  if (sellerOnly) return false;
+  return !account.isVendorApproved;
+};
+
 export default function VendorPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -66,12 +79,12 @@ export default function VendorPage() {
           isVendorApproved: data.vendor.isVendorApproved,
           isVendorLocked: data.vendor.isVendorLocked || false,
           vendorServices: data.vendor.vendorServices || [],
+          isSeller: data.vendor.isSeller ?? stored.isSeller ?? false,
         };
 
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
-        // Lock if not approved OR if explicitly locked
-        setLocked(!updatedUser.isVendorApproved || updatedUser.isVendorLocked);
+        setLocked(shouldLockVendor(updatedUser));
       }
     } catch (err) {
       console.error("Failed to refresh vendor status:", err);
@@ -87,8 +100,7 @@ export default function VendorPage() {
     }
 
     setUser(stored);
-    // Lock if not approved OR if explicitly locked
-    setLocked(!stored.isVendorApproved || stored.isVendorLocked);
+    setLocked(shouldLockVendor(stored));
 
    // Poll if not approved OR if locked (to detect unlock)
    if (!stored.isVendorApproved || stored.isVendorLocked) {
@@ -100,11 +112,7 @@ export default function VendorPage() {
 
   // React to live updates
   useEffect(() => {
-    if (user?.isVendorApproved && !user?.isVendorLocked) {
-      setLocked(false);
-    } else if (user?.isVendorLocked) {
-      setLocked(true);
-    }
+    setLocked(shouldLockVendor(user));
   }, [user]);
 
   if (loading)
@@ -155,7 +163,7 @@ export default function VendorPage() {
           </div>
         </div>
         <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden ">
-          <Dashboard locked={false} />
+          <Dashboard locked={false} isSeller={user?.isSeller || false} />
         </main>
       </div>
       {/* Mobile Sidebar Drawer */}

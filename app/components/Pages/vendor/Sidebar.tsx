@@ -15,7 +15,9 @@ import {
   FaCar,
   FaCompass,
   FaMountain,
-  FaBed
+  FaBed,
+  FaShoppingCart,
+  FaTag,
 } from "react-icons/fa";
 import Link from "next/link";
 
@@ -23,6 +25,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [openProperties, setOpenProperties] = useState(false);
   const [allowedServices, setAllowedServices] = useState<string[]>([]);
+  const [isSeller, setIsSeller] = useState(false);
 
   // Open Properties submenu when on any properties route
   useEffect(() => {
@@ -39,6 +42,7 @@ export default function Sidebar() {
       // If vendor is locked, hide all services from submenu
       if (stored?.isVendorLocked) {
         setAllowedServices([]);
+        setIsSeller(false);
         return;
       }
 
@@ -51,8 +55,10 @@ export default function Sidebar() {
       });
 
       setAllowedServices(normalized);
+      setIsSeller(Boolean(stored?.isSeller));
     } catch {
       setAllowedServices([]);
+      setIsSeller(false);
     }
   };
 
@@ -100,15 +106,54 @@ export default function Sidebar() {
   const filteredProperties = propertiesSubmenu.filter((item) =>
     allowedServices.includes(item.id)
   );
+  
+  // For sellers, show simplified menu with just Products and Categories
+  const sellerLinks = isSeller
+    ? [
+        {
+          id: "seller-products",
+          name: "Products",
+          icon: <FaShoppingCart size={16} />,
+          href: "/vendor/properties/seller/products",
+        },
+        {
+          id: "seller-categories",
+          name: "Categories",
+          icon: <FaTag size={16} />,
+          href: "/vendor/properties/seller/categories",
+        },
+      ]
+    : [];
+  const hasPropertyEntries = filteredProperties.length > 0 || sellerLinks.length > 0;
 
   const menu = [
     { name: "Dashboard", icon: <LayoutDashboard size={18} />, href: "/vendor" },
-
-    {
-      name: "Properties",
-      icon: <Building2 size={18} />,
-      submenu: filteredProperties,
-    },
+    
+    // Show service properties for vendors with services
+    ...(filteredProperties.length > 0 
+      ? [{
+          name: "Properties",
+          icon: <Building2 size={18} />,
+          submenu: filteredProperties,
+          hidden: false,
+        }]
+      : []
+    ),
+    
+    // Show seller products/categories for sellers
+    ...(isSeller 
+      ? [{
+          name: "Products",
+          icon: <FaShoppingCart size={18} />,
+          href: "/vendor/properties/seller/products",
+        },
+        {
+          name: "Categories",
+          icon: <FaTag size={18} />,
+          href: "/vendor/properties/seller/categories",
+        }]
+      : []
+    ),
 
     { name: "Booking", icon: <CalendarCheck size={18} />, href: "/vendor/bookings" },
     { name: "Cancellations", icon: <CalendarCheck size={18} />, href: "/vendor/cancellations" },
@@ -127,15 +172,16 @@ export default function Sidebar() {
     return pathname === href || pathname.startsWith(href + "/");
   };
 
-  const anyPropertiesActive = filteredProperties.some((sub) => isActiveHref(sub.href));
+  const anyPropertiesActive =
+    filteredProperties.some((sub) => isActiveHref(sub.href)) ||
+    sellerLinks.some((sub) => isActiveHref(sub.href));
 
   return (
     <aside className="w-64 bg-white shadow-lg flex flex-col h-screen sticky top-0 overflow-y-auto">
       <div className="p-6 flex-1 overflow-y-auto">
       <nav className="space-y-3">
         {menu
-          // If no allowed services, omit Properties menu entirely
-          .filter((item) => !item.submenu || item.submenu.length > 0)
+          .filter((item) => !item.hidden)
           .map((item) => (
           <div key={item.name}>
             
@@ -164,8 +210,8 @@ export default function Sidebar() {
                 </button>
 
                 {openProperties && (
-                  <div className="ml-8 mt-2 space-y-2">
-                    {item.submenu.map((sub) => (
+                  <div className="ml-8 mt-2 space-y-4">
+                    {filteredProperties.map((sub) => (
                       <Link
                         key={sub.name}
                         href={sub.href}
@@ -179,6 +225,29 @@ export default function Sidebar() {
                         {sub.name}
                       </Link>
                     ))}
+                    {sellerLinks.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-gray-500 tracking-wide mb-1">
+                          Seller
+                        </p>
+                        <div className="space-y-2">
+                          {sellerLinks.map((sub) => (
+                            <Link
+                              key={sub.id}
+                              href={sub.href}
+                              className={`flex items-center gap-2 p-2 rounded-md transition ${
+                                isActiveHref(sub.href)
+                                  ? "text-indigo-600 bg-indigo-50"
+                                  : "text-gray-700 hover:text-indigo-600"
+                              }`}
+                            >
+                              {sub.icon}
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </>

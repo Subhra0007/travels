@@ -16,7 +16,7 @@ export const POST = auth(async (req: NextRequest) => {
   const files = form.getAll("files") as File[];
   const folder =
     form.get("folder")?.toString() ??
-    `stays/${user.accountType === "vendor" ? user.id : "admin"}`;
+    `vehicle-rentals/${user.accountType === "vendor" ? user.id : "admin"}`;
 
   if (!files.length) {
     return NextResponse.json({ success: false, message: "No files received" }, { status: 400 });
@@ -51,5 +51,3 @@ export const POST = auth(async (req: NextRequest) => {
 
   return NextResponse.json({ success: true, uploads });
 });
-
-

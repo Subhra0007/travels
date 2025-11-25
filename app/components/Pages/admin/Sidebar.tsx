@@ -125,6 +125,18 @@ const Sidebar: React.FC = () => {
           <BiCategory size={14} /> Categories
         </button>
 
+        {/* Sellers */}
+        <button
+          onClick={() => router.push("/admin/sellers")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/sellers")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <MdShoppingCart size={14} /> Sellers
+        </button>
+
         {/* Blogs */}
         {/* <button
           onClick={() => router.push("/admin/blogs")}
