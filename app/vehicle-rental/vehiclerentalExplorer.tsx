@@ -88,42 +88,30 @@ export const RentalCard = ({
   const availability = useAvailability("vehicle", rental._id, pickupDate, dropoffDate);
   const availableOptionKeys = availability.availableOptionKeys ?? [];
   const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
-  const router = useRouter();
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // Only navigate if the click wasn't on the wishlist button or tag buttons
-    const target = e.target as HTMLElement;
-    if (target.closest('button')) {
-      return; // Don't navigate if clicking on a button
-    }
-    router.push(`/vehicle-rental/${rental._id}`);
-  };
-
- return (
-  <div className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl">
-    {/* Invisible overlay button that makes the whole card clickable */}
-    <button
-      type="button"
-      onClick={() => router.push(`/vehicle-rental/${rental._id}`)}
-      className="absolute inset-0 z-10 cursor-pointer rounded-2xl"
-      aria-label={`View details for ${rental.name}`}
-    />
-
-    {/* Wishlist button - higher z-index so it stays on top */}
-    <button
-      type="button"
-      aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-      onClick={(e) => {
-        e.stopPropagation(); // This stops the card navigation
-        if (!wishlistDisabled) onToggleWishlist(rental._id, !isWishlisted, "vehicle-rental");
-      }}
-      disabled={wishlistDisabled}
-      className={`absolute right-3 top-3 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
-        wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
-      }`}
+  return (
+    <Link
+      href={`/vehicle-rental/${rental._id}`}
+      className="group relative flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
     >
-      <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
-    </button>
+      {/* Wishlist button */}
+      <button
+        type="button"
+        aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if (!wishlistDisabled) {
+            onToggleWishlist(rental._id, !isWishlisted, "vehicle-rental");
+          }
+        }}
+        disabled={wishlistDisabled}
+        className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
+          wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
+        }`}
+      >
+        <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
+      </button>
 
     {/* Image + badges */}
     <div className="relative h-56 w-full">
@@ -202,7 +190,8 @@ export const RentalCard = ({
               key={tag}
               type="button"
               onClick={(e) => {
-                e.stopPropagation(); // This stops the card navigation
+                e.preventDefault();
+                e.stopPropagation();
                 onSelectTag?.(tag);
               }}
               className="rounded-full border border-green-200 px-3 py-1 text-green-700 transition hover:border-green-400 hover:bg-green-50"
@@ -230,8 +219,8 @@ export const RentalCard = ({
         </span>
       </div>
     </div>
-  </div>
-);
+    </Link>
+  );
 };
 
 export default function VehicleRentalExplorer({ initialCategory = "all" }: VehicleRentalExplorerProps) {
