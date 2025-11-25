@@ -36,7 +36,7 @@ export type VehicleOption = {
 export type VehicleRental = {
   _id: string;
   name: string;
-  category: "cars-rental" | "bikes-rentals";
+  category: "cars-rental" | "bikes-rentals" | "car-with-driver";
   location: {
     address: string;
     city: string;
@@ -125,7 +125,7 @@ export const RentalCard = ({
           </div>
         )}
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
-          {rental.category === "cars-rental" ? "Car" : "Bike"}
+          {rental.category === "cars-rental" ? "Car" : rental.category === "car-with-driver" ? "Car with Driver" : "Bike"}
         </span>
         {hasDates && (
           <span

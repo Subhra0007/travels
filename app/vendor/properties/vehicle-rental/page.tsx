@@ -19,7 +19,7 @@ interface VehicleOption {
 interface VehicleRental {
   _id: string;
   name: string;
-  category: "cars-rental" | "bikes-rentals";
+  category: "cars-rental" | "bikes-rentals" | "car-with-driver";
   location: {
     address: string;
     city: string;
@@ -108,8 +108,9 @@ export default function VendorVehicleRentalsPage() {
 
   const getCategoryLabel = (category: string) => {
     const labels: Record<string, string> = {
-      "cars-rental": "Cars Rental",
-      "bikes-rentals": "Bikes Rentals",
+      "cars-rental": "Cars",
+      "bikes-rentals": "Bikes",
+      "car-with-driver": "Car with Driver",
     };
     return labels[category] || category;
   };
@@ -136,7 +137,7 @@ export default function VendorVehicleRentalsPage() {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gray-200">
-              {rental.category === "cars-rental" ? (
+              {rental.category === "cars-rental" || rental.category === "car-with-driver" ? (
                 <FaCar className="text-4xl text-gray-400" />
               ) : (
                 <FaMotorcycle className="text-4xl text-gray-400" />
@@ -162,7 +163,7 @@ export default function VendorVehicleRentalsPage() {
 
           <div className="text-sm text-gray-700">
             <div className="mb-2 flex items-center gap-2">
-              {rental.category === "cars-rental" ? (
+              {rental.category === "cars-rental" || rental.category === "car-with-driver" ? (
                 <FaCar className="text-gray-600" />
               ) : (
                 <FaMotorcycle className="text-gray-600" />

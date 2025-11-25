@@ -14,7 +14,7 @@ interface VehicleOptionSummary {
 interface VehicleRentalSummary {
   _id: string;
   name: string;
-  category: "cars-rental" | "bikes-rentals";
+  category: "cars-rental" | "bikes-rentals" | "car-with-driver";
   location: {
     city: string;
     state: string;
@@ -57,12 +57,13 @@ export default function AdminVehicleRentalsPage() {
     const map: Record<string, string> = {
       "cars-rental": "Cars",
       "bikes-rentals": "Bikes",
+      "car-with-driver": "Car with Driver",
     };
     return map[category] || category;
   };
 
   const getCategoryIcon = (category: string) => {
-    return category === "cars-rental" ? <FaCar className="text-blue-600" /> : <FaCar className="text-green-600" />;
+    return category === "bikes-rentals" ? <FaCar className="text-green-600" /> : <FaCar className="text-blue-600" />;
   };
 
   return (
@@ -145,7 +146,7 @@ export default function AdminVehicleRentalsPage() {
                           </td>
                           <td className="px-4 py-4">
                             <span className={`rounded-full px-3 py-1 text-xs font-semibold flex items-center gap-1.5 w-fit
-                              ${rental.category === "cars-rental" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"}
+                              ${rental.category === "bikes-rentals" ? "bg-green-50 text-green-700" : "bg-blue-50 text-blue-700"}
                             `}>
                               {getCategoryIcon(rental.category)}
                               {getCategoryLabel(rental.category)}

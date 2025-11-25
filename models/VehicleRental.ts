@@ -4,7 +4,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IVehicleRental extends Document {
   vendorId: mongoose.Types.ObjectId;
   name: string;
-  category: "cars-rental" | "bikes-rentals";
+  category: "cars-rental" | "bikes-rentals" | "car-with-driver";
   location: {
     address: string;
     city: string;
@@ -92,7 +92,7 @@ const vehicleRentalSchema = new Schema<IVehicleRental>(
     name: { type: String, required: true },
     category: {
       type: String,
-      enum: ["cars-rental", "bikes-rentals"],
+      enum: ["cars-rental", "bikes-rentals", "car-with-driver"],
       required: true,
     },
     location: {

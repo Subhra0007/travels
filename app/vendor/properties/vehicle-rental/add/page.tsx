@@ -142,7 +142,7 @@ export default function AddVehicleRentalPage() {
 
   const [formData, setFormData] = useState({
     name: "",
-    category: "cars-rental" as "cars-rental" | "bikes-rentals",
+    category: "cars-rental" as "cars-rental" | "bikes-rentals" | "car-with-driver",
     location: {
       address: "",
       city: "",
@@ -223,7 +223,7 @@ export default function AddVehicleRentalPage() {
   const hydrateForm = (rental: any) => {
     setFormData({
       name: rental.name ?? "",
-      category: (rental.category as "cars-rental" | "bikes-rentals") ?? "cars-rental",
+      category: (rental.category as "cars-rental" | "bikes-rentals" | "car-with-driver") ?? "cars-rental",
       location: {
         address: rental.location?.address ?? "",
         city: rental.location?.city ?? "",
@@ -435,6 +435,11 @@ export default function AddVehicleRentalPage() {
       if (!opt.type) err[`opt-${i}-type`] = "Type required";
       if (opt.pricePerDay <= 0) err[`opt-${i}-price`] = "Price > 0";
       if (opt.images.length < 3) err[`opt-${i}-images`] = "Min 3 images per vehicle";
+      if (formData.category === "car-with-driver") {
+        if (!opt.driver?.name?.trim()) err[`opt-${i}-driver-name`] = "Driver name required";
+        if (!opt.driver?.age?.trim()) err[`opt-${i}-driver-age`] = "Driver age required";
+        if (!opt.driver?.experienceYears?.trim()) err[`opt-${i}-driver-exp`] = "Driver experience required";
+      }
     });
 
     setErrors(err);
@@ -489,7 +494,7 @@ export default function AddVehicleRentalPage() {
               Menu
             </button>
             <h1 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
-              {formData.category === "cars-rental" ? <FaCar /> : <FaMotorcycle />}
+              {formData.category === "cars-rental" || formData.category === "car-with-driver" ? <FaCar /> : <FaMotorcycle />}
               {isEditing ? "Edit Vehicle Rental" : "Create Vehicle Rental"}
             </h1>
           </div>
@@ -527,8 +532,9 @@ export default function AddVehicleRentalPage() {
                     onChange={(e) => setField("category", e.target.value as any)}
                     className="w-full px-4 py-2 border rounded-lg"
                   >
-                    <option value="cars-rental">Cars Rental</option>
-                    <option value="bikes-rentals">Bikes Rentals</option>
+                    <option value="cars-rental">Cars</option>
+                    <option value="bikes-rentals">Bikes</option>
+                    <option value="car-with-driver">Car with Driver</option>
                   </select>
                 </div>
               </div>
@@ -834,16 +840,16 @@ export default function AddVehicleRentalPage() {
                         </div>
                       )}
                     </div>
-                    {formData.category === "cars-rental" && (
+                    {formData.category === "car-with-driver" && (
                       <div className="md:col-span-2 rounded-xl border border-dashed border-green-200 bg-green-50/40 p-4">
-                        <p className="text-sm font-semibold text-green-800">Driver details (optional)</p>
+                        <p className="text-sm font-semibold text-green-800">Driver details <span className="text-red-500">*</span></p>
                         <p className="text-xs text-green-700 mb-3">
-                          Share driver info to build trust with guests. Leave blank if self-drive only.
+                          Driver information is required for car with driver rentals.
                         </p>
                         <div className="grid gap-4 md:grid-cols-3">
                           <div>
                             <label className="block text-xs font-medium uppercase tracking-wide text-green-900">
-                              Driver name
+                              Driver name <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="text"
@@ -855,7 +861,7 @@ export default function AddVehicleRentalPage() {
                           </div>
                           <div>
                             <label className="block text-xs font-medium uppercase tracking-wide text-green-900">
-                              Age
+                              Age <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="number"
@@ -868,7 +874,7 @@ export default function AddVehicleRentalPage() {
                           </div>
                           <div>
                             <label className="block text-xs font-medium uppercase tracking-wide text-green-900">
-                              Experience (years)
+                              Experience (years) <span className="text-red-500">*</span>
                             </label>
                             <input
                               type="number"

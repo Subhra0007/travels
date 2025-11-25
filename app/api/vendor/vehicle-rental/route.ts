@@ -32,7 +32,7 @@ const normalizeRentalPayload = (body: any) => {
     return { error: "Missing required fields or insufficient images" };
   }
 
-  if (!["cars-rental", "bikes-rentals"].includes(category)) {
+  if (!["cars-rental", "bikes-rentals", "car-with-driver"].includes(category)) {
     return { error: "Invalid category" };
   }
 
@@ -58,7 +58,22 @@ const normalizeRentalPayload = (body: any) => {
     }
   }
 
-  const allowDriverDetails = category === "cars-rental";
+  const requireDriverDetails = category === "car-with-driver";
+  const allowDriverDetails = category === "cars-rental" || category === "car-with-driver";
+
+  // Validate driver details for car-with-driver
+  if (requireDriverDetails) {
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i];
+      const driverName = typeof option?.driver?.name === "string" ? option.driver.name.trim() : "";
+      const driverAge = Number(option?.driver?.age);
+      const driverExperience = Number(option?.driver?.experienceYears);
+      
+      if (!driverName || !Number.isFinite(driverAge) || driverAge <= 0 || !Number.isFinite(driverExperience) || driverExperience < 0) {
+        return { error: `Vehicle option ${i + 1}: Driver name, age, and experience are required for car-with-driver category` };
+      }
+    }
+  }
 
   const normalizedOptions = options.map((option: any) => {
     const driverName =

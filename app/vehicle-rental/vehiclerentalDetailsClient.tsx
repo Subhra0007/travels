@@ -33,7 +33,7 @@ import { useAvailability } from "../hooks/useAvailability";
 export type VehicleRentalDetailPayload = {
   _id: string;
   name: string;
-  category: "cars-rental" | "bikes-rentals";
+  category: "cars-rental" | "bikes-rentals" | "car-with-driver";
   location: {
     address: string;
     city: string;
@@ -270,7 +270,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
               <div className="flex items-start justify-between gap-6">
                 <div className="max-w-xl">
                   <p className="uppercase tracking-wide text-white/80">
-                    {rental.category === "cars-rental" ? "Car Rental" : "Bike Rental"}
+                    {rental.category === "cars-rental" ? "Car Rental" : rental.category === "car-with-driver" ? "Car with Driver" : "Bike Rental"}
                   </p>
                   <div className="mt-2 flex items-center gap-3">
                     <h1 className="text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">{rental.name}</h1>
@@ -766,12 +766,12 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                                     </div>
                                   </div>
                                 ) : null}
-                                {rental.category === "cars-rental" &&
+                                {rental.category === "car-with-driver" &&
                                 vehicle.driver &&
                                 (vehicle.driver.name || vehicle.driver.age || vehicle.driver.experienceYears) ? (
                                   <div>
                                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                      Chauffer details
+                                      Driver details
                                     </p>
                                     <ul className="mt-2 space-y-1 text-xs text-gray-600">
                                       {vehicle.driver.name && <li>Name: {vehicle.driver.name}</li>}

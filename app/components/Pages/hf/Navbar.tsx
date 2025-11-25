@@ -188,6 +188,7 @@ const Navbar: React.FC = () => {
       subServices: [
         { name: "Cars", href: "/vehicle-rental?category=cars", icon: <FaCarSide /> },
         { name: "Bikes", href: "/vehicle-rental?category=bikes", icon: <FaBiking /> },
+        { name: "Car with Driver", href: "/vehicle-rental?category=car-with-driver", icon: <FaUser /> },
       ],
     },
     {
