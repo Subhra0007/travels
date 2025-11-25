@@ -141,19 +141,19 @@ export default function Sidebar() {
     ),
     
     // Show seller products/categories for sellers
-    ...(isSeller 
-      ? [{
-          name: "Products",
-          icon: <FaShoppingCart size={18} />,
-          href: "/vendor/properties/seller/products",
-        },
-        {
-          name: "Categories",
-          icon: <FaTag size={18} />,
-          href: "/vendor/properties/seller/categories",
-        }]
-      : []
-    ),
+    // ...(isSeller 
+    //   ? [{
+    //       name: "Products",
+    //       icon: <FaShoppingCart size={18} />,
+    //       href: "/vendor/properties/seller/products",
+    //     },
+    //     {
+    //       name: "Categories",
+    //       icon: <FaTag size={18} />,
+    //       href: "/vendor/properties/seller/categories",
+    //     }]
+    //   : []
+    // ),
 
     { name: "Booking", icon: <CalendarCheck size={18} />, href: "/vendor/bookings" },
     { name: "Cancellations", icon: <CalendarCheck size={18} />, href: "/vendor/cancellations" },
