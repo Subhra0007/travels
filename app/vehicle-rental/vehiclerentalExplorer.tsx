@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  FaHeart,
   FaMapMarkerAlt,
   FaSearch,
   FaStar,
@@ -14,7 +13,6 @@ import {
   FaMotorcycle,
   FaRupeeSign,
 } from "react-icons/fa";
-import { useWishlist } from "@/app/hooks/useWishlist";
 import { useAvailability } from "@/app/hooks/useAvailability";
 import {
   VEHICLE_RENTAL_CATEGORIES,
@@ -59,9 +57,6 @@ type VehicleRentalExplorerProps = {
 
 type RentalCardProps = {
   rental: VehicleRental;
-  isWishlisted: boolean;
-  wishlistDisabled: boolean;
-  onToggleWishlist: (rentalId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
   pickupDate?: string;
   dropoffDate?: string;
@@ -69,9 +64,6 @@ type RentalCardProps = {
 
 export const RentalCard = ({
   rental,
-  isWishlisted,
-  wishlistDisabled,
-  onToggleWishlist,
   onSelectTag,
   pickupDate,
   dropoffDate,
@@ -95,21 +87,6 @@ export const RentalCard = ({
       className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
     >
       <div className="relative h-56 w-full">
-        <button
-          type="button"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!wishlistDisabled) onToggleWishlist(rental._id, !isWishlisted, "vehicle-rental");
-          }}
-          disabled={wishlistDisabled}
-          className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
-            wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
-          }`}
-        >
-          <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
-        </button>
 
         {rental.images?.[0] ? (
           <Image
@@ -236,8 +213,6 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
-    useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const set = new Set<string>();
@@ -592,11 +567,6 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
           )}
         </div>
 
-        {wishlistError && (
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-            {wishlistError}
-          </div>
-        )}
         {error && (
           <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-600">{error}</div>
         )}
@@ -616,9 +586,6 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
               <RentalCard
                 key={rental._id}
                 rental={rental}
-                isWishlisted={isInWishlist(rental._id)}
-                wishlistDisabled={!wishlistLoaded}
-                onToggleWishlist={(id, state) => toggleWishlist(id, state, "vehicle-rental")}
                 onSelectTag={(tag) => setSelectedTags((p) => (p.includes(tag) ? p : [...p, tag]))}
                 pickupDate={pickupDate}
                 dropoffDate={dropoffDate}

@@ -45,6 +45,7 @@ export default function SellerEditProductPage() {
     category: "",
     description: "",
     basePrice: 0,
+    stock: 0,
     images: [] as string[],
     variants: [] as Variant[],
     tags: [] as string[],
@@ -125,6 +126,7 @@ export default function SellerEditProductPage() {
         category: product.category || "",
         description: product.description || "",
         basePrice: product.basePrice || 0,
+        stock: product.stock ?? 0,
         images: product.images || [],
         variants: product.variants || [],
         tags: product.tags || [],
@@ -305,6 +307,8 @@ export default function SellerEditProductPage() {
           if (variant.stock < 0) errs[`variant-${idx}-stock`] = "Stock must be 0 or greater";
         });
       }
+    } else if (selectedCategory) {
+      if (formData.stock < 0) errs.stock = "Stock must be 0 or greater";
     }
 
     setErrors(errs);
@@ -424,6 +428,7 @@ export default function SellerEditProductPage() {
                       setFormData((prev) => ({
                         ...prev,
                         category: e.target.value,
+                        stock: newCategory?.requiresVariants ? 0 : prev.stock,
                         variants: newCategory?.requiresVariants ? prev.variants : [],
                       }));
                     }}
@@ -433,7 +438,6 @@ export default function SellerEditProductPage() {
                     {categories.map((cat) => (
                       <option key={cat.slug} value={cat.slug}>
                         {cat.name}
-                        {cat.owned ? " (My Category)" : ""}
                       </option>
                     ))}
                   </select>
@@ -493,6 +497,34 @@ export default function SellerEditProductPage() {
                   />
                 </div>
               </div>
+              {!needsVariants && selectedCategory && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Stock <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.stock}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        stock: Math.max(0, parseInt(e.target.value) || 0),
+                      }))
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Enter available stock"
+                  />
+                  <p
+                    className={`text-sm mt-1 ${
+                      formData.stock === 0 ? "text-red-600" : "text-green-600"
+                    }`}
+                  >
+                    {formData.stock === 0 ? "Out of stock" : `${formData.stock} in stock`}
+                  </p>
+                  {errors.stock && <p className="text-red-600 text-sm mt-1">{errors.stock}</p>}
+                </div>
+              )}
             </section>
 
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
@@ -817,7 +849,6 @@ export default function SellerEditProductPage() {
     </div>
   );
 }
-
 
 
 

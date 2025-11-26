@@ -8,19 +8,21 @@ import PageLoader from "../components/common/PageLoader";
 import ProfileSidebar from "../components/Pages/profile/ProfileSidebar";
 import ProfileLayoutContext from "./ProfileLayoutContext";
 
-type SidebarSection = "profile" | "bookings" | "wishlist" | "inbox" | "support";
+type SidebarSection = "profile" | "bookings" | "cart" | "orders" | "inbox" | "support";
 
 const routeMap: Record<SidebarSection, string> = {
   profile: "/profile",
   bookings: "/profile/bookings",
-  wishlist: "/profile/wishlist",
+  cart: "/profile/cart",
+  orders: "/profile/orders",
   inbox: "/profile/inbox",
   support: "/profile/support",
 };
 
 const deriveActiveTab = (path: string): SidebarSection => {
   if (path.startsWith("/profile/bookings")) return "bookings";
-  if (path.startsWith("/profile/wishlist")) return "wishlist";
+  if (path.startsWith("/profile/cart")) return "cart";
+  if (path.startsWith("/profile/orders")) return "orders";
   if (path.startsWith("/profile/inbox")) return "inbox";
   if (path.startsWith("/profile/support")) return "support";
   return "profile";

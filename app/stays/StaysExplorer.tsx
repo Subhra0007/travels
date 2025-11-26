@@ -10,7 +10,6 @@ import {
   FaBolt,
   FaCoffee,
   FaDumbbell,
-  FaHeart,
   FaMapMarkerAlt,
   FaParking,
   FaSearch,
@@ -25,7 +24,6 @@ import {
   FaRupeeSign,
 } from "react-icons/fa";
 import { STAY_CATEGORIES, type StayCategoryValue } from "./categories";
-import { useWishlist } from "../hooks/useWishlist";
 import { useAvailability } from "../hooks/useAvailability";
 import CategoryTabs from "@/app/components/common/CategoryTabs";
 
@@ -71,9 +69,6 @@ type StaysExplorerProps = {
 
 type StayCardProps = {
   stay: Stay;
-  isWishlisted: boolean;
-  wishlistDisabled: boolean;
-  onToggleWishlist: (stayId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
   checkIn?: string;
   checkOut?: string;
@@ -101,9 +96,6 @@ const getFacilityIcon = (label: string) => {
 
 export const StayCard = ({
   stay,
-  isWishlisted,
-  wishlistDisabled,
-  onToggleWishlist,
   onSelectTag,
   checkIn,
   checkOut,
@@ -127,23 +119,6 @@ export const StayCard = ({
       className="group flex flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-xl backdrop-blur-sm transition hover:-translate-y-2 hover:shadow-2xl"
     >
       <div className="relative h-56 w-full">
-        <button
-          type="button"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (!wishlistDisabled) {
-              onToggleWishlist(stay._id, !isWishlisted, "stay");
-            }
-          }}
-          disabled={wishlistDisabled}
-          className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
-            wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
-          }`}
-        >
-          <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
-        </button>
 
         {stay.images && stay.images.length ? (
           <Image
@@ -308,8 +283,6 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
     "rating-desc" | "price-asc" | "price-desc" | "location-asc"
   >("rating-desc");
 
-  const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
-    useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
@@ -729,11 +702,6 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
         </div>
 
         {/* Errors */}
-        {wishlistError && (
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-            {wishlistError}
-          </div>
-        )}
         {/* Results */}
         {loading ? (
           <div className="mt-12 flex justify-center">
@@ -752,9 +720,6 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
               <StayCard
                 key={stay._id}
                 stay={stay}
-                isWishlisted={isInWishlist(stay._id)}
-                wishlistDisabled={!wishlistLoaded}
-                onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }

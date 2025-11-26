@@ -17,6 +17,7 @@ interface Product {
   sellerId: string | null;
   createdAt: string;
   updatedAt: string;
+  stock?: number; // Add stock field for non-variant products
 }
 
 const AdminProductsPage: React.FC = () => {
@@ -174,7 +175,14 @@ const AdminProductsPage: React.FC = () => {
                                 <p className="text-xs text-gray-500">Total stock: {totalStock}</p>
                               </div>
                             ) : (
-                              <span className="text-gray-500">No variants</span>
+                              <div>
+                                <p className="text-gray-900">No variants</p>
+                                {product.stock !== undefined && (
+                                  <p className="text-xs text-gray-500">
+                                    Stock: {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                                  </p>
+                                )}
+                              </div>
                             )}
                           </td>
                           <td className="px-4 py-4">
@@ -259,7 +267,14 @@ const AdminProductsPage: React.FC = () => {
                                   {variantCount} variant{variantCount !== 1 ? "s" : ""} • {totalStock} in stock
                                 </p>
                               ) : (
-                                <p className="text-xs text-gray-500">No variants</p>
+                                <div>
+                                  <p className="text-xs text-gray-500">No variants</p>
+                                  {product.stock !== undefined && (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Stock: {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                                    </p>
+                                  )}
+                                </div>
                               )}
                             </div>
                             <div className="flex gap-2">

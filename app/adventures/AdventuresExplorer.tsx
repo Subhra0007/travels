@@ -6,7 +6,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { FaHeart, FaMapMarkerAlt, FaSearch, FaStar, FaUsers, FaRupeeSign } from "react-icons/fa";
-import { useWishlist } from "../hooks/useWishlist";
 import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
 import CategoryTabs from "@/app/components/common/CategoryTabs";
 
@@ -50,17 +49,11 @@ type AdventuresExplorerProps = {
 
 type AdventureCardProps = {
   adventure: Adventure;
-   isWishlisted: boolean;
-  wishlistDisabled: boolean;
-  onToggleWishlist: (advId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
 };
 
 export const AdventureCard = ({
   adventure,
- isWishlisted,
-  wishlistDisabled,
-  onToggleWishlist,
   onSelectTag,
 }: AdventureCardProps) => {
   const optionCount = adventure.options?.length ?? 0;
@@ -78,21 +71,6 @@ export const AdventureCard = ({
       className="group flex flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-xl backdrop-blur-sm transition hover:-translate-y-2 hover:shadow-2xl"
     >
       <div className="relative h-56 w-full">
-        <button
-          type="button"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!wishlistDisabled) onToggleWishlist(adventure._id, !isWishlisted, "adventure");
-          }}
-          disabled={wishlistDisabled}
-          className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
-            wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
-          }`}
-        >
-          <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
-        </button>
 
         {adventure.images?.length ? (
           <Image
@@ -216,8 +194,6 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
   const [formDifficultyFilter, setFormDifficultyFilter] = useState<string>("");
   const [formActiveCategory, setFormActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
 
-   const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
-    useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const set = new Set<string>();
@@ -587,11 +563,6 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
           )}
         </div>
 
-        {wishlistError && (
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-            {wishlistError}
-          </div>
-        )}
 
         {error && (
           <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-600">
@@ -616,9 +587,6 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <AdventureCard
                 key={adv._id}
                 adventure={adv}
-                isWishlisted={isInWishlist(adv._id)}
-                wishlistDisabled={!wishlistLoaded}
-                onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }

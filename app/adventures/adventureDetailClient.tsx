@@ -9,7 +9,7 @@ import {
   FaCheck,
   FaChevronLeft,
   FaChevronRight,
-  FaHeart,
+  FaShoppingCart,
   FaMapMarkerAlt,
   FaTag,
   FaUsers,
@@ -38,7 +38,7 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { useWishlist } from "../hooks/useWishlist";
+import { useCart } from "../hooks/useCart";
 import { useAvailability } from "../hooks/useAvailability";
 
 export type AdventureDetailPayload = {
@@ -156,8 +156,7 @@ interface AdventureDetailClientProps {
 
 const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure }) => {
   const router = useRouter();
- const { wishlistIds, isInWishlist, toggleWishlist, wishlistLoaded } = useWishlist({ autoLoad: true });
-  const isWishlisted = isInWishlist(adventure._id);
+  const { addToCart, loading: cartLoading } = useCart();
 
   const images = useMemo(() => {
     const gallery = Array.isArray(adventure.gallery) ? adventure.gallery : [];
@@ -329,14 +328,21 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                           </div>
                           <button
                             type="button"
-                            aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-                            onClick={() => toggleWishlist(adventure._id, !isWishlisted, "adventure")}
-                            disabled={!wishlistLoaded}
+                            aria-label="Add to Cart"
+                            onClick={async () => {
+                              try {
+                                await addToCart(adventure._id, "Adventure", 1);
+                                alert("Added to cart!");
+                              } catch (err: any) {
+                                alert(err.message || "Failed to add to cart");
+                              }
+                            }}
+                            disabled={cartLoading}
                             className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
-                              !wishlistLoaded ? "cursor-not-allowed opacity-60" : ""
+                              cartLoading ? "cursor-not-allowed opacity-60" : ""
                             }`}
                           >
-                            <FaHeart className={isWishlisted ? "text-red-400" : "text-white"} />
+                            <FaShoppingCart className="text-white" />
                           </button>
                         </div>
           

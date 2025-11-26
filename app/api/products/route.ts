@@ -71,7 +71,7 @@ export const POST = auth(async (req: NextRequest, context: any) => {
       );
     }
 
-    const { name, category, description, basePrice, images, variants, tags } = body;
+    const { name, category, description, basePrice, images, variants, tags, stock } = body;
 
     if (!name || !category || !description || basePrice === undefined) {
       return NextResponse.json(
@@ -123,6 +123,7 @@ export const POST = auth(async (req: NextRequest, context: any) => {
       images,
       variants: variants || [],
       tags: tags || [],
+      stock: categoryDoc.requiresVariants ? undefined : stock || 0, // Add stock for non-variant products
       isActive: true,
       sellerId: isSeller ? user.id || user._id : null,
     });

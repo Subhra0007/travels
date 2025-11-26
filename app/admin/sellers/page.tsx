@@ -18,6 +18,8 @@ interface Product {
   basePrice: number;
   isActive: boolean;
   createdAt: string;
+  variants?: any[];
+  stock?: number;
 }
 
 const SellersPage: React.FC = () => {
@@ -80,7 +82,7 @@ const SellersPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-        <div className="hidden lg:block lg:flex-shrink-0">
+        <div className="hidden lg:block lg:shrink-0">
           <Sidebar />
         </div>
         <div className="flex-1 flex flex-col mt-15 overflow-hidden">
@@ -131,7 +133,7 @@ const SellersPage: React.FC = () => {
   if (error) {
     return (
       <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-        <div className="hidden lg:block lg:flex-shrink-0">
+        <div className="hidden lg:block lg:shrink-0">
           <Sidebar />
         </div>
         <div className="flex-1 flex flex-col mt-15 overflow-hidden">
@@ -179,7 +181,7 @@ const SellersPage: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
+      <div className="hidden lg:block lg:shrink-0">
         <Sidebar />
       </div>
 
@@ -243,36 +245,57 @@ const SellersPage: React.FC = () => {
                           <th className="px-4 py-3">Product</th>
                           <th className="px-4 py-3">Category</th>
                           <th className="px-4 py-3">Price</th>
+                          <th className="px-4 py-3">Stock</th>
                           <th className="px-4 py-3">Status</th>
                           <th className="px-4 py-3">Added Date</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {vendorProducts.map((product) => (
-                          <tr key={product._id} className="hover:bg-gray-50">
-                            <td className="px-4 py-4 font-medium text-gray-900">{product.name}</td>
-                            <td className="px-4 py-4">
-                              <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-                                {product.category}
-                              </span>
-                            </td>
-                            <td className="px-4 py-4">₹{product.basePrice.toLocaleString()}</td>
-                            <td className="px-4 py-4">
-                              <span
-                                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                                  product.isActive
-                                    ? "bg-green-50 text-green-700"
-                                    : "bg-red-50 text-red-700"
-                                }`}
-                              >
-                                {product.isActive ? "Active" : "Inactive"}
-                              </span>
-                            </td>
-                            <td className="px-4 py-4 text-sm text-gray-500">
-                              {new Date(product.createdAt).toLocaleDateString()}
-                            </td>
-                          </tr>
-                        ))}
+                        {vendorProducts.map((product) => {
+                          const variantList = product.variants ?? [];
+                          const variantCount = variantList.length;
+                          const hasVariants = variantCount > 0;
+                          const totalStock = hasVariants
+                            ? variantList.reduce((sum: number, v: any) => sum + (v.stock || 0), 0)
+                            : product.stock || 0;
+                            
+                          return (
+                            <tr key={product._id} className="hover:bg-gray-50">
+                              <td className="px-4 py-4 font-medium text-gray-900">{product.name}</td>
+                              <td className="px-4 py-4">
+                                <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
+                                  {product.category}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4">₹{product.basePrice.toLocaleString()}</td>
+                              <td className="px-4 py-4">
+                                {hasVariants ? (
+                                  <span className="text-xs text-gray-600">
+                                    {variantCount} variant{variantCount !== 1 ? 's' : ''} • {totalStock} in stock
+                                  </span>
+                                ) : (
+                                  <span className={`text-xs font-semibold ${totalStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {totalStock > 0 ? `${totalStock} in stock` : 'Out of stock'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-4">
+                                <span
+                                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                                    product.isActive
+                                      ? "bg-green-50 text-green-700"
+                                      : "bg-red-50 text-red-700"
+                                  }`}
+                                >
+                                  {product.isActive ? "Active" : "Inactive"}
+                                </span>
+                              </td>
+                              <td className="px-4 py-4 text-sm text-gray-500">
+                                {new Date(product.createdAt).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

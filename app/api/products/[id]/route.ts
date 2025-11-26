@@ -78,7 +78,7 @@ export const PUT = auth(async (req: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    const { name, category, description, basePrice, images, variants, tags, isActive } = body;
+    const { name, category, description, basePrice, images, variants, tags, isActive, stock } = body;
 
     // Validate required fields
     if (!name || !category || !description || basePrice === undefined) {
@@ -125,9 +125,12 @@ export const PUT = auth(async (req: NextRequest, { params }: { params: Promise<{
             );
           }
         }
+        
+        product.variants = variants;
+      } else {
+        // For non-variant products, set the stock field
+        product.stock = stock || 0;
       }
-      
-      product.variants = variants;
     }
 
     // Save updated product

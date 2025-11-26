@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { FaShoppingCart, FaArrowLeft } from "react-icons/fa";
+import { FaShoppingCart, FaArrowLeft, FaBolt } from "react-icons/fa";
 import PageLoader from "../../components/common/PageLoader";
 
 type ProductVariant = {
@@ -25,6 +25,7 @@ type Product = {
   images: string[];
   variants?: ProductVariant[];
   tags?: string[];
+  stock?: number; // Add stock field for non-variant products
 };
 
 export default function ProductDetailPage() {
@@ -101,6 +102,9 @@ export default function ProductDetailPage() {
     : product.images;
   const displayPrice = selectedVariant?.price || product.basePrice;
   const hasVariants = product.variants && product.variants.length > 0;
+  const isInStock = hasVariants 
+    ? selectedVariant && selectedVariant.stock > 0
+    : (!hasVariants && (product.stock === undefined || product.stock > 0)); // For non-variant products
 
   // Format category name
   const getCategoryName = (category: string) => {
@@ -311,10 +315,12 @@ export default function ProductDetailPage() {
                       <span className="font-medium text-gray-900">{product.variants?.length || 0}</span>
                     </div>
                   )}
-                  {!hasVariants && (
+                  {!hasVariants && product.stock !== undefined && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Stock:</span>
-                      <span className="font-medium text-green-600">In Stock</span>
+                      <span className={`font-medium ${product.stock > 0 ? "text-green-600" : "text-red-600"}`}>
+                        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -337,13 +343,45 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Add to Cart Button */}
-              <button
-                disabled={!!(hasVariants && selectedVariant && selectedVariant.stock === 0)}
-                className="w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <FaShoppingCart /> Add to Cart
-              </button>
+              {/* Add to Cart and Buy Now Buttons */}
+              <div className="space-y-3">
+                <button
+                  disabled={!!(hasVariants ? (selectedVariant && selectedVariant.stock === 0) : (product.stock === 0))}
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/api/cart", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify({
+                          itemId: productId,
+                          itemType: "Product",
+                          quantity: 1,
+                        }),
+                      });
+                      if (!res.ok) {
+                        const errorData = await res.json();
+                        throw new Error(errorData?.message || "Failed to add to cart");
+                      }
+                      alert("Added to cart!");
+                    } catch (err: any) {
+                      alert(err.message || "Failed to add to cart. Please log in.");
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaShoppingCart /> Add to Cart
+                </button>
+                <button
+                  disabled={!!(hasVariants ? (selectedVariant && selectedVariant.stock === 0) : (product.stock === 0))}
+                  onClick={() => {
+                    window.location.href = `/checkout?item=${productId}&type=Product&quantity=1`;
+                  }}
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-6 py-3 text-white font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaBolt /> Buy Now
+                </button>
+              </div>
             </div>
           </div>
         </div>

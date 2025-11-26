@@ -28,6 +28,7 @@ export default function AddProductPage() {
     images: [] as string[],
     variants: [] as Variant[],
     tags: [] as string[],
+    stock: 0, // Add stock field for non-variant products
   });
 
   const [bulkColor, setBulkColor] = useState("");
@@ -231,6 +232,9 @@ export default function AddProductPage() {
           if (variant.stock < 0) errs[`variant-${idx}-stock`] = "Stock must be 0 or greater";
         });
       }
+    } else {
+      // For non-variant products, validate the stock field
+      if (formData.stock < 0) errs.stock = "Stock must be 0 or greater";
     }
 
     setErrors(errs);
@@ -379,6 +383,24 @@ export default function AddProductPage() {
                 />
                 {errors.basePrice && <p className="text-red-600 text-sm mt-1">{errors.basePrice}</p>}
               </div>
+              
+              {/* Stock field for non-variant products */}
+              {!needsVariants && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Stock <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.stock}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="0"
+                  />
+                  {errors.stock && <p className="text-red-600 text-sm mt-1">{errors.stock}</p>}
+                </div>
+              )}
             </section>
 
             {/* Main Images */}

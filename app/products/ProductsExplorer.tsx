@@ -19,13 +19,14 @@ export type ProductVariant = {
 export type Product = {
   _id: string;
   name: string;
-  category: "jacket" | "t-shirt"  | "book" | "other";
+  category: string;
   description: string;
   basePrice: number;
   images: string[];
   variants?: ProductVariant[];
   tags?: string[];
   isActive: boolean;
+  stock?: number; // Add stock field for non-variant products
 };
 
 type ProductCardProps = {
@@ -44,6 +45,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
     minPrice === maxPrice
       ? `₹${minPrice.toLocaleString()}`
       : `₹${minPrice.toLocaleString()} - ₹${maxPrice.toLocaleString()}`;
+      
+  // Check if the product is in stock
+  const isInStock = hasVariants 
+    ? product.variants?.some(v => v.stock > 0) ?? false
+    : (product.stock === undefined || product.stock > 0);
 
   return (
     <Link
@@ -70,6 +76,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
         {hasVariants && product.variants && (
           <span className="absolute right-4 top-4 rounded-full bg-green-500/90 px-3 py-1 text-xs font-semibold text-white shadow">
             {product.variants.length} Variants
+          </span>
+        )}
+        {!isInStock && (
+          <span className="absolute right-4 bottom-4 rounded-full bg-red-500/90 px-3 py-1 text-xs font-semibold text-white shadow">
+            Out of Stock
           </span>
         )}
       </div>

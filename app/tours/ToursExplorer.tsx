@@ -11,7 +11,6 @@ import {
   FaCheckCircle,
   FaClock,
   FaGlobe,
-  FaHeart,
   FaHotel,
   FaMapMarkerAlt,
   FaRoute,
@@ -21,7 +20,6 @@ import {
   FaUtensils,
   FaHiking,
 } from "react-icons/fa";
-import { useWishlist } from "../hooks/useWishlist";
 import { useAvailability } from "../hooks/useAvailability";
 import { FaRupeeSign } from "react-icons/fa";
 import { TOUR_CATEGORIES, type TourCategoryValue } from "./categories";
@@ -69,9 +67,6 @@ type ToursExplorerProps = {
 
 type TourCardProps = {
   tour: Tour;
-  isWishlisted: boolean;
-  wishlistDisabled: boolean;
-  onToggleWishlist: (TourId: string, nextState?: boolean, serviceType?: "stay" | "tour" | "adventure" | "vehicle-rental") => void;
   onSelectTag?: (tag: string) => void;
   startDate?: string;
   endDate?: string;
@@ -97,9 +92,6 @@ const getTourFacilityIcon = (label: string) => {
 
 export const TourCard = ({
   tour,
-  isWishlisted,
-  wishlistDisabled,
-  onToggleWishlist,
   onSelectTag,
    startDate,
   endDate,
@@ -123,23 +115,6 @@ export const TourCard = ({
       className="group flex flex-col overflow-hidden rounded-3xl border border-white/40 bg-white/95 shadow-xl backdrop-blur-sm transition hover:-translate-y-2 hover:shadow-2xl"
     >
       <div className="relative h-56 w-full">
-        <button
-          type="button"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            if (!wishlistDisabled) {
-              onToggleWishlist(tour._id, !isWishlisted, "tour");
-            }
-          }}
-          disabled={wishlistDisabled}
-          className={`absolute right-3 top-3 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-105 ${
-            wishlistDisabled ? "cursor-not-allowed opacity-60" : ""
-          }`}
-        >
-          <FaHeart className={`text-lg ${isWishlisted ? "text-red-500" : "text-gray-300"}`} />
-        </button>
 
         {tour.images && tour.images.length ? (
           <Image
@@ -309,9 +284,6 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
- // Fixed Wishlist Hook
- const { wishlistEntries, wishlistIds, isInWishlist, wishlistLoaded, toggleWishlist, error: wishlistError } =
-    useWishlist<{ _id: string }>({ autoLoad: true });
 
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
@@ -735,11 +707,6 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
           )}
         </div>
 
-        {wishlistError && (
-          <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
-            {wishlistError}
-          </div>
-        )}
 
         {error && (
           <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-600">
@@ -764,9 +731,6 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               <TourCard
                 key={tour._id}
                 tour={tour}
-                isWishlisted={isInWishlist(tour._id)}
-                wishlistDisabled={!wishlistLoaded}
-                onToggleWishlist={toggleWishlist}
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }

@@ -17,6 +17,7 @@ interface Product {
   sellerId: string;
   createdAt: string;
   updatedAt: string;
+  stock?: number;
 }
 
 interface Category {
@@ -167,6 +168,7 @@ const VendorProductsPage: React.FC = () => {
                     {products.map((product) => {
                       const variantCount = product.variants?.length || 0;
                       const totalStock = product.variants?.reduce((sum, v) => sum + v.stock, 0) || 0;
+                      const productStock = product.stock ?? 0;
                       return (
                         <tr key={product._id} className="hover:bg-gray-50">
                           <td className="px-4 py-4">
@@ -199,7 +201,16 @@ const VendorProductsPage: React.FC = () => {
                                 <p className="text-xs text-gray-500">Total stock: {totalStock}</p>
                               </div>
                             ) : (
-                              <span className="text-gray-500">No variants</span>
+                              <div>
+                                <p className="text-gray-900">No variants</p>
+                                <p
+                                  className={`text-xs font-semibold ${
+                                    productStock === 0 ? "text-red-600" : "text-green-600"
+                                  }`}
+                                >
+                                  {productStock === 0 ? "Out of stock" : `${productStock} in stock`}
+                                </p>
+                              </div>
                             )}
                           </td>
                           <td className="px-4 py-4">
@@ -247,6 +258,7 @@ const VendorProductsPage: React.FC = () => {
                 {products.map((product) => {
                   const variantCount = product.variants?.length || 0;
                   const totalStock = product.variants?.reduce((sum, v) => sum + v.stock, 0) || 0;
+                  const productStock = product.stock ?? 0;
                   return (
                     <div key={product._id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                       <div className="flex items-start gap-3">
@@ -284,7 +296,13 @@ const VendorProductsPage: React.FC = () => {
                                   {variantCount} variant{variantCount !== 1 ? "s" : ""} • {totalStock} in stock
                                 </p>
                               ) : (
-                                <p className="text-xs text-gray-500">No variants</p>
+                                <p
+                                  className={`text-xs font-semibold ${
+                                    productStock === 0 ? "text-red-600" : "text-green-600"
+                                  }`}
+                                >
+                                  {productStock === 0 ? "Out of stock" : `${productStock} in stock`}
+                                </p>
                               )}
                             </div>
                             <div className="flex gap-2">
