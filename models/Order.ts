@@ -1,6 +1,14 @@
 // models/Order.ts
 import mongoose, { Schema, Document } from "mongoose";
 
+export type OrderStatus =
+  | "Pending"
+  | "Processing"
+  | "Shipped"
+  | "Delivered"
+  | "Cancelled"
+  | "Placed";
+
 export interface IOrderItem {
   itemId: mongoose.Types.ObjectId;
   itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental";
@@ -12,6 +20,8 @@ export interface IOrderItem {
     price?: number;
     photos?: string[];
   } | null;
+  status?: OrderStatus;
+  deliveryDate?: Date | null;
 }
 
 export interface IOrder extends Document {
@@ -28,7 +38,10 @@ export interface IOrder extends Document {
     state: string;
     landmark?: string;
   };
-  status: "Placed" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
+  status: OrderStatus;
+  cancellationReason?: string | null;
+  cancelledBy?: mongoose.Types.ObjectId | null;
+  cancelledAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -49,6 +62,12 @@ const OrderItemSchema = new Schema<IOrderItem>(
       price: Number,
       photos: { type: [String], default: [] },
     },
+    status: {
+      type: String,
+      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Placed"],
+      default: "Pending",
+    },
+    deliveryDate: { type: Date, default: null },
   },
   { _id: false }
 );
@@ -70,9 +89,12 @@ const OrderSchema = new Schema<IOrder>(
     },
     status: {
       type: String,
-      enum: ["Placed", "Processing", "Shipped", "Delivered", "Cancelled"],
-      default: "Placed",
+      enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Placed"],
+      default: "Pending",
     },
+    cancellationReason: { type: String, default: null },
+    cancelledBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    cancelledAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

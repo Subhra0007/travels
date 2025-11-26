@@ -11,6 +11,7 @@ import {
   FaComments,
   FaUserCircle,
   FaBed,
+  FaShoppingBag,
 } from "react-icons/fa";
 import { MdShoppingCart } from "react-icons/md";
 import { BiCategory } from "react-icons/bi";
@@ -111,6 +112,30 @@ const Sidebar: React.FC = () => {
           }`}
         >
           <MdShoppingCart size={14} /> Products
+        </button>
+
+        {/* Orders */}
+        <button
+          onClick={() => router.push("/admin/orders")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/orders")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaShoppingBag size={14} /> Orders
+        </button>
+
+        {/* Product Purchase Manage */}
+        <button
+          onClick={() => router.push("/admin/product-purchase-manage")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/product-purchase-manage")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaShoppingBag size={14} /> Product Purchase Manage
         </button>
 
         {/* Categories */}

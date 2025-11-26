@@ -338,7 +338,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                               }
                             }}
                             disabled={cartLoading}
-                            className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
+                            className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${
                               cartLoading ? "cursor-not-allowed opacity-60" : ""
                             }`}
                           >

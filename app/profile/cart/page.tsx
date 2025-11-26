@@ -105,7 +105,7 @@ export default function CartPage() {
   const grandTotal = productTotal + deliveryCharge;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:pt-15 pt-0">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
         <span className="text-sm text-gray-600">{items.length} item{items.length !== 1 ? "s" : ""}</span>
@@ -295,9 +295,8 @@ export default function CartPage() {
                         )}
                         
                         <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
-                          <div>
-                            <p className="text-xs uppercase tracking-wide text-gray-500">Service price</p>
-                            <p className="text-lg font-bold text-green-600">₹{price.toLocaleString()}</p>
+                          <div className="text-xs uppercase tracking-wide text-gray-500">
+                            Quantity fixed at 1
                           </div>
                           <button
                             onClick={(e) => {
@@ -310,6 +309,15 @@ export default function CartPage() {
                             <FaTrash /> Delete
                           </button>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleServiceNavigate(item);
+                          }}
+                          className="mt-2 inline-flex items-center justify-center rounded-full border border-green-200 px-4 py-2 text-sm font-semibold text-green-700 hover:bg-green-50 transition"
+                        >
+                          View Details
+                        </button>
                         <p className="text-xs text-gray-500">Tap the card to view details. Quantity fixed at 1.</p>
                       </div>
                     </div>

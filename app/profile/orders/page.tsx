@@ -17,6 +17,8 @@ type OrderItem = {
     price?: number;
     photos?: string[];
   } | null;
+  status?: string;
+  deliveryDate?: string | null;
 };
 
 type Order = {
@@ -35,11 +37,14 @@ type Order = {
   };
   status: string;
   createdAt: string;
+  cancellationReason?: string | null;
+  cancelledAt?: string | null;
 };
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadOrders();
@@ -59,9 +64,14 @@ export default function OrdersPage() {
     }
   };
 
+  const normalizeStatus = (status: string) => {
+    if (!status || status === "Placed") return "Pending";
+    return status;
+  };
+
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Placed":
+    switch (normalizeStatus(status)) {
+      case "Pending":
         return "bg-blue-100 text-blue-700";
       case "Processing":
         return "bg-yellow-100 text-yellow-700";
@@ -85,12 +95,45 @@ export default function OrdersPage() {
     });
   };
 
+  const canCancelOrder = (order: Order) => {
+    const status = normalizeStatus(order.status);
+    if (status === "Delivered" || status === "Cancelled") return false;
+    return true;
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    const reason = window.prompt("Please share a brief reason for cancelling this order:");
+    if (reason === null) return;
+    if (!reason.trim()) {
+      alert("Please provide a short reason so we can review your request.");
+      return;
+    }
+    setCancellingId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ action: "cancel", reason: reason.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data?.message || "Unable to cancel order");
+      }
+      await loadOrders();
+    } catch (err: any) {
+      alert(err?.message || "We couldn’t cancel the order right now. Please try again.");
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   if (loading) {
     return <PageLoader />;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 lg:pt-15 pt-0">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-gray-900">Order History</h1>
         <span className="text-sm text-gray-600">{orders.length} order{orders.length !== 1 ? "s" : ""}</span>
@@ -103,12 +146,12 @@ export default function OrdersPage() {
           <p className="text-gray-500 mb-6">Your order history will appear here</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 ">
           {orders.map((order) => (
             <div key={order._id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between mb-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
                     <FaShoppingBag className="text-green-600" />
                     <span className="font-semibold text-gray-900">Order #{order._id.slice(-8).toUpperCase()}</span>
                   </div>
@@ -117,11 +160,31 @@ export default function OrdersPage() {
                       <FaCalendarAlt />
                       <span>{formatDate(order.createdAt)}</span>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <FaMapMarkerAlt />
+                      <span>{order.address.city}, {order.address.state}</span>
+                    </div>
                   </div>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
-                  {order.status}
-                </span>
+                <div className="flex flex-col items-end gap-3">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
+                    {normalizeStatus(order.status)}
+                  </span>
+                  {canCancelOrder(order) && (
+                    <button
+                      type="button"
+                      onClick={() => handleCancelOrder(order._id)}
+                      disabled={cancellingId === order._id}
+                      className={`text-sm font-semibold rounded-full border px-4 py-1 ${
+                        cancellingId === order._id
+                          ? "border-gray-200 text-gray-400"
+                          : "border-red-200 text-red-600 hover:bg-red-50"
+                      }`}
+                    >
+                      {cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -131,15 +194,19 @@ export default function OrdersPage() {
                   const image =
                     item.variant?.photos?.[0] ||
                     itemData?.images?.[0] ||
-                    itemData?.photos?.[0] ||
-                    "/placeholder.jpg";
+                    itemData?.photos?.[0];
                   return (
                     <div key={idx} className="flex gap-4 pb-4 border-b last:border-0">
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                         <Image src={image} alt={itemData?.name || "Item"} fill className="object-cover" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{itemData?.name || "Item"}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-semibold text-gray-900">{itemData?.name || "Item"}</h3>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(item.status || order.status)}`}>
+                            {normalizeStatus(item.status || order.status)}
+                          </span>
+                        </div>
                         {item.variant && (
                           <p className="text-sm text-gray-600">
                             Variant:{" "}
@@ -149,6 +216,12 @@ export default function OrdersPage() {
                           </p>
                         )}
                         <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                        <p className="text-xs text-gray-500">
+                          Delivery date:{" "}
+                          <span className="font-semibold text-gray-700">
+                            {item.deliveryDate ? formatDate(item.deliveryDate) : "Not scheduled yet"}
+                          </span>
+                        </p>
                         <p className="text-lg font-bold text-green-600">₹{(price * item.quantity).toLocaleString()}</p>
                       </div>
                     </div>
@@ -189,6 +262,13 @@ export default function OrdersPage() {
                   </div>
                 </div>
               </div>
+
+              {order.cancellationReason && (
+                <div className="mt-4 rounded-lg border border-red-100 bg-red-50 p-4 text-sm text-red-700">
+                  <p className="font-semibold">Cancellation reason</p>
+                  <p className="mt-1">{order.cancellationReason}</p>
+                </div>
+              )}
             </div>
           ))}
         </div>

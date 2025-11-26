@@ -287,7 +287,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                     }
                   }}
                   disabled={cartLoading}
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 ${
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${
                     cartLoading ? "cursor-not-allowed opacity-60" : ""
                   }`}
                 >

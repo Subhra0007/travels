@@ -12,6 +12,7 @@ import {
   FaCar,
   FaMotorcycle,
   FaRupeeSign,
+  FaShoppingCart,
 } from "react-icons/fa";
 import { useAvailability } from "@/app/hooks/useAvailability";
 import {
@@ -124,11 +125,16 @@ export const RentalCard = ({
               {rental.location.city}, {rental.location.state}
             </p>
           </div>
-          {ratingValue !== null && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-              <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
+          <div className="flex flex-col items-end gap-2">
+            <span className="inline-flex items-center justify-center rounded-full bg-green-50 p-2 text-green-600 shadow cursor-pointer">
+              <FaShoppingCart className="text-sm" />
             </span>
-          )}
+            {ratingValue !== null && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
+              </span>
+            )}
+          </div>
         </div>
 
         {heroHighlights.length > 0 && (

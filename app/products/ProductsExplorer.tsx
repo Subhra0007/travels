@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -110,7 +111,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <span className="text-xl font-bold text-green-600">{priceDisplay}</span>
           <button
             aria-disabled={!isInStock}
-            className={`rounded-full p-2 text-white transition ${
+            className={`rounded-full p-2 text-white transition cursor-pointer ${
               isInStock ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed opacity-60"
             }`}
           >

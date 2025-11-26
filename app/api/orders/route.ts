@@ -10,6 +10,8 @@ import Tour from "@/models/Tour";
 import Adventure from "@/models/Adventure";
 import VehicleRental from "@/models/VehicleRental";
 
+type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Placed";
+
 type OrderItem = {
   itemId: mongoose.Types.ObjectId;
   itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental";
@@ -21,6 +23,8 @@ type OrderItem = {
     price?: number;
     photos?: string[];
   } | null;
+  status?: OrderStatus;
+  deliveryDate?: Date | null;
   itemData?: any;
 };
 
@@ -30,8 +34,8 @@ type OrderLean = {
   items: OrderItem[];
   totalAmount: number;
   deliveryCharge: number;
-  address: string;
-  status: string;
+  address: any;
+  status: OrderStatus;
   createdAt: Date;
 };
 
@@ -286,11 +290,15 @@ export const POST = auth(async (req: NextRequest) => {
     // Create order
     const order = await Order.create({
       user: userId,
-      items: normalizedItems,
+      items: normalizedItems.map((item) => ({
+        ...item,
+        status: "Pending",
+        deliveryDate: null,
+      })),
       totalAmount,
       deliveryCharge,
       address,
-      status: "Placed",
+      status: "Pending",
     });
 
     if (productStockUpdates.length) {

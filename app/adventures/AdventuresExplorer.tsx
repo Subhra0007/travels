@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { FaHeart, FaMapMarkerAlt, FaSearch, FaStar, FaUsers, FaRupeeSign } from "react-icons/fa";
+import { FaHeart, FaMapMarkerAlt, FaSearch, FaStar, FaUsers, FaRupeeSign, FaShoppingCart } from "react-icons/fa";
 import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
 import CategoryTabs from "@/app/components/common/CategoryTabs";
 
@@ -85,7 +85,7 @@ export const AdventureCard = ({
             No image
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-green-900/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-green-900/60 via-transparent to-transparent" />
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
           {adventure.category}
         </span>
@@ -100,11 +100,16 @@ export const AdventureCard = ({
               {adventure.location.city}, {adventure.location.state}
             </p>
           </div>
-          {ratingValue !== null && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-              <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
+          <div className="flex flex-col items-end gap-2">
+            <span className="inline-flex items-center justify-center rounded-full bg-green-50 p-2 text-green-600 shadow cursor-pointer">
+              <FaShoppingCart className="text-sm" />
             </span>
-          )}
+            {ratingValue !== null && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
+              </span>
+            )}
+          </div>
         </div>
 
         {heroHighlights.length > 0 && (

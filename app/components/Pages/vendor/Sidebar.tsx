@@ -171,7 +171,7 @@ export default function Sidebar({ onNavigate, onLogout }: SidebarProps) {
       : []
     ),
 
-    { name: "Booking", icon: <CalendarCheck size={18} />, href: "/vendor/bookings" },
+    { name: "Purchases", icon: <CalendarCheck size={18} />, href: "/vendor/purchases" },
     { name: "Cancellations", icon: <CalendarCheck size={18} />, href: "/vendor/cancellations" },
 
     { name: "Payment", icon: <CreditCard size={18} />, href: "/vendor/payments" },
