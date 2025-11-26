@@ -25,6 +25,9 @@ export default function SellerEditProductPage() {
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
+  
+  // Get navigation function from global context
+  const navigate = typeof window !== 'undefined' ? (window as any).__VENDOR_NAVIGATE__?.navigate : null;
 
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [authorized, setAuthorized] = useState(false);
@@ -130,7 +133,7 @@ export default function SellerEditProductPage() {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to load product";
       alert(message);
-      router.push("/vendor/properties/seller/products");
+      navigate ? navigate("/vendor/properties/seller/products") : router.push("/vendor/properties/seller/products");
     } finally {
       setLoading(false);
     }
@@ -327,7 +330,7 @@ export default function SellerEditProductPage() {
       if (!res.ok || !data.success) {
         throw new Error(data?.message || "Failed to update product");
       }
-      router.push("/vendor/properties/seller/products");
+      navigate ? navigate("/vendor/properties/seller/products") : router.push("/vendor/properties/seller/products");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Failed to update product";
       alert(message);
@@ -342,7 +345,7 @@ export default function SellerEditProductPage() {
 
   if (checkingAuth || loading) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center h-full py-12">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
       </div>
     );
