@@ -15,6 +15,7 @@ type CartItemLean = {
   itemId: mongoose.Types.ObjectId;
   itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental";
   quantity: number;
+  variantId?: mongoose.Types.ObjectId | null;
 };
 
 export const GET = auth(async (req: NextRequest) => {
@@ -49,7 +50,9 @@ export const GET = auth(async (req: NextRequest) => {
 
         if (Model) {
           itemData = await Model.findById(item.itemId)
-            .select("_id name images price basePrice category")
+            .select(
+              "_id name images photos coverImage banner price basePrice category description location rating tags heroHighlights options stock outOfStock sellerId variants"
+            )
             .lean();
         }
 
@@ -57,11 +60,34 @@ export const GET = auth(async (req: NextRequest) => {
           return null;
         }
 
+        let variantData = null;
+        if (item.itemType === "Product" && item.variantId && Array.isArray(itemData?.variants)) {
+          const variant = itemData.variants.find(
+            (variant: any) => variant?._id?.toString() === item.variantId?.toString()
+          );
+          if (variant) {
+            variantData = {
+              _id: variant._id.toString(),
+              color: variant.color,
+              size: variant.size,
+              stock: variant.stock,
+              price: variant.price ?? null,
+              photos: variant.photos ?? [],
+            };
+          }
+        }
+
+        if (item.itemType === "Product" && itemData?.variants) {
+          delete itemData.variants;
+        }
+
         return {
           _id: item._id.toString(),
           itemId: item.itemId.toString(),
           itemType: item.itemType,
           quantity: item.quantity,
+          variantId: item.variantId ? item.variantId.toString() : null,
+          variant: variantData,
           item: itemData,
         };
       })
@@ -88,7 +114,7 @@ export const POST = auth(async (req: NextRequest) => {
     const userId = (req as any).user.id;
     const body = await req.json();
 
-    const { itemId, itemType, quantity = 1 } = body;
+    const { itemId, itemType, quantity = 1, variantId } = body;
 
     if (!itemId || !itemType) {
       return NextResponse.json(
@@ -107,6 +133,14 @@ export const POST = auth(async (req: NextRequest) => {
     if (quantity < 1) {
       return NextResponse.json(
         { success: false, message: "Quantity must be at least 1" },
+        { status: 400 }
+      );
+    }
+
+    // Validate ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(itemId)) {
+      return NextResponse.json(
+        { success: false, message: "Invalid itemId format" },
         { status: 400 }
       );
     }
@@ -142,16 +176,78 @@ export const POST = auth(async (req: NextRequest) => {
       );
     }
 
+    const normalizedQuantity = itemType === "Product" ? quantity : 1;
+
+    let variantObjectId: mongoose.Types.ObjectId | null = null;
+
+    if (itemType === "Product") {
+      const hasVariants = Array.isArray(itemExists.variants) && itemExists.variants.length > 0;
+
+      if (hasVariants) {
+        if (!variantId) {
+          return NextResponse.json(
+            { success: false, message: "variantId is required for variant products" },
+            { status: 400 }
+          );
+        }
+        if (!mongoose.Types.ObjectId.isValid(variantId)) {
+          return NextResponse.json(
+            { success: false, message: "Invalid variantId format" },
+            { status: 400 }
+          );
+        }
+        variantObjectId = new mongoose.Types.ObjectId(variantId);
+        const variant = itemExists.variants.id(variantObjectId);
+        if (!variant) {
+          return NextResponse.json(
+            { success: false, message: "Variant not found" },
+            { status: 404 }
+          );
+        }
+        const variantStock = typeof variant.stock === "number" ? variant.stock : 0;
+        if (itemExists.outOfStock || variantStock <= 0) {
+          return NextResponse.json(
+            { success: false, message: "Item is out of stock" },
+            { status: 400 }
+          );
+        }
+        if (normalizedQuantity > variantStock) {
+          return NextResponse.json(
+            { success: false, message: "Maximum stock reached" },
+            { status: 400 }
+          );
+        }
+      } else {
+        const stockValue = typeof itemExists.stock === "number" ? itemExists.stock : null;
+        if (itemExists.outOfStock || (stockValue !== null && stockValue <= 0)) {
+          return NextResponse.json(
+            { success: false, message: "Item is out of stock" },
+            { status: 400 }
+          );
+        }
+        if (stockValue !== null && normalizedQuantity > stockValue) {
+          return NextResponse.json(
+            { success: false, message: "Maximum stock reached" },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Check if already in cart
-    const existing = await CartItem.findOne({
+    const existingQuery: any = {
       user: userObjectId,
       itemId: itemObjectId,
       itemType,
-    });
+    };
+    if (variantObjectId) {
+      existingQuery.variantId = variantObjectId;
+    }
+    const existing = await CartItem.findOne(existingQuery);
 
     if (existing) {
       // Update quantity
-      existing.quantity = quantity;
+      existing.quantity = normalizedQuantity;
       await existing.save();
       return NextResponse.json({
         success: true,
@@ -165,7 +261,8 @@ export const POST = auth(async (req: NextRequest) => {
       user: userObjectId,
       itemId: itemObjectId,
       itemType,
-      quantity,
+      quantity: normalizedQuantity,
+      variantId: variantObjectId,
     });
 
     return NextResponse.json({
@@ -175,6 +272,14 @@ export const POST = auth(async (req: NextRequest) => {
     });
   } catch (error: any) {
     console.error("Cart POST error:", error);
+
+    // Handle ObjectId casting errors specifically
+    if (error.name === "CastError" && error.kind === "ObjectId") {
+      return NextResponse.json(
+        { success: false, message: "Invalid ID format" },
+        { status: 400 }
+      );
+    }
 
     if (error.code === 11000) {
       return NextResponse.json({

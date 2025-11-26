@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import CartItem from "@/models/CartItem";
+import Product from "@/models/Product";
 
 export const DELETE = auth(async (
   req: NextRequest,
@@ -88,8 +89,76 @@ export const PATCH = auth(async (
     }
 
     if (quantity !== undefined) {
-      cartItem.quantity = quantity;
-      await cartItem.save();
+      if (cartItem.itemType !== "Product") {
+        return NextResponse.json(
+          { success: false, message: "Service quantity cannot be updated" },
+          { status: 400 }
+        );
+      }
+
+      const product = await Product.findById(cartItem.itemId);
+      if (!product) {
+        return NextResponse.json(
+          { success: false, message: "Product not found" },
+          { status: 404 }
+        );
+      }
+
+      const hasVariants = Array.isArray(product.variants) && product.variants.length > 0;
+
+      if (hasVariants) {
+        if (!cartItem.variantId) {
+          return NextResponse.json(
+            { success: false, message: "Variant selection missing for this cart item" },
+            { status: 400 }
+          );
+        }
+
+        const variant = product.variants.id(cartItem.variantId);
+        if (!variant) {
+          return NextResponse.json(
+            { success: false, message: "Selected variant not found" },
+            { status: 404 }
+          );
+        }
+
+        const variantStock = typeof variant.stock === "number" ? variant.stock : 0;
+        if (product.outOfStock || variantStock <= 0) {
+          return NextResponse.json(
+            { success: false, message: "Item is out of stock" },
+            { status: 400 }
+          );
+        }
+
+        if (quantity > variantStock) {
+          return NextResponse.json(
+            { success: false, message: "Maximum stock reached" },
+            { status: 400 }
+          );
+        }
+
+        cartItem.quantity = quantity;
+        await cartItem.save();
+      } else {
+        const stockValue = typeof product.stock === "number" ? product.stock : null;
+
+        if (product.outOfStock || (stockValue !== null && stockValue <= 0)) {
+          return NextResponse.json(
+            { success: false, message: "Item is out of stock" },
+            { status: 400 }
+          );
+        }
+
+        if (stockValue !== null && quantity > stockValue) {
+          return NextResponse.json(
+            { success: false, message: "Maximum stock reached" },
+            { status: 400 }
+          );
+        }
+
+        cartItem.quantity = quantity;
+        await cartItem.save();
+      }
     }
 
     return NextResponse.json({

@@ -19,6 +19,7 @@ export interface IProduct extends Document {
   isActive: boolean;
   sellerId?: mongoose.Types.ObjectId;
   stock?: number; // Add stock field for non-variant products
+  outOfStock?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -50,6 +51,7 @@ const productSchema = new Schema<IProduct>(
     isActive: { type: Boolean, default: true },
     sellerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     stock: { type: Number, default: 0, min: 0 }, // Add stock field for non-variant products
+    outOfStock: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

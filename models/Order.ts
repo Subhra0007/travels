@@ -5,6 +5,13 @@ export interface IOrderItem {
   itemId: mongoose.Types.ObjectId;
   itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental";
   quantity: number;
+  variantId?: mongoose.Types.ObjectId | null;
+  variant?: {
+    color?: string;
+    size?: string;
+    price?: number;
+    photos?: string[];
+  } | null;
 }
 
 export interface IOrder extends Document {
@@ -35,6 +42,13 @@ const OrderItemSchema = new Schema<IOrderItem>(
       required: true,
     },
     quantity: { type: Number, required: true, min: 1 },
+    variantId: { type: Schema.Types.ObjectId, default: null },
+    variant: {
+      color: String,
+      size: String,
+      price: Number,
+      photos: { type: [String], default: [] },
+    },
   },
   { _id: false }
 );

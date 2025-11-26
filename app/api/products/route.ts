@@ -115,6 +115,14 @@ export const POST = auth(async (req: NextRequest, context: any) => {
       }
     }
 
+    const normalizedStock =
+      categoryDoc.requiresVariants || stock === undefined
+        ? categoryDoc.requiresVariants
+          ? undefined
+          : 0
+        : Math.max(Number(stock), 0);
+    const outOfStock = categoryDoc.requiresVariants ? false : (normalizedStock ?? 0) <= 0;
+
     const product = await Product.create({
       name,
       category,
@@ -123,7 +131,8 @@ export const POST = auth(async (req: NextRequest, context: any) => {
       images,
       variants: variants || [],
       tags: tags || [],
-      stock: categoryDoc.requiresVariants ? undefined : stock || 0, // Add stock for non-variant products
+      stock: categoryDoc.requiresVariants ? undefined : normalizedStock, // Add stock for non-variant products
+      outOfStock,
       isActive: true,
       sellerId: isSeller ? user.id || user._id : null,
     });

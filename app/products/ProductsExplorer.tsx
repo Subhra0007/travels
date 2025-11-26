@@ -27,6 +27,7 @@ export type Product = {
   tags?: string[];
   isActive: boolean;
   stock?: number; // Add stock field for non-variant products
+  outOfStock?: boolean;
 };
 
 type ProductCardProps = {
@@ -47,9 +48,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
       : `₹${minPrice.toLocaleString()} - ₹${maxPrice.toLocaleString()}`;
       
   // Check if the product is in stock
-  const isInStock = hasVariants 
-    ? product.variants?.some(v => v.stock > 0) ?? false
-    : (product.stock === undefined || product.stock > 0);
+  const explicitStock = typeof product.stock === "number" ? product.stock : null;
+  const isInStock = !product.outOfStock && (
+    hasVariants
+      ? product.variants?.some((v) => v.stock > 0) ?? false
+      : (explicitStock === null || explicitStock > 0)
+  );
 
   return (
     <Link
@@ -104,7 +108,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         <div className="mt-auto flex items-center justify-between pt-2">
           <span className="text-xl font-bold text-green-600">{priceDisplay}</span>
-          <button className="rounded-full bg-green-600 p-2 text-white transition hover:bg-green-700">
+          <button
+            aria-disabled={!isInStock}
+            className={`rounded-full p-2 text-white transition ${
+              isInStock ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed opacity-60"
+            }`}
+          >
             <FaShoppingCart className="text-sm" />
           </button>
         </div>

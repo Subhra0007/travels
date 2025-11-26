@@ -6,6 +6,7 @@ export interface ICartItem extends Document {
   itemId: mongoose.Types.ObjectId;
   itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental";
   quantity: number;
+  variantId?: mongoose.Types.ObjectId | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -20,12 +21,13 @@ const CartItemSchema = new Schema<ICartItem>(
       required: true,
     },
     quantity: { type: Number, default: 1, min: 1 },
+    variantId: { type: Schema.Types.ObjectId, default: null },
   },
   { timestamps: true }
 );
 
-// Unique compound index: one item per user per itemId
-CartItemSchema.index({ user: 1, itemId: 1, itemType: 1 }, { unique: true });
+// Unique compound index: one item per user per itemId (+ variant when applicable)
+CartItemSchema.index({ user: 1, itemId: 1, itemType: 1, variantId: 1 }, { unique: true });
 
 // Index for fast user lookup
 CartItemSchema.index({ user: 1 });

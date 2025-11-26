@@ -105,6 +105,8 @@ export const PUT = auth(async (req: NextRequest, { params }: { params: Promise<{
     product.isActive = isActive !== undefined ? isActive : product.isActive;
 
     // Handle variants
+    let isVariantProduct = (variants && Array.isArray(variants) && variants.length > 0) || (product.variants?.length || 0) > 0;
+
     if (variants && Array.isArray(variants)) {
       const Category = (await import("@/models/Category")).default;
       const categoryDoc = await Category.findOne({ slug: category, isActive: true });
@@ -127,10 +129,23 @@ export const PUT = auth(async (req: NextRequest, { params }: { params: Promise<{
         }
         
         product.variants = variants;
+        product.outOfStock = variants.every((variant: any) => Number(variant.stock) <= 0);
+        isVariantProduct = true;
       } else {
         // For non-variant products, set the stock field
-        product.stock = stock || 0;
+        const normalizedStock = Math.max(Number(stock) || 0, 0);
+        product.stock = normalizedStock;
+        product.outOfStock = normalizedStock <= 0;
+        isVariantProduct = false;
       }
+    } else if (!isVariantProduct && stock !== undefined) {
+      const normalizedStock = Math.max(Number(stock) || 0, 0);
+      product.stock = normalizedStock;
+      product.outOfStock = normalizedStock <= 0;
+    }
+
+    if (isVariantProduct && (!variants || !Array.isArray(variants))) {
+      product.outOfStock = product.variants?.every((variant: any) => Number(variant.stock) <= 0) ?? product.outOfStock;
     }
 
     // Save updated product

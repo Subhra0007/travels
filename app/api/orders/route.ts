@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import Order from "@/models/Order";
-import CartItem from "@/models/CartItem";
 import Product from "@/models/Product";
 import Stay from "@/models/Stay";
 import Tour from "@/models/Tour";
@@ -15,6 +14,13 @@ type OrderItem = {
   itemId: mongoose.Types.ObjectId;
   itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental";
   quantity: number;
+  variantId?: mongoose.Types.ObjectId | null;
+  variant?: {
+    color?: string;
+    size?: string;
+    price?: number;
+    photos?: string[];
+  } | null;
   itemData?: any;
 };
 
@@ -119,9 +125,16 @@ export const POST = auth(async (req: NextRequest) => {
 
     // Validate and calculate total amount
     let totalAmount = 0;
+    const productStockUpdates: Array<{ productId: mongoose.Types.ObjectId; newStock: number }> = [];
+    const variantStockUpdates: Array<{
+      productId: mongoose.Types.ObjectId;
+      variantId: mongoose.Types.ObjectId;
+      newStock: number;
+    }> = [];
+    const normalizedItems: OrderItem[] = [];
 
     for (const item of items) {
-      const { itemId, itemType, quantity } = item;
+      const { itemId, itemType, quantity, variantId } = item;
 
       if (!itemId || !itemType || !quantity || quantity < 1) {
         return NextResponse.json(
@@ -129,6 +142,17 @@ export const POST = auth(async (req: NextRequest) => {
           { status: 400 }
         );
       }
+
+      if (!mongoose.Types.ObjectId.isValid(itemId)) {
+        return NextResponse.json(
+          { success: false, message: `Invalid item ID: ${itemId}` },
+          { status: 400 }
+        );
+      }
+
+      const itemObjectId = new mongoose.Types.ObjectId(itemId);
+      let variantObjectId: mongoose.Types.ObjectId | null = null;
+      let variantSnapshot: OrderItem["variant"] = null;
 
       let Model: any = null;
       switch (itemType) {
@@ -154,7 +178,7 @@ export const POST = auth(async (req: NextRequest) => {
           );
       }
 
-      const itemData = await Model.findById(itemId);
+      const itemData = await Model.findById(itemObjectId);
       if (!itemData) {
         return NextResponse.json(
           { success: false, message: `Item not found: ${itemId}` },
@@ -162,23 +186,139 @@ export const POST = auth(async (req: NextRequest) => {
         );
       }
 
-      const price = itemData.price || itemData.basePrice || 0;
-      totalAmount += price * quantity;
+      if (itemType === "Product") {
+        const hasVariants = Array.isArray(itemData.variants) && itemData.variants.length > 0;
+
+        if (hasVariants) {
+          if (!variantId) {
+            return NextResponse.json(
+              { success: false, message: "variantId is required for variant products" },
+              { status: 400 }
+            );
+          }
+
+          if (!mongoose.Types.ObjectId.isValid(variantId)) {
+            return NextResponse.json(
+              { success: false, message: "Invalid variantId" },
+              { status: 400 }
+            );
+          }
+
+          variantObjectId = new mongoose.Types.ObjectId(variantId);
+          const variant = itemData.variants.id(variantObjectId);
+          if (!variant) {
+            return NextResponse.json(
+              { success: false, message: "Selected variant not found" },
+              { status: 404 }
+            );
+          }
+
+          const variantStock = typeof variant.stock === "number" ? variant.stock : 0;
+          if (itemData.outOfStock || variantStock <= 0) {
+            return NextResponse.json(
+              { success: false, message: "One or more products are out of stock" },
+              { status: 400 }
+            );
+          }
+
+          if (quantity > variantStock) {
+            return NextResponse.json(
+              { success: false, message: "Requested quantity exceeds available stock" },
+              { status: 400 }
+            );
+          }
+
+          variantSnapshot = {
+            color: variant.color,
+            size: variant.size,
+            price: variant.price ?? undefined,
+            photos: variant.photos ?? [],
+          };
+
+          variantStockUpdates.push({
+            productId: itemData._id,
+            variantId: variantObjectId,
+            newStock: variantStock - quantity,
+          });
+
+          const price = variant.price ?? itemData.price ?? itemData.basePrice ?? 0;
+          totalAmount += price * quantity;
+        } else {
+          const stockValue = typeof itemData.stock === "number" ? itemData.stock : null;
+          if (itemData.outOfStock || (stockValue !== null && stockValue <= 0)) {
+            return NextResponse.json(
+              { success: false, message: "One or more products are out of stock" },
+              { status: 400 }
+            );
+          }
+
+          if (stockValue !== null && quantity > stockValue) {
+            return NextResponse.json(
+              { success: false, message: "Requested quantity exceeds available stock" },
+              { status: 400 }
+            );
+          }
+
+          if (stockValue !== null) {
+            productStockUpdates.push({
+              productId: itemData._id,
+              newStock: stockValue - quantity,
+            });
+          }
+
+          const price = itemData.price || itemData.basePrice || 0;
+          totalAmount += price * quantity;
+        }
+      } else {
+        const price = itemData.price || itemData.basePrice || 0;
+        totalAmount += price * quantity;
+      }
+
+      normalizedItems.push({
+        itemId: itemObjectId,
+        itemType,
+        quantity,
+        variantId: variantObjectId,
+        variant: variantSnapshot,
+      });
     }
 
     // Create order
     const order = await Order.create({
       user: userId,
-      items,
+      items: normalizedItems,
       totalAmount,
       deliveryCharge,
       address,
       status: "Placed",
     });
 
-    // Clear cart items if they were from cart
-    // (This is optional - you might want to keep them for reference)
-    // await CartItem.deleteMany({ user: userId, itemId: { $in: items.map(i => i.itemId) } });
+    if (productStockUpdates.length) {
+      await Promise.all(
+        productStockUpdates.map(({ productId, newStock }) =>
+          Product.findByIdAndUpdate(productId, {
+            stock: newStock,
+            outOfStock: newStock <= 0,
+          })
+        )
+      );
+    }
+
+    if (variantStockUpdates.length) {
+      await Promise.all(
+        variantStockUpdates.map(async ({ productId, variantId, newStock }) => {
+          const product = await Product.findById(productId);
+          if (!product) return;
+          const variant = product.variants.id(variantId);
+          if (!variant) return;
+          variant.stock = newStock;
+          product.outOfStock = product.variants.every(
+            (variantDoc: any) => Number(variantDoc.stock) <= 0
+          );
+          await product.save();
+        })
+      );
+    }
 
     return NextResponse.json({
       success: true,

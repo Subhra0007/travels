@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaShoppingCart, FaArrowLeft, FaBolt } from "react-icons/fa";
 import PageLoader from "../../components/common/PageLoader";
+import { useCart } from "../../hooks/useCart";
 
 type ProductVariant = {
   _id?: string;
@@ -26,6 +27,7 @@ type Product = {
   variants?: ProductVariant[];
   tags?: string[];
   stock?: number; // Add stock field for non-variant products
+  outOfStock?: boolean;
 };
 
 export default function ProductDetailPage() {
@@ -35,6 +37,8 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { addToCart } = useCart();
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     loadProduct();
@@ -67,7 +71,8 @@ export default function ProductDetailPage() {
 
       setProduct(data.product);
       if (data.product.variants && data.product.variants.length > 0) {
-        setSelectedVariant(data.product.variants[0]);
+        const firstAvailable = data.product.variants.find((variant: ProductVariant) => variant.stock > 0) || data.product.variants[0];
+        setSelectedVariant(firstAvailable);
       }
       } catch (error: unknown) {
       console.error("Failed to load product:", error);
@@ -102,9 +107,10 @@ export default function ProductDetailPage() {
     : product.images;
   const displayPrice = selectedVariant?.price || product.basePrice;
   const hasVariants = product.variants && product.variants.length > 0;
-  const isInStock = hasVariants 
-    ? selectedVariant && selectedVariant.stock > 0
-    : (!hasVariants && (product.stock === undefined || product.stock > 0)); // For non-variant products
+  const baseStock = typeof product.stock === "number" ? product.stock : null;
+  const variantAvailable = hasVariants ? Boolean(selectedVariant && selectedVariant.stock > 0) : true;
+  const baseProductAvailable = !hasVariants ? !(product.outOfStock || (baseStock !== null && baseStock <= 0)) : true;
+  const isPurchasable = hasVariants ? variantAvailable : baseProductAvailable;
 
   // Format category name
   const getCategoryName = (category: string) => {
@@ -199,7 +205,14 @@ export default function ProductDetailPage() {
                   {getCategoryName(product.category)}
                 </span>
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
-                <p className="text-2xl font-bold text-green-600 mb-4">₹{displayPrice.toLocaleString()}</p>
+                <div className="mb-4 flex flex-wrap items-center gap-3">
+                  <p className="text-2xl font-bold text-green-600">₹{displayPrice.toLocaleString()}</p>
+                  {!isPurchasable && (
+                    <span className="inline-flex items-center rounded-full bg-red-100 px-4 py-1 text-sm font-semibold uppercase tracking-wide text-red-700">
+                      Out of Stock
+                    </span>
+                  )}
+                </div>
                 <div className="prose max-w-none">
                   <p className="text-gray-700 leading-relaxed text-base mb-4">{product.description}</p>
                 </div>
@@ -315,11 +328,17 @@ export default function ProductDetailPage() {
                       <span className="font-medium text-gray-900">{product.variants?.length || 0}</span>
                     </div>
                   )}
-                  {!hasVariants && product.stock !== undefined && (
+                  {!hasVariants && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Stock:</span>
-                      <span className={`font-medium ${product.stock > 0 ? "text-green-600" : "text-red-600"}`}>
-                        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                      <span className={`font-medium ${baseProductAvailable ? "text-green-600" : "text-red-600"}`}>
+                        {product.stock !== undefined
+                          ? product.stock > 0
+                            ? `${product.stock} in stock`
+                            : "Out of stock"
+                          : product.outOfStock
+                          ? "Out of stock"
+                          : "Available"}
                       </span>
                     </div>
                   )}
@@ -346,38 +365,46 @@ export default function ProductDetailPage() {
               {/* Add to Cart and Buy Now Buttons */}
               <div className="space-y-3">
                 <button
-                  disabled={!!(hasVariants ? (selectedVariant && selectedVariant.stock === 0) : (product.stock === 0))}
+                  disabled={!isPurchasable || adding}
                   onClick={async () => {
+                    if (!isPurchasable) {
+                      alert("This product is currently out of stock.");
+                      return;
+                    }
+                    if (product?.variants?.length && !selectedVariant) {
+                      alert("Please select a variant before adding to cart.");
+                      return;
+                    }
+                    setAdding(true);
                     try {
-                      const res = await fetch("/api/cart", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({
-                          itemId: productId,
-                          itemType: "Product",
-                          quantity: 1,
-                        }),
-                      });
-                      if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(errorData?.message || "Failed to add to cart");
-                      }
+                      await addToCart(productId, "Product", 1, selectedVariant?._id);
                       alert("Added to cart!");
                     } catch (err: any) {
-                      alert(err.message || "Failed to add to cart. Please log in.");
+                      console.error("Add to cart error:", err);
+                      alert(err?.message || "Failed to add to cart. Please log in.");
+                    } finally {
+                      setAdding(false);
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <FaShoppingCart /> Add to Cart
+                  <FaShoppingCart /> {adding ? "Adding..." : "Add to Cart"}
                 </button>
                 <button
-                  disabled={!!(hasVariants ? (selectedVariant && selectedVariant.stock === 0) : (product.stock === 0))}
+                  disabled={!isPurchasable}
                   onClick={() => {
-                    window.location.href = `/checkout?item=${productId}&type=Product&quantity=1`;
+                    if (!isPurchasable) {
+                      alert("This product is currently out of stock.");
+                      return;
+                    }
+                    if (product?.variants?.length && !selectedVariant) {
+                      alert("Please select a variant before proceeding.");
+                      return;
+                    }
+                    const variantQuery = selectedVariant?._id ? `&variant=${selectedVariant._id}` : "";
+                    window.location.href = `/checkout?item=${productId}&type=Product&quantity=1${variantQuery}`;
                   }}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-6 py-3 text-white font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-6 py-3 text-white font-semibold hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <FaBolt /> Buy Now
                 </button>

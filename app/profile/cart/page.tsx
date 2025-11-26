@@ -3,14 +3,55 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { FaShoppingCart, FaTrash, FaPlus, FaMinus, FaArrowRight } from "react-icons/fa";
+import { FaShoppingCart, FaTrash, FaPlus, FaMinus, FaArrowRight, FaStar, FaMapMarkerAlt } from "react-icons/fa";
 import { useCart } from "../../hooks/useCart";
 import PageLoader from "../../components/common/PageLoader";
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, loading, refresh, removeFromCart, updateQuantity, totalPrice } = useCart({ autoLoad: true });
+  const { items, loading, refresh, removeFromCart, updateQuantity, productTotal } = useCart({ autoLoad: true });
   const [processing, setProcessing] = useState<string | null>(null);
+
+  const getServiceDetailPath = (itemType: string, itemId: string) => {
+    switch (itemType) {
+      case "Stay":
+        return `/stays/${itemId}`;
+      case "Tour":
+        return `/tours/${itemId}`;
+      case "Adventure":
+        return `/adventures/${itemId}`;
+      case "VehicleRental":
+        return `/vehicle-rental/${itemId}`;
+      default:
+        return "";
+    }
+  };
+
+  const handleServiceNavigate = (item: any) => {
+    const path = getServiceDetailPath(item.itemType, item.itemId);
+    if (path) {
+      router.push(path);
+    }
+  };
+
+  const handleProductCardClick = (itemId: string) => {
+    router.push(`/products/${itemId}`);
+  };
+
+  const getStockValue = (cartItem: any) => {
+    if (typeof cartItem.variant?.stock === "number") return cartItem.variant.stock;
+    if (typeof cartItem.item?.stock === "number") return cartItem.item.stock;
+    return null;
+  };
+
+  const handleIncrease = async (cartItem: any) => {
+    const stockValue = getStockValue(cartItem);
+    if (stockValue !== null && cartItem.quantity >= stockValue) {
+      alert("Maximum stock reached");
+      return;
+    }
+    await handleQuantityChange(cartItem._id, cartItem.quantity + 1);
+  };
 
   const handleRemove = async (cartItemId: string) => {
     if (!confirm("Remove this item from cart?")) return;
@@ -40,7 +81,8 @@ export default function CartPage() {
   };
 
   const handleBuyNow = (item: any) => {
-    router.push(`/checkout?item=${item.itemId}&type=${item.itemType}&quantity=${item.quantity}`);
+    const variantParam = item.variantId ? `&variant=${item.variantId}` : "";
+    router.push(`/checkout?item=${item.itemId}&type=${item.itemType}&quantity=${item.quantity}${variantParam}`);
   };
 
   const handleCheckout = () => {
@@ -59,8 +101,8 @@ export default function CartPage() {
 
   const productItems = items.filter((item) => item.itemType === "Product");
   const serviceItems = items.filter((item) => item.itemType !== "Product");
-  const deliveryCharge = 15;
-  const grandTotal = totalPrice + (productItems.length > 0 ? deliveryCharge : 0);
+  const deliveryCharge = productItems.length > 0 ? 15 : 0;
+  const grandTotal = productTotal + deliveryCharge;
 
   return (
     <div className="space-y-6">
@@ -88,50 +130,96 @@ export default function CartPage() {
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold text-gray-900">Products</h2>
                 {productItems.map((item) => {
-                  const price = item.item?.price || item.item?.basePrice || 0;
-                  const image = item.item?.images?.[0] || item.item?.photos?.[0] || "/placeholder.jpg";
+                  const price = item.variant?.price ?? item.item?.price ?? item.item?.basePrice ?? 0;
+                  const image =
+                    item.variant?.photos?.[0] ||
+                    item.item?.images?.[0] ||
+                    item.item?.photos?.[0] ||
+                    "/placeholder.jpg";
+                  const stockValue = getStockValue(item);
+                  const outOfStock = Boolean(
+                    item.item?.outOfStock || (stockValue !== null && stockValue <= 0)
+                  );
+                  const stockLeft =
+                    stockValue !== null ? Math.max(stockValue - item.quantity, 0) : null;
                   return (
                     <div
                       key={item._id}
-                      className="bg-white rounded-lg shadow p-6 flex gap-4"
+                      onClick={() => handleProductCardClick(item.itemId)}
+                      className="group relative flex cursor-pointer gap-4 rounded-2xl bg-white p-6 shadow transition hover:-translate-y-1 hover:shadow-lg"
                     >
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        <Image src={image} alt={item.item?.name || "Product"} fill className="object-cover" />
+                      <div className="relative h-28 w-28 rounded-2xl overflow-hidden bg-gray-100 shrink-0">
+                        <Image src={image} alt={item.item?.name || "Product"} fill className="object-cover transition duration-500 group-hover:scale-105" />
+                        {outOfStock && (
+                          <span className="absolute left-2 top-2 rounded-full bg-red-500/90 px-2 py-1 text-[10px] font-semibold uppercase text-white shadow">
+                            Out of Stock
+                          </span>
+                        )}
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">{item.item?.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{item.item?.category}</p>
-                        <p className="text-lg font-bold text-green-600">₹{price.toLocaleString()}</p>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{item.item?.name}</h3>
+                            <p className="text-xs uppercase tracking-wide text-gray-500">{item.item?.category}</p>
+                            {item.variant && (
+                              <p className="text-sm text-gray-600 mt-1">
+                                Variant:{" "}
+                                <span className="font-medium text-gray-900">
+                                  {item.variant.color} • {item.variant.size}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                          <p className="text-lg font-bold text-green-600">₹{price.toLocaleString()}</p>
+                        </div>
+                        {stockValue !== null && (
+                          <p className="text-xs text-gray-500">
+                            Stock left: <span className="font-medium text-gray-900">{stockLeft}</span>
+                          </p>
+                        )}
                       </div>
-                      <div className="flex flex-col items-end gap-2">
+                      <div className="flex flex-col items-end gap-3">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleQuantityChange(item._id, item.quantity - 1)}
-                            disabled={processing === item._id}
-                            className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleQuantityChange(item._id, item.quantity - 1);
+                            }}
+                            disabled={processing === item._id || item.quantity <= 1}
+                            className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                           >
                             <FaMinus className="text-xs" />
                           </button>
-                          <span className="w-12 text-center font-medium">{item.quantity}</span>
+                          <span className="w-10 text-center font-semibold">{item.quantity}</span>
                           <button
-                            onClick={() => handleQuantityChange(item._id, item.quantity + 1)}
-                            disabled={processing === item._id}
-                            className="w-8 h-8 rounded border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await handleIncrease(item);
+                            }}
+                            disabled={processing === item._id || outOfStock}
+                            className="w-9 h-9 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50"
                           >
                             <FaPlus className="text-xs" />
                           </button>
                         </div>
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleBuyNow(item)}
-                            className="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleBuyNow(item);
+                            }}
+                            disabled={processing === item._id || outOfStock}
+                            className="px-5 py-2 rounded-full bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 disabled:opacity-50"
                           >
                             Buy Now
                           </button>
                           <button
-                            onClick={() => handleRemove(item._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemove(item._id);
+                            }}
                             disabled={processing === item._id}
-                            className="px-4 py-2 rounded-lg bg-red-100 text-red-700 text-sm font-semibold hover:bg-red-200 disabled:opacity-50"
+                            className="px-5 py-2 rounded-full bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-100 disabled:opacity-50"
                           >
                             <FaTrash />
                           </button>
@@ -148,35 +236,81 @@ export default function CartPage() {
                 <h2 className="text-xl font-semibold text-gray-900">Services</h2>
                 {serviceItems.map((item) => {
                   const price = item.item?.price || item.item?.basePrice || 0;
-                  const image = item.item?.images?.[0] || "/placeholder.jpg";
+                  const image =
+                    item.item?.images?.[0] || item.item?.photos?.[0] || item.item?.coverImage || item.item?.banner || "/placeholder.jpg";
+                  
+                  // Get rating if available
+                  const ratingValue = item.item?.rating?.count ? item.item.rating.average : null;
+                  
                   return (
                     <div
                       key={item._id}
-                      className="bg-white rounded-lg shadow p-6 flex gap-4"
+                      onClick={() => handleServiceNavigate(item)}
+                      className="group flex cursor-pointer flex-col overflow-hidden rounded-3xl border border-white/40 bg-white shadow-lg transition hover:-translate-y-1 hover:shadow-2xl"
                     >
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        <Image src={image} alt={item.item?.name || "Service"} fill className="object-cover" />
+                      <div className="relative h-56 w-full">
+                        <Image src={image} alt={item.item?.name || "Service"} fill className="object-cover transition duration-500 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
+                        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-emerald-700 shadow">
+                          {item.item?.category || item.itemType}
+                        </span>
+                        {ratingValue !== null && (
+                          <span className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700 shadow">
+                            <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
+                          </span>
+                        )}
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">{item.item?.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">{item.itemType}</p>
-                        <p className="text-lg font-bold text-green-600">₹{price.toLocaleString()}</p>
-                        <p className="text-xs text-gray-500 mt-1">Quantity: 1 (fixed)</p>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <button
-                          onClick={() => handleBuyNow(item)}
-                          className="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700"
-                        >
-                          Buy Now
-                        </button>
-                        <button
-                          onClick={() => handleRemove(item._id)}
-                          disabled={processing === item._id}
-                          className="px-4 py-2 rounded-lg bg-red-100 text-red-700 text-sm font-semibold hover:bg-red-200 disabled:opacity-50"
-                        >
-                          <FaTrash />
-                        </button>
+                      <div className="flex flex-1 flex-col gap-3 p-5 text-gray-900">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{item.item?.name}</h3>
+                            {item.item?.location?.city && (
+                              <p className="mt-1 flex items-center text-sm text-gray-600">
+                                <FaMapMarkerAlt className="mr-2 text-green-600" />
+                                {item.item.location.city}
+                                {item.item.location.state ? `, ${item.item.location.state}` : ""}
+                              </p>
+                            )}
+                          </div>
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                            {item.itemType}
+                          </span>
+                        </div>
+                        
+                        {item.item?.description && (
+                          <p className="text-sm text-gray-600 line-clamp-2">{item.item.description}</p>
+                        )}
+                        
+                        {item.item?.heroHighlights?.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {item.item.heroHighlights.slice(0, 3).map((highlight: string) => (
+                              <span
+                                key={highlight}
+                                className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700"
+                              >
+                                {highlight}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <div className="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
+                          <div>
+                            <p className="text-xs uppercase tracking-wide text-gray-500">Service price</p>
+                            <p className="text-lg font-bold text-green-600">₹{price.toLocaleString()}</p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemove(item._id);
+                            }}
+                            disabled={processing === item._id}
+                            className="inline-flex items-center gap-2 rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 disabled:opacity-50"
+                          >
+                            <FaTrash /> Delete
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500">Tap the card to view details. Quantity fixed at 1.</p>
                       </div>
                     </div>
                   );
@@ -191,7 +325,7 @@ export default function CartPage() {
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between text-gray-700">
                   <span>Subtotal</span>
-                  <span>₹{totalPrice.toLocaleString()}</span>
+                  <span>₹{productTotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-gray-700">
                   <span>Platform Charge</span>
@@ -209,8 +343,13 @@ export default function CartPage() {
                 Proceed to Checkout <FaArrowRight />
               </button>
               <p className="text-xs text-gray-500 mt-3 text-center">
-                Only products can be checked out together
+                Only physical products can be checked out together.
               </p>
+              {serviceItems.length > 0 && (
+                <p className="text-xs text-amber-600 mt-1 text-center">
+                  Service bookings are billed separately on their detail pages.
+                </p>
+              )}
             </div>
           )}
         </div>

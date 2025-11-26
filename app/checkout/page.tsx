@@ -21,12 +21,13 @@ type Address = {
 export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { items: cartItems, totalPrice: cartTotal } = useCart({ autoLoad: true });
+  const { items: cartItems, productTotal: cartProductTotal } = useCart({ autoLoad: true });
 
   const itemId = searchParams.get("item");
   const itemType = searchParams.get("type") as "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental" | null;
   const quantity = parseInt(searchParams.get("quantity") || "1");
   const fromCart = searchParams.get("fromCart") === "true";
+  const variantIdParam = searchParams.get("variant");
 
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState<any>(null);
@@ -47,7 +48,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     loadData();
-  }, [itemId, itemType, fromCart]);
+  }, [itemId, itemType, fromCart, cartItems, variantIdParam]);
 
   const loadData = async () => {
     try {
@@ -78,7 +79,22 @@ export default function CheckoutPage() {
           if (res.ok) {
             const data = await res.json();
             const itemData = data.product || data.stay || data.tour || data.adventure || data.vehicleRental || data;
-            setItem({ ...itemData, itemType, quantity, isCart: false });
+            let resolvedVariant = null;
+            if (itemType === "Product" && variantIdParam && Array.isArray(itemData?.variants)) {
+              resolvedVariant =
+                itemData.variants.find(
+                  (variant: any) => variant?._id?.toString() === variantIdParam
+                ) || null;
+            }
+
+            setItem({
+              ...itemData,
+              itemType,
+              quantity,
+              isCart: false,
+              variantId: resolvedVariant?._id?.toString() || variantIdParam,
+              variant: resolvedVariant,
+            });
           }
         }
       }
@@ -143,14 +159,18 @@ export default function CheckoutPage() {
           itemId: cartItem.itemId,
           itemType: cartItem.itemType,
           quantity: cartItem.quantity,
+          variantId: cartItem.variantId || null,
         }));
       } else if (item) {
         // Single item
-        orderItems = [{
-          itemId: item._id || itemId,
-          itemType: item.itemType || itemType,
-          quantity: item.quantity || quantity,
-        }];
+        orderItems = [
+          {
+            itemId: item._id || itemId,
+            itemType: item.itemType || itemType,
+            quantity: item.quantity || quantity,
+            variantId: item.variantId || variantIdParam || null,
+          },
+        ];
       }
 
       if (orderItems.length === 0) {
@@ -158,8 +178,9 @@ export default function CheckoutPage() {
       }
 
       const totalAmount = item?.isCart
-        ? cartTotal
-        : (item?.price || item?.basePrice || 0) * (item?.quantity || quantity);
+        ? cartProductTotal
+        : (item?.variant?.price ?? item?.price ?? item?.basePrice ?? 0) *
+          (item?.quantity || quantity);
 
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -214,8 +235,8 @@ export default function CheckoutPage() {
   }
 
   const subtotal = item.isCart
-    ? cartTotal
-    : (item.price || item.basePrice || 0) * (item.quantity || quantity);
+    ? cartProductTotal
+    : (item.variant?.price ?? item.price ?? item.basePrice ?? 0) * (item.quantity || quantity);
   const deliveryCharge = 15;
   const total = subtotal + deliveryCharge;
 
@@ -232,15 +253,27 @@ export default function CheckoutPage() {
               <div className="space-y-3">
                 {item.items.map((cartItem: any) => {
                   const itemData = cartItem.item;
-                  const price = itemData?.price || itemData?.basePrice || 0;
-                  const image = itemData?.images?.[0] || itemData?.photos?.[0] || "/placeholder.jpg";
+                  const price = cartItem.variant?.price ?? itemData?.price ?? itemData?.basePrice ?? 0;
+                  const image =
+                    cartItem.variant?.photos?.[0] ||
+                    itemData?.images?.[0] ||
+                    itemData?.photos?.[0] ||
+                    "/placeholder.jpg";
                   return (
                     <div key={cartItem._id} className="flex gap-4 pb-3 border-b">
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                         <Image src={image} alt={itemData?.name || "Product"} fill className="object-cover" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900">{itemData?.name}</h3>
+                        {cartItem.variant && (
+                          <p className="text-sm text-gray-600">
+                            Variant:{" "}
+                            <span className="font-medium text-gray-900">
+                              {cartItem.variant.color} • {cartItem.variant.size}
+                            </span>
+                          </p>
+                        )}
                         <p className="text-sm text-gray-600">Quantity: {cartItem.quantity}</p>
                         <p className="text-lg font-bold text-green-600">₹{(price * cartItem.quantity).toLocaleString()}</p>
                       </div>
@@ -250,9 +283,14 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div className="flex gap-4">
-                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                   <Image
-                    src={item.images?.[0] || item.photos?.[0] || "/placeholder.jpg"}
+                    src={
+                      item.variant?.photos?.[0] ||
+                      item.images?.[0] ||
+                      item.photos?.[0] ||
+                      "/placeholder.jpg"
+                    }
                     alt={item.name}
                     fill
                     className="object-cover"
@@ -260,9 +298,21 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                  {item.variant && (
+                    <p className="text-sm text-gray-600">
+                      Variant:{" "}
+                      <span className="font-medium text-gray-900">
+                        {item.variant.color} • {item.variant.size}
+                      </span>
+                    </p>
+                  )}
                   <p className="text-sm text-gray-600">Quantity: {item.quantity || quantity}</p>
                   <p className="text-lg font-bold text-green-600">
-                    ₹{((item.price || item.basePrice || 0) * (item.quantity || quantity)).toLocaleString()}
+                    ₹
+                    {(
+                      (item.variant?.price ?? item.price ?? item.basePrice ?? 0) *
+                      (item.quantity || quantity)
+                    ).toLocaleString()}
                   </p>
                 </div>
               </div>

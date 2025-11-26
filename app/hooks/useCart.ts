@@ -8,6 +8,15 @@ type CartItem = {
   itemId: string;
   itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental";
   quantity: number;
+  variantId?: string | null;
+  variant?: {
+    _id: string;
+    color: string;
+    size: string;
+    stock: number;
+    price?: number;
+    photos?: string[];
+  } | null;
   item: any;
 };
 
@@ -48,15 +57,30 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
     async (
       itemId: string,
       itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental",
-      quantity: number = 1
+      quantity: number = 1,
+      variantId?: string
     ) => {
       setError(null);
       try {
+        // Validate inputs before sending request
+        if (!itemId || !itemType) {
+          throw new Error("itemId and itemType are required");
+        }
+        
+        if (quantity < 1) {
+          throw new Error("Quantity must be at least 1");
+        }
+        
+        const payload: Record<string, any> = { itemId, itemType, quantity };
+        if (variantId) {
+          payload.variantId = variantId;
+        }
+
         const res = await fetch("/api/cart", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ itemId, itemType, quantity }),
+          body: JSON.stringify(payload),
         });
         if (res.status === 401) {
           throw new Error("Please log in to add to cart.");
@@ -67,6 +91,7 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
         }
         await refresh();
       } catch (err: any) {
+        console.error("Add to cart error:", err);
         setError(err?.message || "Failed to add to cart");
         throw err;
       }
@@ -134,7 +159,15 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
 
   const totalPrice = useMemo(() => {
     return items.reduce((sum, item) => {
-      const price = item.item?.price || item.item?.basePrice || 0;
+      const price = item.variant?.price ?? item.item?.price ?? item.item?.basePrice ?? 0;
+      return sum + price * item.quantity;
+    }, 0);
+  }, [items]);
+
+  const productTotal = useMemo(() => {
+    return items.reduce((sum, item) => {
+      if (item.itemType !== "Product") return sum;
+      const price = item.variant?.price ?? item.item?.price ?? item.item?.basePrice ?? 0;
       return sum + price * item.quantity;
     }, 0);
   }, [items]);
@@ -154,6 +187,7 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
     updateQuantity,
     totalItems,
     totalPrice,
+    productTotal,
   };
 }
 

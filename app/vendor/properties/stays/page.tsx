@@ -217,7 +217,7 @@ export default function VendorStaysPage() {
 
   // ──────────────────────── EXACT SAME LAYOUT AS /vendor/page.tsx ────────────────────────
   return (
-    <div className="flex h-screen bg-gray-50 relative">
+    <div className="flex h-screen bg-gray-50 relative ">
       {/* Desktop Sidebar */}
       {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
         <Sidebar />
@@ -226,7 +226,7 @@ export default function VendorStaysPage() {
       {/* Main Content Area */}
       
         {/* Topbar with mobile menu button */}
-        <div className="sticky top-0 z-40 bg-sky-50">
+        <div className="flex-1 flex flex-col  overflow-hidden">
        {/* Topbar with mobile menu button */}
 <div className="sticky top-0 z-40 bg-sky-50 border-b lg:pt-15 pt-0">
    {/* Mobile menu button */}
@@ -270,13 +270,13 @@ export default function VendorStaysPage() {
 
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
+        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
           {stays.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full bg-white rounded-xl shadow p-10 text-center">
+            <div className="bg-white rounded-xl shadow p-8 text-center">
               <p className="text-gray-600 mb-6">No stays added yet.</p>
               <button
                 onClick={() => navigate ? navigate("/vendor/properties/stays/add") : router.push("/vendor/properties/stays/add")}
-                className="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 shadow-md"
+                className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition shadow-md"
               >
                 Add Your First Stay
               </button>

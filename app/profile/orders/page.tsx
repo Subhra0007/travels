@@ -10,6 +10,13 @@ type OrderItem = {
   itemType: string;
   quantity: number;
   itemData?: any;
+  variantId?: string | null;
+  variant?: {
+    color?: string;
+    size?: string;
+    price?: number;
+    photos?: string[];
+  } | null;
 };
 
 type Order = {
@@ -120,15 +127,27 @@ export default function OrdersPage() {
               <div className="space-y-4">
                 {order.items.map((item, idx) => {
                   const itemData = item.itemData;
-                  const price = itemData?.price || itemData?.basePrice || 0;
-                  const image = itemData?.images?.[0] || itemData?.photos?.[0] || "/placeholder.jpg";
+                  const price = item.variant?.price ?? itemData?.price ?? itemData?.basePrice ?? 0;
+                  const image =
+                    item.variant?.photos?.[0] ||
+                    itemData?.images?.[0] ||
+                    itemData?.photos?.[0] ||
+                    "/placeholder.jpg";
                   return (
                     <div key={idx} className="flex gap-4 pb-4 border-b last:border-0">
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
                         <Image src={image} alt={itemData?.name || "Item"} fill className="object-cover" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900">{itemData?.name || "Item"}</h3>
+                        {item.variant && (
+                          <p className="text-sm text-gray-600">
+                            Variant:{" "}
+                            <span className="font-medium text-gray-900">
+                              {item.variant.color} • {item.variant.size}
+                            </span>
+                          </p>
+                        )}
                         <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                         <p className="text-lg font-bold text-green-600">₹{(price * item.quantity).toLocaleString()}</p>
                       </div>

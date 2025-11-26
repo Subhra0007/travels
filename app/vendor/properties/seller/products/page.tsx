@@ -18,6 +18,7 @@ interface Product {
   createdAt: string;
   updatedAt: string;
   stock?: number;
+  outOfStock?: boolean;
 }
 
 interface Category {
@@ -182,6 +183,11 @@ const VendorProductsPage: React.FC = () => {
                               )}
                               <div>
                                 <p className="font-semibold text-gray-900">{product.name}</p>
+                                {product.outOfStock && (
+                                  <span className="mt-1 inline-flex rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-red-700">
+                                    Out of Stock
+                                  </span>
+                                )}
                                 <p className="text-xs text-gray-500 line-clamp-1">{product.description}</p>
                               </div>
                             </div>
@@ -205,10 +211,10 @@ const VendorProductsPage: React.FC = () => {
                                 <p className="text-gray-900">No variants</p>
                                 <p
                                   className={`text-xs font-semibold ${
-                                    productStock === 0 ? "text-red-600" : "text-green-600"
+                                    productStock > 0 && !product.outOfStock ? "text-green-600" : "text-red-600"
                                   }`}
                                 >
-                                  {productStock === 0 ? "Out of stock" : `${productStock} in stock`}
+                                  {productStock > 0 && !product.outOfStock ? `${productStock} in stock` : "Out of stock"}
                                 </p>
                               </div>
                             )}
@@ -271,6 +277,11 @@ const VendorProductsPage: React.FC = () => {
                         )}
                         <div className="flex-1">
                           <p className="text-base font-semibold text-gray-900">{product.name}</p>
+                          {product.outOfStock && (
+                            <span className="mt-1 inline-flex rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-red-700">
+                              Out of Stock
+                            </span>
+                          )}
                           <p className="text-xs text-gray-500 line-clamp-2 mt-1">{product.description}</p>
                           
                           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -298,10 +309,10 @@ const VendorProductsPage: React.FC = () => {
                               ) : (
                                 <p
                                   className={`text-xs font-semibold ${
-                                    productStock === 0 ? "text-red-600" : "text-green-600"
+                                    productStock > 0 && !product.outOfStock ? "text-green-600" : "text-red-600"
                                   }`}
                                 >
-                                  {productStock === 0 ? "Out of stock" : `${productStock} in stock`}
+                                  {productStock > 0 && !product.outOfStock ? `${productStock} in stock` : "Out of stock"}
                                 </p>
                               )}
                             </div>
