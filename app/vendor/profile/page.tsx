@@ -131,12 +131,12 @@ export default function VendorProfilePage() {
       <div className="flex-1 lg:pt-0 overflow-y-auto min-h-screen">
         {/* Mobile Menu Button */}
         <div className="lg:hidden sticky top-0 z-40 bg-sky-50 px-4 pt-4 pb-2">
-          <button
+          {/* <button
             onClick={() => setMobileSidebarOpen(true)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
           >
             ☰ <span className="text-sm font-medium">Menu</span>
-          </button>
+          </button> */}
         </div>
         <div className="max-w-6xl mx-auto px-4 pt-6 lg:pt-24 pb-12">
         <div className="mb-8 flex items-center justify-between">
@@ -226,7 +226,7 @@ export default function VendorProfilePage() {
       </div>
 
       {/* Mobile Sidebar Drawer */}
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-90 bg-black/40 lg:hidden"
@@ -245,7 +245,7 @@ export default function VendorProfilePage() {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }

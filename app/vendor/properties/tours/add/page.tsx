@@ -547,16 +547,16 @@ export default function AddTourPage() {
         <Sidebar />
       </div> */}
 
-      <div className="flex-1 flex flex-col mt-15">
+      <div className="flex-1 flex flex-col ">
         <div className="sticky top-0 z-40 bg-sky-50">
-          <div className="flex items-center gap-3 p-3 border-b">
-            <button
+          <div className="flex items-center gap-3 p-3 border-b lg:pt-15 pt-0">
+            {/* <button
               className="lg:hidden px-3 py-2 rounded border text-gray-800"
               onClick={() => setMobileSidebarOpen(true)}
               aria-label="Open menu"
             >
               Menu
-            </button>
+            </button> */}
             <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">
               {isEditing ? "Edit tour" : "Create a new tour"}
             </h1>
@@ -1208,7 +1208,7 @@ export default function AddTourPage() {
         </main>
       </div>
 
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-100 bg-black/40 lg:hidden"
@@ -1227,7 +1227,7 @@ export default function AddTourPage() {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }

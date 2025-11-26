@@ -505,14 +505,14 @@ export default function AddAdventurePage() {
             </div> */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-sky-50 border-b pt-15">
+        <div className="sticky top-0 z-40 bg-sky-50 border-b lg:pt-15 pt-0">
           <div className="flex items-center gap-3 p-3">
-            <button
+            {/* <button
               className="lg:hidden px-3 py-2 rounded border text-gray-700"
               onClick={() => setMobileSidebarOpen(true)}
             >
               Menu
-            </button>
+            </button> */}
             <h1 className="text-xl sm:text-2xl font-semibold">
               {isEditing ? "Edit Adventure" : "Create Adventure"}
             </h1>
@@ -1233,7 +1233,7 @@ export default function AddAdventurePage() {
       </div>
 
       {/* Mobile Sidebar Overlay */}
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-100 bg-black/40 lg:hidden"
@@ -1252,7 +1252,7 @@ export default function AddAdventurePage() {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }

@@ -172,13 +172,13 @@ export default function VendorPaymentsPage() {
                 </div> */}
       <div className="lg:pl-64 min-h-screen overflow-y-auto overflow-x-hidden">
         {/* Mobile Menu Button */}
-        <div className="lg:hidden sticky top-0 z-40 bg-slate-50 px-4  pb-2 pt-15">
-          <button
+        <div className="lg:hidden sticky top-0 z-40 bg-slate-50 px-4  pb-2 lg:pt-15 pt-0">
+          {/* <button
             onClick={() => setMobileSidebarOpen(true)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
           >
             ☰ <span className="text-sm font-medium">Menu</span>
-          </button>
+          </button> */}
         </div>
         <div className="p-6 lg:mt-20 mt-5 overflow-y-auto">
           <div className="mb-6">
@@ -256,7 +256,7 @@ export default function VendorPaymentsPage() {
       </div>
 
       {/* Mobile Sidebar Drawer */}
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-90 bg-black/40 lg:hidden"
@@ -275,7 +275,7 @@ export default function VendorPaymentsPage() {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }

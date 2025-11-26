@@ -485,14 +485,14 @@ export default function AddVehicleRentalPage() {
                  </div> */}
 
       <div className="flex-1 flex flex-col">
-        <div className="sticky top-0 z-40 bg-sky-50 border-b mt-15 ">
+        <div className="sticky top-0 z-40 bg-sky-50 border-b lg:pt-15 pt-0 ">
           <div className="flex items-center gap-3 p-3 ">
-            <button
+            {/* <button
               className="lg:hidden px-3 py-2 rounded border text-gray-700"
               onClick={() => setMobileSidebarOpen(true)}
             >
               Menu
-            </button>
+            </button> */}
             <h1 className="text-xl sm:text-2xl font-semibold flex items-center gap-2">
               {formData.category === "cars-rental" || formData.category === "car-with-driver" ? <FaCar /> : <FaMotorcycle />}
               {isEditing ? "Edit Vehicle Rental" : "Create Vehicle Rental"}
@@ -1298,7 +1298,7 @@ export default function AddVehicleRentalPage() {
       </div>
 
       {/* Mobile Sidebar */}
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-100 bg-black/40 lg:hidden"
@@ -1317,7 +1317,7 @@ export default function AddVehicleRentalPage() {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }

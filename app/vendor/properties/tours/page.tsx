@@ -248,15 +248,15 @@ export default function VendorToursPage() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col  overflow-hidden">
-     <div className="sticky top-0 z-40 bg-sky-50 border-b pt-13">
+     <div className="sticky top-0 z-40 bg-sky-50 border-b lg:pt-15 pt-0">
    {/* Mobile menu button */}
-    <button
+    {/* <button
       className="lg:hidden px-3 py-2 rounded border text-gray-700 "
       onClick={() => setMobileSidebarOpen(true)}
       aria-label="Open menu"
     >
       ☰
-    </button>
+    </button> */}
 
   <div className="flex items-center justify-between ">
     
@@ -307,7 +307,7 @@ export default function VendorToursPage() {
       </div>
 
       {/* Mobile Sidebar Drawer */}
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-100 bg-black/40 lg:hidden"
@@ -326,7 +326,7 @@ export default function VendorToursPage() {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }

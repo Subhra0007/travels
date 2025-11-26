@@ -83,19 +83,19 @@ const VendorCancellationsPage = () => {
               <Sidebar />
             </div> */}
    
-          <div className="flex-1 flex flex-col mt-15 overflow-hidden">
+          <div className="flex-1 flex flex-col  overflow-hidden lg:pt-15 pt-0">
            {/* Topbar with mobile trigger */}
-           <div className="sticky top-0 z-40 bg-sky-50">
-             <div className="flex items-center gap-3 p-3 border-b">
-               <button
+           {/* <div className="sticky top-0 z-40 bg-sky-50 lg:pt-15 pt-0">
+             <div className="flex items-center gap-3 p-3 border-b"> */}
+               {/* <button
                  className="lg:hidden px-3 py-2 rounded border text-gray-700"
                  onClick={() => setMobileSidebarOpen(true)}
                  aria-label="Open menu"
                >
                  ☰
-               </button>
-             </div>
-           </div>
+               </button> */}
+             {/* </div>
+           </div> */}
 
         <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10  w-full overflow-x-hidden">
           <div className="mb-6 flex flex-col gap-2">

@@ -356,12 +356,12 @@ export default function SellerEditProductPage() {
         <Sidebar />
       </div> */}
 
-      <div className="flex-1 flex flex-col mt-20 overflow-y-auto">
-       <div className="sticky top-0 z-40 bg-sky-50 border-b p-4">
+      <div className="flex-1 flex flex-col overflow-y-auto">
+       <div className="sticky top-0 z-40 bg-sky-50 border-b p-4 lg:pt-15 pt-0">
   <div className="flex items-center justify-between">
     
     {/* Left Side: Menu + Title */}
-    <div className="flex items-center gap-3">
+    {/* <div className="flex items-center gap-3">
       <button
         className="lg:hidden px-3 py-2 rounded border text-gray-700"
         onClick={() => setMobileSidebarOpen(true)}
@@ -373,7 +373,7 @@ export default function SellerEditProductPage() {
       <h1 className="text-2xl font-semibold text-gray-900">
         Edit Product
       </h1>
-    </div>
+    </div> */}
 
     {/* Right Side: Cancel */}
     <button
@@ -791,7 +791,7 @@ export default function SellerEditProductPage() {
         </form>
       </div>
 
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-100 bg-black/40 lg:hidden"
@@ -810,9 +810,10 @@ export default function SellerEditProductPage() {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 }
+
 
 

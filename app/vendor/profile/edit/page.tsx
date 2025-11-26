@@ -168,13 +168,13 @@ export default function VendorProfileEditPage() {
                  </div> */}
       <div className="flex-1  lg:pt-0 overflow-y-auto min-h-screen ">
         {/* Mobile Menu Button */}
-        <div className="lg:hidden sticky top-0 z-40 bg-sky-50 px-4 pt-15 pb-2">
-          <button
+        <div className="lg:hidden sticky top-0 z-40 bg-sky-50 px-4 lg:pt-15 pt-0 pb-2">
+          {/* <button
             onClick={() => setMobileSidebarOpen(true)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
           >
             ☰ <span className="text-sm font-medium">Menu</span>
-          </button>
+          </button> */}
         </div>
         {/* main  */}
       <div className="w-full px-4 pt-6 lg:pt-24 pb-12">
@@ -351,7 +351,7 @@ export default function VendorProfileEditPage() {
     </div>
 
     {/* Mobile Sidebar Drawer */}
-    {mobileSidebarOpen && (
+    {/* {mobileSidebarOpen && (
       <>
         <div
           className="fixed inset-0 z-90 bg-black/40 lg:hidden"
@@ -370,7 +370,7 @@ export default function VendorProfileEditPage() {
           <Sidebar />
         </div>
       </>
-    )}
+    )} */}
   </div>
 );
 }

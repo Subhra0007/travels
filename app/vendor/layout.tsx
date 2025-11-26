@@ -186,12 +186,9 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
             <Sidebar onNavigate={handleNavigation} onLogout={handleLogout} />
           </div>
         </div>
-
-        {/* Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Topbar with mobile trigger */}
+ {/* Topbar with mobile trigger */}
         
-            {/* <div className="flex items-center gap-3 p-3">
+            <div className="flex items-center gap-3 p-3 mt-15">
               <button
                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
                 onClick={() => setMobileSidebarOpen(true)}
@@ -199,7 +196,10 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
               >
                 <FaBars />
               </button>
-            </div> */}
+            </div> 
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+        
      
           <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 md:p-6">
             {isNavigating ? (

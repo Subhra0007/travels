@@ -92,11 +92,11 @@ const VendorProductsPage: React.FC = () => {
         <Sidebar />
       </div> */}
 
-      <div className="flex-1 flex flex-col pt-15 overflow-hidden">
+      <div className="flex-1 flex flex-col  overflow-hidden lg:pt-15 pt-0">
      <div className="sticky top-0 z-40 bg-sky-50">
 
   {/* Top Bar — only menu button */}
-  <div className="p-3  flex items-center">
+  {/* <div className="p-3  flex items-center">
     <button
       className="lg:hidden px-3 py-2 rounded border text-gray-700"
       onClick={() => setMobileSidebarOpen(true)}
@@ -104,7 +104,7 @@ const VendorProductsPage: React.FC = () => {
     >
       ☰
     </button>
-  </div>
+  </div> */}
 
   {/* Title + Add Product */}
   <div className="flex items-center justify-between gap-3 p-3 border-b">
@@ -320,7 +320,7 @@ const VendorProductsPage: React.FC = () => {
       </div>
 
       {/* Mobile Sidebar Drawer */}
-      {mobileSidebarOpen && (
+      {/* {mobileSidebarOpen && (
         <>
           <div
             className="fixed inset-0 z-100 bg-black/40 lg:hidden"
@@ -339,7 +339,7 @@ const VendorProductsPage: React.FC = () => {
             <Sidebar />
           </div>
         </>
-      )}
+      )} */}
     </div>
   );
 };

@@ -137,7 +137,7 @@ export default function Dashboard({ locked, isSeller = false }: DashboardProps) 
     }).format(n);
 
   return (
-    <div className="space-y-6 pt-15">
+    <div className="space-y-6 lg:pt-15 pt-0">
       <div className="flex justify-end">
         
         <button

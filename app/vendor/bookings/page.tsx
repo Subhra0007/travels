@@ -59,8 +59,9 @@ const VendorBookingsPage = () => {
   if (!user) return <PageLoader fullscreen={false} />;
 
   return (
-    <div className="space-y-6">
-      <div className="mb-6 flex flex-col gap-2">
+    <div className="space-y-6 lg:pt-15 pt-0">
+       
+      <div className="mb-6 flex flex-col gap-2 ">
         <h1 className="text-3xl font-bold text-gray-900">Bookings</h1>
         <p className="text-sm text-gray-600">
           Track every reservation received for your booking. Update status as you confirm, host, or cancel bookings.
@@ -82,8 +83,8 @@ const VendorBookingsPage = () => {
           </button>
         </div>
       ) : (
-        <div className="w-full">
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <div className="w-full ">
+          <div className="overflow-x-auto -mx-4 sm:mx-0 overflow-y-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden">
                 <BookingTable
