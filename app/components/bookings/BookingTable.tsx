@@ -85,8 +85,16 @@ export type BookingRecord = {
     email?: string;
     contactNumber?: string;
   } | string;
+  cancelledBy?: {
+    _id: string;
+    fullName?: string;
+    email?: string;
+    accountType?: string;
+  } | string;
   createdAt?: string;
   cancelledAt?: string;
+  cancellationReason?: string;
+  cancelledByRole?: "user" | "vendor" | "admin";
 };
 
 type BookingTableProps = {
@@ -96,6 +104,7 @@ type BookingTableProps = {
   onUpdateStatus?: (bookingId: string, status: string) => void | Promise<void>;
   onCancel?: (bookingId: string) => void | Promise<void>;
   loadingBookingId?: string | null;
+  showCancellationMeta?: boolean;
 };
 
 const formatDate = (value?: string) => {
@@ -124,6 +133,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
   onUpdateStatus,
   onCancel,
   loadingBookingId,
+  showCancellationMeta = false,
 }) => {
   const rows = useMemo(() => bookings || [], [bookings]);
 
@@ -158,6 +168,13 @@ const BookingTable: React.FC<BookingTableProps> = ({
               <th className="px-4 py-3 text-left">Status</th>
               {variant === "admin" && <th className="px-4 py-3 text-left">Vendor</th>}
               <th className="px-4 py-3 text-left">Created</th>
+              {showCancellationMeta && (
+                <>
+                  <th className="px-4 py-3 text-left">Cancelled By</th>
+                  <th className="px-4 py-3 text-left">Reason</th>
+                  <th className="px-4 py-3 text-left">Cancelled On</th>
+                </>
+              )}
               {(showVendorActions || showUserActions) && <th className="px-4 py-3 text-left">Actions</th>}
             </tr>
           </thead>
@@ -291,6 +308,35 @@ const BookingTable: React.FC<BookingTableProps> = ({
                     </td>
                   )}
                   <td className="px-4 py-3 align-top text-xs text-gray-500">{formatDate(booking.createdAt)}</td>
+                  {showCancellationMeta && (
+                    <>
+                      <td className="px-4 py-3 align-top text-xs text-gray-600">
+                        {booking.cancelledByRole ? (
+                          <div className="flex flex-col">
+                            <span className="font-semibold capitalize">{booking.cancelledByRole}</span>
+                            {typeof booking.cancelledBy === "object" && booking.cancelledBy ? (
+                              <>
+                                <span>{booking.cancelledBy.fullName ?? "—"}</span>
+                                {booking.cancelledBy.email && (
+                                  <span className="text-gray-400">{booking.cancelledBy.email}</span>
+                                )}
+                              </>
+                            ) : null}
+                          </div>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="px-4 py-3 align-top text-xs text-gray-600">
+                        {booking.cancellationReason ? (
+                          <span className="line-clamp-2">{booking.cancellationReason}</span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="px-4 py-3 align-top text-xs text-gray-500">{formatDate(booking.cancelledAt)}</td>
+                    </>
+                  )}
                   {(showVendorActions || showUserActions) && (
                     <td className="px-4 py-3 align-top">
                       {showVendorActions ? (

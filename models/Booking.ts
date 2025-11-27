@@ -62,6 +62,9 @@ export interface IBooking extends Document {
   paymentReference?: string;
   metadata?: Record<string, any>;
   cancelledAt?: Date;
+  cancellationReason?: string;
+  cancelledBy?: mongoose.Types.ObjectId;
+  cancelledByRole?: "user" | "vendor" | "admin";
   completedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
@@ -145,6 +148,9 @@ const bookingSchema = new Schema<IBooking>(
     paymentReference: String,
     metadata: Schema.Types.Mixed,
     cancelledAt: Date,
+    cancellationReason: String,
+    cancelledBy: { type: Schema.Types.ObjectId, ref: "User" },
+    cancelledByRole: { type: String, enum: ["user", "vendor", "admin"], default: null },
     completedAt: Date,
   },
   { timestamps: true }

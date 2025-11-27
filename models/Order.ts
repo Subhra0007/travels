@@ -42,6 +42,7 @@ export interface IOrder extends Document {
   cancellationReason?: string | null;
   cancelledBy?: mongoose.Types.ObjectId | null;
   cancelledAt?: Date | null;
+  cancelledByRole?: "user" | "vendor" | "admin" | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -95,6 +96,7 @@ const OrderSchema = new Schema<IOrder>(
     cancellationReason: { type: String, default: null },
     cancelledBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     cancelledAt: { type: Date, default: null },
+    cancelledByRole: { type: String, enum: ["user", "vendor", "admin"], default: null },
   },
   { timestamps: true }
 );

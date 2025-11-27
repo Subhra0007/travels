@@ -15,6 +15,7 @@ const ProductPurchaseManagePage = () => {
         title="Vendor Product Purchases"
         description="Shows purchases for every vendor product listed on the marketplace."
         showVendorColumn
+        readOnly={true}
       />
     </div>
   );

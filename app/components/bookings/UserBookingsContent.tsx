@@ -6,6 +6,15 @@ import { useEffect, useState } from "react";
 import BookingTable, { type BookingRecord } from "./BookingTable";
 import PageLoader from "../common/PageLoader";
 import { useProfileLayout } from "@/app/profile/ProfileLayoutContext";
+import CancellationModal from "../common/CancellationModal";
+
+const PRESET_BOOKING_REASONS = [
+  "Change of travel plans",
+  "Found better dates or pricing",
+  "Booking created by mistake",
+  "Vendor is unresponsive",
+  "Health or emergency reasons",
+];
 
 const UserBookingsContent: React.FC = () => {
   const { user } = useProfileLayout();
@@ -13,6 +22,9 @@ const UserBookingsContent: React.FC = () => {
   const [tableLoadingId, setTableLoadingId] = useState<string | null>(null);
   const [tableRefreshing, setTableRefreshing] = useState(false);
   const [initialFetch, setInitialFetch] = useState(true);
+  const [cancellationModalOpen, setCancellationModalOpen] = useState(false);
+  const [pendingCancellationId, setPendingCancellationId] = useState<string | null>(null);
+  const [modalSubmitting, setModalSubmitting] = useState(false);
 
   const loadBookings = async (isInitial = false) => {
     try {
@@ -41,13 +53,17 @@ const UserBookingsContent: React.FC = () => {
     loadBookings(true);
   }, []);
 
-  const handleCancelBooking = async (bookingId: string) => {
-    const reason = window.prompt("Let the host know why you are cancelling (optional).") ?? "";
-    if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+  const openCancellationModal = (bookingId: string) => {
+    setPendingCancellationId(bookingId);
+    setCancellationModalOpen(true);
+  };
 
+  const handleConfirmCancellation = async (reason: string) => {
+    if (!pendingCancellationId) return;
     try {
-      setTableLoadingId(bookingId);
-      const res = await fetch(`/api/bookings/${bookingId}`, {
+      setModalSubmitting(true);
+      setTableLoadingId(pendingCancellationId);
+      const res = await fetch(`/api/bookings/${pendingCancellationId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -58,9 +74,13 @@ const UserBookingsContent: React.FC = () => {
         throw new Error(data?.message || "Failed to cancel booking");
       }
       await loadBookings();
+      setCancellationModalOpen(false);
+      setPendingCancellationId(null);
     } catch (error: any) {
       alert(error?.message || "Unable to cancel booking. Please try again.");
       setTableLoadingId(null);
+    } finally {
+      setModalSubmitting(false);
     }
   };
 
@@ -86,13 +106,28 @@ const UserBookingsContent: React.FC = () => {
       {initialFetch ? (
         <PageLoader fullscreen={false} className="py-16" />
       ) : (
-        <BookingTable
-          bookings={bookings}
-          variant="user"
-          onCancel={handleCancelBooking}
-          loadingBookingId={tableLoadingId}
-          emptyMessage="Once you confirm a stay, it will appear here with the reference number and stay details."
-        />
+        <>
+          <BookingTable
+            bookings={bookings}
+            variant="user"
+            onCancel={openCancellationModal}
+            loadingBookingId={tableLoadingId}
+            emptyMessage="Once you confirm a stay, it will appear here with the reference number and stay details."
+          />
+          <CancellationModal
+            open={cancellationModalOpen}
+            title="Cancel this booking"
+            subtitle="Selected bookings are cancelled instantly and the vendor is notified."
+            presetReasons={PRESET_BOOKING_REASONS}
+            submitting={modalSubmitting}
+            onClose={() => {
+              if (modalSubmitting) return;
+              setCancellationModalOpen(false);
+              setPendingCancellationId(null);
+            }}
+            onConfirm={handleConfirmCancellation}
+          />
+        </>
       )}
     </div>
   );

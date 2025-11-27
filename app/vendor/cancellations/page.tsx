@@ -1,163 +1,171 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Sidebar from "@/app/components/Pages/vendor/Sidebar";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import BookingTable, { type BookingRecord } from "@/app/components/bookings/BookingTable";
+import CancelledOrdersTable, { type CancelledOrderRecord } from "@/app/components/orders/CancelledOrdersTable";
+import { useVendorLayout } from "../VendorLayoutContext";
+
+const POLL_INTERVAL_MS = 8000;
 
 const VendorCancellationsPage = () => {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const { user } = useVendorLayout();
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [orders, setOrders] = useState<CancelledOrderRecord[]>([]);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [orderError, setOrderError] = useState<string | null>(null);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
-  const verifyVendor = async () => {
+  const hasServices = Array.isArray(user?.vendorServices) && user.vendorServices.length > 0;
+  const isSeller = Boolean(user?.isSeller);
+
+  const loadBookings = useCallback(async () => {
+    if (!hasServices) return;
     try {
-      const res = await fetch("/api/auth/verify", { credentials: "include" });
-      if (res.status === 401) {
-        router.replace("/login");
-        return;
-      }
-
-      const data = await res.json().catch(() => null);
-      const verifiedUser = data?.user;
-      if (!res.ok || !verifiedUser) {
-        router.replace("/login");
-        return;
-      }
-      if (verifiedUser.accountType !== "vendor") {
-        router.replace("/profile");
-        return;
-      }
-
-      setAuthorized(true);
-    } catch (err) {
-      console.error("Vendor auth failed", err);
-      router.replace("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadCancelledBookings = async () => {
-    try {
-      setError(null);
-      const res = await fetch("/api/bookings?status=cancelled", { credentials: "include" });
+      setBookingError(null);
+      setLoadingBookings(true);
+      const res = await fetch("/api/bookings?status=cancelled", { credentials: "include", cache: "no-store" });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data?.message || "Unable to load cancellations");
+        throw new Error(data?.message || "Unable to load booking cancellations");
       }
       setBookings(data.bookings ?? []);
-    } catch (err: any) {
-      console.error("Vendor cancellations fetch failed", err);
-      setError(err?.message || "Failed to load cancellations.");
+    } catch (error) {
+      console.error("Vendor booking cancellations fetch failed", error);
+      const message = error instanceof Error ? error.message : "Failed to load booking cancellations.";
+      setBookingError(message);
+    } finally {
+      setLoadingBookings(false);
     }
-  };
+  }, [hasServices]);
+
+  const loadOrders = useCallback(async () => {
+    if (!isSeller) return;
+    try {
+      setOrderError(null);
+      setLoadingOrders(true);
+      const res = await fetch("/api/vendor/orders?status=Cancelled", { credentials: "include", cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data?.message || "Unable to load cancelled orders");
+      }
+      setOrders(data.data ?? []);
+    } catch (error) {
+      console.error("Vendor cancelled orders fetch failed", error);
+      const message = error instanceof Error ? error.message : "Failed to load cancelled orders.";
+      setOrderError(message);
+    } finally {
+      setLoadingOrders(false);
+    }
+  }, [isSeller]);
 
   useEffect(() => {
-    verifyVendor();
-  }, []);
+    loadBookings();
+    loadOrders();
+  }, [loadBookings, loadOrders]);
 
   useEffect(() => {
-    if (authorized) {
-      loadCancelledBookings();
-    }
-  }, [authorized]);
+    if (!hasServices && !isSeller) return;
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadBookings();
+        loadOrders();
+      }
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [hasServices, isSeller, loadBookings, loadOrders]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full py-12">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
-      </div>
-    );
-  }
-
-  if (!authorized) return null;
+  const vendorTypeLabel = useMemo(() => {
+    if (hasServices && isSeller) return "bookings and orders";
+    if (hasServices) return "bookings";
+    if (isSeller) return "orders";
+    return "cancellations";
+  }, [hasServices, isSeller]);
 
   return (
-   <div className="flex h-screen bg-gray-50 relative ">
-            {/* Desktop sidebar */}
-               {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto overflow-x-hidden">
-              <Sidebar />
-            </div> */}
-   
-          <div className="flex-1 flex flex-col  overflow-hidden lg:pt-15 pt-0">
-           {/* Topbar with mobile trigger */}
-           {/* <div className="sticky top-0 z-40 bg-sky-50 lg:pt-15 pt-0">
-             <div className="flex items-center gap-3 p-3 border-b"> */}
-               {/* <button
-                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
-                 onClick={() => setMobileSidebarOpen(true)}
-                 aria-label="Open menu"
-               >
-                 ☰
-               </button> */}
-             {/* </div>
-           </div> */}
+    <div className="space-y-8 lg:pt-15 pt-0">
+      <header className="flex flex-col gap-2">
+        <p className="text-xs uppercase tracking-wide text-green-600 font-semibold">Cancellation centre</p>
+        <h1 className="text-3xl font-bold text-gray-900">Your cancelled {vendorTypeLabel}</h1>
+        <p className="text-sm text-gray-600">
+          Every cancellation is synced instantly so you can free inventory, follow up with travellers, and keep the admin
+          team aligned.
+        </p>
+      </header>
 
-        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10  w-full overflow-x-hidden">
-          <div className="mb-6 flex flex-col gap-2">
-            <h1 className="text-3xl font-bold text-gray-900">Cancelled bookings</h1>
-            <p className="text-sm text-gray-600">
-              See every stay a guest cancelled so you can follow up, restock availability, and coordinate with the admin team.
-            </p>
+      {hasServices && (
+        <section className="space-y-4 rounded-3xl bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Cancelled bookings</h2>
+              <p className="text-sm text-gray-500">Includes every stay or experience guests cancelled.</p>
+              {loadingBookings && <p className="text-xs uppercase tracking-wide text-gray-400 mt-2">Refreshing…</p>}
+            </div>
+            <button
+              type="button"
+              onClick={loadBookings}
+              className="inline-flex items-center rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 hover:border-gray-300"
+            >
+              Refresh
+            </button>
           </div>
 
-          {error ? (
-            <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
-              <p className="font-semibold">We couldn&apos;t retrieve cancellations.</p>
-              <p className="mt-2">{error}</p>
-              <button
-                type="button"
-                onClick={() => loadCancelledBookings()}
-                className="mt-4 inline-flex items-center justify-center rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow transition hover:bg-green-700"
-              >
-                Refresh page
-              </button>
+          {bookingError ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+              <p className="font-semibold">We couldn&apos;t retrieve cancelled bookings.</p>
+              <p className="mt-1">{bookingError}</p>
             </div>
           ) : (
-            <div className="w-full">
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <div className="inline-block min-w-full align-middle">
-                  <div className="overflow-hidden">
-                    <BookingTable
-                      bookings={bookings}
-                      variant="vendor"
-                      emptyMessage="Cancelled bookings will appear here instantly, so you can keep an eye on your calendar."
-                    />
-                  </div>
+            <BookingTable
+              bookings={bookings}
+              variant="vendor"
+              showCancellationMeta
+              emptyMessage="Cancelled bookings will appear here instantly, so you can free up those dates."
+            />
+          )}
+        </section>
+      )}
+
+      {isSeller && (
+        <div className="space-y-4">
+          {orderError ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">We couldn&apos;t retrieve cancelled orders.</p>
+                  <p className="mt-1">{orderError}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={loadOrders}
+                  className="rounded-full border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 hover:border-gray-300"
+                >
+                  Retry
+                </button>
               </div>
             </div>
+          ) : (
+            <CancelledOrdersTable
+              title="Cancelled product orders"
+              description="When a user cancels a product order we automatically restore your stock levels."
+              rows={orders}
+              variant="vendor"
+              refreshing={loadingOrders}
+              onRefresh={loadOrders}
+              emptyMessage="As soon as a customer cancels a product order it will appear here."
+            />
           )}
-        </main>
-      </div>
+        </div>
+      )}
 
-      {mobileSidebarOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-100 bg-black/40 lg:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          <div className="fixed inset-y-0 left-0 z-100 w-72 overflow-y-auto bg-white shadow-2xl lg:hidden">
-            <div className="p-4 border-b flex items-center justify-between">
-              <span className="text-lg font-semibold text-gray-800">Menu</span>
-              <button
-                onClick={() => setMobileSidebarOpen(false)}
-                className="px-3 py-1.5 rounded-md border text-gray-700"
-              >
-                Close
-              </button>
-            </div>
-            <Sidebar />
-          </div>
-        </>
+      {!hasServices && !isSeller && (
+        <div className="rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600">
+          Your vendor account does not include services or products yet. Once you publish listings or products, cancelled
+          entries will appear here automatically.
+        </div>
       )}
     </div>
   );
 };
 
 export default VendorCancellationsPage;
-

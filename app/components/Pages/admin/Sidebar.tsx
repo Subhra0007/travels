@@ -12,6 +12,7 @@ import {
   FaUserCircle,
   FaBed,
   FaShoppingBag,
+  FaTimesCircle,
 } from "react-icons/fa";
 import { MdShoppingCart } from "react-icons/md";
 import { BiCategory } from "react-icons/bi";
@@ -255,7 +256,6 @@ const Sidebar: React.FC = () => {
                 { label: "Tours", path: "/admin/bookings/tours" },
                 { label: "Adventures", path: "/admin/bookings/adventures" },
                 { label: "Vehicle Rental", path: "/admin/bookings/vehicle-rental" },
-                { label: "Cancellations", path: "/admin/bookings/cancellations" },
               ].map((item) => (
                 <div
                   key={item.path}
@@ -272,6 +272,28 @@ const Sidebar: React.FC = () => {
             </div>
           )}
         </div>
+
+        <button
+          onClick={() => router.push("/admin/cancellation")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/cancellation")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaTimesCircle size={14} /> Order Cancellation
+        </button>
+
+        <button
+          onClick={() => router.push("/admin/admin-product-cancellations")}
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+            isActive("/admin/admin-product-cancellations")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+          }`}
+        >
+          <FaTimesCircle size={14} /> Admin Product Cancellations
+        </button>
 
         {/* Accounting */}
         <div>

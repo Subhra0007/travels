@@ -682,6 +682,7 @@ export const GET = auth(async (req: NextRequest, context: any) => {
       .populate("adventureId", "name category location vendorId")
       .populate("vehicleRentalId", "name category location vendorId")
       .populate("vendorId", "fullName email contactNumber")
+      .populate({ path: "cancelledBy", select: "fullName email accountType", strictPopulate: false })
       .sort({ createdAt: -1 })
       .lean();
 

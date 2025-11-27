@@ -49,13 +49,27 @@ const VendorPurchasesPage = () => {
   }, [user?._id, hasServices]);
 
   const handleStatusChange = async (bookingId: string, status: string) => {
+    const payload: Record<string, any> = { status };
+
+    if (status === "cancelled") {
+      const reason = window.prompt("Please explain why this booking is being cancelled.");
+      if (reason === null) {
+        return;
+      }
+      if (!reason.trim()) {
+        alert("A short cancellation reason is required.");
+        return;
+      }
+      payload.reason = reason.trim();
+    }
+
     setActionBookingId(bookingId);
     try {
       const res = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {

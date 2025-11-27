@@ -4,6 +4,15 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { FaShoppingBag, FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
 import PageLoader from "../../components/common/PageLoader";
+import CancellationModal from "../../components/common/CancellationModal";
+
+const PRESET_ORDER_REASONS = [
+  "Ordered the wrong item",
+  "Found a better price elsewhere",
+  "Shipping feels too slow",
+  "No longer need the product",
+  "Payment or billing issue",
+];
 
 type OrderItem = {
   itemId: string;
@@ -45,6 +54,8 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalSubmitting, setModalSubmitting] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -101,30 +112,32 @@ export default function OrdersPage() {
     return true;
   };
 
-  const handleCancelOrder = async (orderId: string) => {
-    const reason = window.prompt("Please share a brief reason for cancelling this order:");
-    if (reason === null) return;
-    if (!reason.trim()) {
-      alert("Please provide a short reason so we can review your request.");
-      return;
-    }
+  const openCancellationModal = (orderId: string) => {
     setCancellingId(orderId);
+    setModalOpen(true);
+  };
+
+  const handleCancelOrder = async (reason: string) => {
+    if (!cancellingId) return;
+    setModalSubmitting(true);
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${cancellingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ action: "cancel", reason: reason.trim() }),
+        body: JSON.stringify({ action: "cancel", reason }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
         throw new Error(data?.message || "Unable to cancel order");
       }
       await loadOrders();
+      setModalOpen(false);
+      setCancellingId(null);
     } catch (err: any) {
       alert(err?.message || "We couldn’t cancel the order right now. Please try again.");
     } finally {
-      setCancellingId(null);
+      setModalSubmitting(false);
     }
   };
 
@@ -173,15 +186,15 @@ export default function OrdersPage() {
                   {canCancelOrder(order) && (
                     <button
                       type="button"
-                      onClick={() => handleCancelOrder(order._id)}
-                      disabled={cancellingId === order._id}
+                      onClick={() => openCancellationModal(order._id)}
+                      disabled={modalSubmitting && cancellingId === order._id}
                       className={`text-sm font-semibold rounded-full border px-4 py-1 ${
-                        cancellingId === order._id
+                        modalSubmitting && cancellingId === order._id
                           ? "border-gray-200 text-gray-400"
                           : "border-red-200 text-red-600 hover:bg-red-50"
                       }`}
                     >
-                      {cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
+                      {modalSubmitting && cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
                     </button>
                   )}
                 </div>
@@ -273,6 +286,20 @@ export default function OrdersPage() {
           ))}
         </div>
       )}
+
+      <CancellationModal
+        open={modalOpen}
+        title="Cancel this order"
+        subtitle="We immediately release reserved inventory back to the seller."
+        presetReasons={PRESET_ORDER_REASONS}
+        submitting={modalSubmitting}
+        onClose={() => {
+          if (modalSubmitting) return;
+          setModalOpen(false);
+          setCancellingId(null);
+        }}
+        onConfirm={handleCancelOrder}
+      />
     </div>
   );
 }

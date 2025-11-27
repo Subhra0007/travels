@@ -10,7 +10,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   tours: "Tour bookings",
   adventures: "Adventure bookings",
   "vehicle-rental": "Vehicle rental bookings",
-  cancellations: "Cancelled bookings",
 };
 
 const SERVICE_TYPE_BY_CATEGORY: Record<string, BookingRecord["serviceType"]> = {
@@ -91,10 +90,6 @@ const AdminBookingsCategoryPage = () => {
   }, [categoryParam, router]);
 
   const filteredBookings = useMemo(() => {
-    if (category === "cancellations") {
-      return bookings.filter((booking) => booking.status === "cancelled");
-    }
-
     const serviceType = SERVICE_TYPE_BY_CATEGORY[category];
     if (!serviceType) return bookings;
 
@@ -111,8 +106,6 @@ const AdminBookingsCategoryPage = () => {
         return "Adventure reservations will appear here when travellers confirm their trip.";
       case "vehicle-rental":
         return "Vehicle rental bookings will display here after drivers provide their pickup information.";
-      case "cancellations":
-        return "When any booking is cancelled it will be listed here for quick follow-up.";
       default:
         return "Bookings for this category will display here.";
     }

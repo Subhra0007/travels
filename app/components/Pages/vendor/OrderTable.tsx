@@ -77,38 +77,43 @@ export default function OrderTable({ refreshKey = 0 }: { refreshKey?: number }) 
       ) : purchases.length === 0 ? (
         <p className="text-sm text-gray-500">No recent purchases</p>
       ) : (
-        <table className="w-full text-sm">
-          <thead className="border-b">
-            <tr>
-              <th className="py-2 text-left">Item Type</th>
-              <th className="py-2 text-left">Item Name</th>
-              <th>Status</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {purchases.map((purchase) => (
-              <tr key={purchase._id} className="border-b last:border-none">
-                <td className="py-2">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      purchase.type === "Product" ? "bg-purple-100 text-purple-700" : "bg-teal-100 text-teal-700"
-                    }`}
-                  >
-                    {purchase.type}
-                  </span>
-                </td>
-                <td className="py-2">{purchase.name}</td>
-                <td>
-                  <span className={`px-2 py-1 rounded text-xs ${getStatusColor(purchase.status)}`}>
-                    {purchase.status}
-                  </span>
-                </td>
-                <td>{formatPrice(purchase.price)}</td>
+        <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+          <table className="min-w-full text-sm text-left">
+            <thead className="bg-gray-50 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+              <tr>
+                <th className="px-4 py-3">Item Type</th>
+                <th className="px-4 py-3">Item Name</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-right">Price</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-100 bg-white">
+              {purchases.map((purchase) => (
+                <tr key={purchase._id} className="transition hover:bg-gray-50/60">
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                        purchase.type === "Product" ? "bg-purple-50 text-purple-700" : "bg-teal-50 text-teal-700"
+                      }`}
+                    >
+                      {purchase.type}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-gray-900">{purchase.name}</p>
+                    <p className="text-xs text-gray-500 capitalize">{purchase.type.toLowerCase()} booking</p>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(purchase.status)}`}>
+                      {purchase.status || "N/A"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right font-semibold text-gray-900">{formatPrice(purchase.price)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -17,7 +17,8 @@ const shouldLockVendor = (account: any) => {
     Array.isArray(account.vendorServices) && account.vendorServices.length > 0;
   const sellerOnly = Boolean(account.isSeller) && !hasVendorServices;
 
-  if (sellerOnly) return false;
+  // Lock sellers (even without vendor services) until approved, just like vendors
+  if (sellerOnly) return !account.isVendorApproved;
   return !account.isVendorApproved;
 };
 

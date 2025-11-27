@@ -13,6 +13,8 @@ type TrendPoint = {
 export default function EarningsOverviewChart({ refreshKey = 0 }: { refreshKey?: number }) {
   const [data, setData] = useState<TrendPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [supportsServices, setSupportsServices] = useState(true);
+  const [supportsProducts, setSupportsProducts] = useState(true);
 
   useEffect(() => {
     const fetchEarnings = async () => {
@@ -24,6 +26,9 @@ export default function EarningsOverviewChart({ refreshKey = 0 }: { refreshKey?:
         });
         const payload = await res.json();
         if (payload.success && payload.earningsTrend) {
+          const caps = payload.capabilities || {};
+          setSupportsServices(caps.services ?? true);
+          setSupportsProducts(caps.products ?? true);
           const { today, yesterday } = payload.earningsTrend;
           const chartData: TrendPoint[] = [
             {
@@ -80,9 +85,9 @@ export default function EarningsOverviewChart({ refreshKey = 0 }: { refreshKey?:
               <XAxis dataKey="period" stroke="#888" />
               <YAxis stroke="#888" tickFormatter={(value) => `${value / 1000}k`} />
               <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              <Legend />
-              <Bar dataKey="service" stackId="earnings" fill="#0ea5e9" name="Service" />
-              <Bar dataKey="product" stackId="earnings" fill="#a855f7" name="Product" />
+              {(supportsServices || supportsProducts) && <Legend />}
+              {supportsServices && <Bar dataKey="service" stackId="earnings" fill="#0ea5e9" name="Service" />}
+              {supportsProducts && <Bar dataKey="product" stackId="earnings" fill="#a855f7" name="Product" />}
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -94,7 +99,14 @@ export default function EarningsOverviewChart({ refreshKey = 0 }: { refreshKey?:
             <p className="text-gray-500">{point.period}</p>
             <p className="text-base font-semibold">{formatCurrency(point.total)}</p>
             <p className="text-[11px] text-gray-500">
-              {formatCurrency(point.service)} services • {formatCurrency(point.product)} products
+              {supportsServices && (
+                <span>
+                  {formatCurrency(point.service)} services
+                  {supportsProducts ? " • " : ""}
+                </span>
+              )}
+              {supportsProducts && <span>{formatCurrency(point.product)} products</span>}
+              {!supportsServices && !supportsProducts && "No earnings available"}
             </p>
           </div>
         ))}

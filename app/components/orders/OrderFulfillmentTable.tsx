@@ -30,6 +30,9 @@ export type OrderFulfillmentRow = {
   orderCreatedAt?: string | null;
   vendorName?: string | null;
   vendorId?: string | null;
+  cancelledAt?: string | null;
+  cancellationReason?: string | null;
+  cancelledByRole?: string | null;
 };
 
 type Props = {
@@ -38,6 +41,7 @@ type Props = {
   description?: string;
   showVendorColumn?: boolean;
   emptyMessage?: string;
+  readOnly?: boolean; // If true, status cannot be edited (for admin view)
 };
 
 const toInputDate = (value?: string | null) => {
@@ -80,6 +84,7 @@ const OrderFulfillmentTable = ({
   description,
   showVendorColumn = false,
   emptyMessage = "No orders found yet.",
+  readOnly = false,
 }: Props) => {
   const [rows, setRows] = useState<OrderFulfillmentRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -286,43 +291,59 @@ const OrderFulfillmentTable = ({
                   <td className="py-4 pr-4">
                     <label className="flex flex-col text-xs font-semibold text-gray-500">
                       <span>Expected</span>
-                      <input
-                        type="date"
-                        value={form.deliveryDate}
-                        onChange={(event) => handleFieldChange(key, "deliveryDate", event.target.value)}
-                        className="mt-1 w-36 rounded border border-gray-200 px-2 py-1 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none"
-                        disabled={isSaving}
-                      />
-                      <span className="text-[10px] font-normal text-gray-400">{formatDisplayDate(row.deliveryDate)}</span>
+                      {readOnly ? (
+                        <div className="mt-1 w-36 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-sm text-gray-700">
+                          {formatDisplayDate(row.deliveryDate)}
+                        </div>
+                      ) : (
+                        <>
+                          <input
+                            type="date"
+                            value={form.deliveryDate}
+                            onChange={(event) => handleFieldChange(key, "deliveryDate", event.target.value)}
+                            className="mt-1 w-36 rounded border border-gray-200 px-2 py-1 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none"
+                            disabled={isSaving}
+                          />
+                          <span className="text-[10px] font-normal text-gray-400">{formatDisplayDate(row.deliveryDate)}</span>
+                        </>
+                      )}
                     </label>
                   </td>
                   <td className="py-4 pr-4">
-                    <select
-                      value={form.status}
-                      onChange={(event) => handleFieldChange(key, "status", event.target.value)}
-                      className="w-36 rounded border border-gray-200 px-2 py-1 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none"
-                      disabled={isSaving}
-                    >
-                      {ORDER_STATUS_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    {readOnly ? (
+                      <div className="w-36 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-sm text-gray-700">
+                        {form.status}
+                      </div>
+                    ) : (
+                      <select
+                        value={form.status}
+                        onChange={(event) => handleFieldChange(key, "status", event.target.value)}
+                        className="w-36 rounded border border-gray-200 px-2 py-1 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none"
+                        disabled={isSaving}
+                      >
+                        {ORDER_STATUS_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </td>
                   <td className="py-4 text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleUpdate(row)}
-                      disabled={!isDirty(row) || isSaving}
-                      className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-semibold ${
-                        !isDirty(row) || isSaving
-                          ? "cursor-not-allowed border border-gray-200 text-gray-400"
-                          : "bg-indigo-600 text-white hover:bg-indigo-700"
-                      }`}
-                    >
-                      {isSaving ? "Saving..." : "Update"}
-                    </button>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdate(row)}
+                        disabled={!isDirty(row) || isSaving}
+                        className={`inline-flex items-center rounded-full px-4 py-1.5 text-xs font-semibold ${
+                          !isDirty(row) || isSaving
+                            ? "cursor-not-allowed border border-gray-200 text-gray-400"
+                            : "bg-indigo-600 text-white hover:bg-indigo-700"
+                        }`}
+                      >
+                        {isSaving ? "Saving..." : "Update"}
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -331,7 +352,7 @@ const OrderFulfillmentTable = ({
         </table>
       </div>
     );
-  }, [loading, error, rows, formState, savingKey, showVendorColumn]);
+  }, [loading, error, rows, formState, savingKey, showVendorColumn, readOnly]);
 
   return (
     <section className="rounded-3xl bg-white p-6 shadow-sm">

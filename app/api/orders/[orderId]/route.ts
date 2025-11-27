@@ -32,6 +32,34 @@ const parseDateInput = (value: unknown) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
+const restoreProductStock = async (items: IOrderItem[]) => {
+  await Promise.all(
+    items
+      .filter((item) => item.itemType === "Product")
+      .map(async (item) => {
+        const product = await Product.findById(item.itemId);
+        if (!product) return;
+
+        if (Array.isArray(product.variants) && product.variants.length > 0 && item.variantId) {
+          const variant = product.variants.id(item.variantId);
+          if (!variant) return;
+          const currentStock = typeof variant.stock === "number" ? variant.stock : 0;
+          variant.stock = currentStock + item.quantity;
+          const hasInventory = product.variants.some(
+            (variantDoc: any) => Number(variantDoc.stock ?? 0) > 0
+          );
+          product.outOfStock = !hasInventory;
+        } else {
+          const currentStock = typeof product.stock === "number" ? product.stock : 0;
+          product.stock = currentStock + item.quantity;
+          product.outOfStock = product.stock <= 0;
+        }
+
+        await product.save();
+      })
+  );
+};
+
 type RouteParams = { orderId: string };
 
 export const PATCH = auth(async (req: NextRequest, context: { params: Promise<RouteParams> }) => {
@@ -76,6 +104,10 @@ export const PATCH = auth(async (req: NextRequest, context: { params: Promise<Ro
         return NextResponse.json({ success: false, message: "Delivered orders cannot be cancelled" }, { status: 400 });
       }
 
+      const itemsToRestock = order.items.filter(
+        (item: IOrderItem) => normalizeStatus(item.status as any) !== "Cancelled"
+      );
+
       order.items.forEach((item: IOrderItem) => {
         item.status = "Cancelled";
         item.deliveryDate = null;
@@ -85,8 +117,12 @@ export const PATCH = auth(async (req: NextRequest, context: { params: Promise<Ro
       order.cancellationReason = reason;
       order.cancelledBy = new mongoose.Types.ObjectId(user.id);
       order.cancelledAt = new Date();
+      order.cancelledByRole = "user";
 
       await order.save();
+      if (itemsToRestock.length) {
+        await restoreProductStock(itemsToRestock);
+      }
       return NextResponse.json({ success: true, order: order.toObject() });
     }
 

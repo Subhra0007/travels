@@ -100,6 +100,8 @@ export const PATCH = auth(async (
 
     let previousStatus: BookingStatus | undefined;
 
+    const reasonFromBody = typeof body.reason === "string" ? body.reason.trim() : "";
+
     if (body.status) {
       previousStatus = booking.status as BookingStatus;
       const nextStatus = body.status as BookingStatus;
@@ -116,15 +118,26 @@ export const PATCH = auth(async (
       if (nextStatus === "cancelled") {
         updates.cancelledAt = new Date();
 
+        const fallbackReason = isCustomer
+          ? "Customer cancelled the booking"
+          : isVendor
+            ? "Vendor cancelled the booking"
+            : "Admin cancelled the booking";
+
         // Require a reason when the customer cancels
-        if (isCustomer) {
-          if (!body.reason || typeof body.reason !== "string" || !body.reason.trim()) {
-            return NextResponse.json(
-              { success: false, message: "Cancellation reason is required" },
-              { status: 400 }
-            );
-          }
+        if (isCustomer && !reasonFromBody) {
+          return NextResponse.json(
+            { success: false, message: "Cancellation reason is required" },
+            { status: 400 }
+          );
         }
+
+        const actorId = user.id || user._id;
+        if (actorId && mongoose.Types.ObjectId.isValid(actorId)) {
+          updates.cancelledBy = new mongoose.Types.ObjectId(actorId);
+        }
+        updates.cancelledByRole = isAdmin ? "admin" : isVendor ? "vendor" : "user";
+        updates.cancellationReason = reasonFromBody || booking.cancellationReason || fallbackReason;
       }
       // Set completedAt when status is "completed"
       // Always set it if status is completed (even if already completed, to ensure it's set)
@@ -152,10 +165,15 @@ export const PATCH = auth(async (
       updates.metadata = { ...booking.metadata, ...body.metadata };
     }
 
-    if (isCustomer && body.reason && typeof body.reason === "string") {
+    if (isCustomer && reasonFromBody) {
       updates.metadata = {
         ...booking.metadata,
-        userCancellationReason: body.reason,
+        userCancellationReason: reasonFromBody,
+      };
+    } else if (!isCustomer && reasonFromBody) {
+      updates.metadata = {
+        ...booking.metadata,
+        staffCancellationReason: reasonFromBody,
       };
     }
 
@@ -211,7 +229,10 @@ export const PATCH = auth(async (
 
           if (vendorEmail) {
             const reason =
-              (updatedBooking.metadata as any)?.userCancellationReason || body.reason || "";
+              updatedBooking.cancellationReason ||
+              (updatedBooking.metadata as any)?.userCancellationReason ||
+              reasonFromBody ||
+              "";
 
             await mailSender(
               vendorEmail,

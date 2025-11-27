@@ -6,7 +6,20 @@ import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import Order from "@/models/Order";
 
-const buildPipeline = (vendorId: mongoose.Types.ObjectId) => {
+const normalizeStatus = (status?: string | null) => {
+  if (!status || status === "Placed") return "Pending";
+  return status;
+};
+
+const formatStatusFilter = (value?: string | null) => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const lower = trimmed.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+};
+
+const buildPipeline = (vendorId: mongoose.Types.ObjectId, statusFilter?: string | null) => {
   const pipeline: mongoose.PipelineStage[] = [
     { $sort: { createdAt: -1 } },
     {
@@ -54,15 +67,22 @@ const buildPipeline = (vendorId: mongoose.Types.ObjectId) => {
         soldAmount: { $multiply: ["$unitPrice", "$items.quantity"] },
       },
     },
-    { $sort: { createdAt: -1 } },
   ];
 
-  return pipeline;
-};
+  if (statusFilter) {
+    pipeline.push({
+      $match: {
+        $or: [
+          { "items.status": statusFilter },
+          { status: statusFilter },
+        ],
+      },
+    });
+  }
 
-const normalizeStatus = (status?: string | null) => {
-  if (!status || status === "Placed") return "Pending";
-  return status;
+  pipeline.push({ $sort: { createdAt: -1 } });
+
+  return pipeline;
 };
 
 const mapRow = (row: any) => {
@@ -94,6 +114,9 @@ const mapRow = (row: any) => {
     status: normalizeStatus(row?.items?.status ?? row?.status),
     orderStatus: normalizeStatus(row?.status),
     orderCreatedAt: row?.createdAt ?? null,
+    cancellationReason: row?.cancellationReason ?? null,
+    cancelledAt: row?.cancelledAt ?? null,
+    cancelledByRole: row?.cancelledByRole ?? null,
   };
 };
 
@@ -106,7 +129,9 @@ export const GET = auth(async (req: NextRequest) => {
 
     await dbConnect();
     const vendorId = new mongoose.Types.ObjectId(user.id || user._id);
-    const rows = await Order.aggregate(buildPipeline(vendorId));
+    const { searchParams } = new URL(req.url);
+    const statusFilter = formatStatusFilter(searchParams.get("status"));
+    const rows = await Order.aggregate(buildPipeline(vendorId, statusFilter));
 
     return NextResponse.json({ success: true, data: rows.map(mapRow) });
   } catch (error: any) {

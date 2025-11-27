@@ -6,7 +6,15 @@ import dbConnect from "@/lib/config/database";
 import { auth } from "@/lib/middlewares/auth";
 import Order from "@/models/Order";
 
-const buildPipeline = (scope: "admin" | "vendor") => {
+const formatStatusFilter = (value?: string | null) => {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const lower = trimmed.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+};
+
+const buildPipeline = (scope: "admin" | "vendor", statusFilter?: string | null) => {
   const pipeline: mongoose.PipelineStage[] = [
     { $sort: { createdAt: -1 } },
     {
@@ -86,6 +94,17 @@ const buildPipeline = (scope: "admin" | "vendor") => {
     });
   }
 
+  if (statusFilter) {
+    pipeline.push({
+      $match: {
+        $or: [
+          { "items.status": statusFilter },
+          { status: statusFilter },
+        ],
+      },
+    });
+  }
+
   pipeline.push({ $sort: { createdAt: -1 } });
 
   return pipeline;
@@ -128,7 +147,12 @@ const mapRow = (row: any) => {
     orderStatus: normalizeStatus(row?.status),
     orderCreatedAt: row?.createdAt ?? null,
     vendorName: row?.vendor?.fullName ?? null,
+    vendorEmail: row?.vendor?.email ?? null,
+    vendorPhone: row?.vendor?.contactNumber ?? null,
     vendorId: row?.vendor?._id?.toString() ?? null,
+    cancellationReason: row?.cancellationReason ?? null,
+    cancelledAt: row?.cancelledAt ?? null,
+    cancelledByRole: row?.cancelledByRole ?? null,
   };
 };
 
@@ -142,8 +166,9 @@ export const GET = auth(async (req: NextRequest) => {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const scopeParam = searchParams.get("scope") === "vendor" ? "vendor" : "admin";
+    const statusFilter = formatStatusFilter(searchParams.get("status"));
 
-    const rows = await Order.aggregate(buildPipeline(scopeParam));
+    const rows = await Order.aggregate(buildPipeline(scopeParam, statusFilter));
 
     return NextResponse.json({
       success: true,
