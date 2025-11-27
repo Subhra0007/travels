@@ -528,7 +528,7 @@ const StaysForm: React.FC<StaysFormProps> = ({
           Search Stays
         </button>
       </div>
-      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-1000">
         <div className="fixed inset-0 z-1000 bg-black/60" aria-hidden="true" />
         <div className="fixed inset-0 z-1001 flex items-center justify-center p-4">
           <Dialog.Panel className={`relative z-1002 w-full ${modalSection === "location" ? "max-w-sm" : "max-w-lg"} rounded-2xl bg-white p-6 shadow-2xl border border-gray-200`}>
@@ -767,10 +767,10 @@ const ToursForm: React.FC<{
           Find Tours
         </button>
       </div>
-      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-1000">
         <div className="fixed inset-0 z-1000 bg-black/60" aria-hidden="true" />
-        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
-          <Dialog.Panel className="relative z-[1002] w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-200">
+        <div className="fixed inset-0 z-1001 flex items-center justify-center p-4">
+          <Dialog.Panel className="relative z-1002 w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-200">
             <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
             <Dialog.Title className="text-lg font-semibold text-black">Choose destination</Dialog.Title>
             <div className="mt-4 max-h-[60vh] overflow-y-auto">
@@ -997,10 +997,10 @@ const AdventuresForm: React.FC<{
           Book Adventure
         </button>
       </div>
-      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
-        <div className="fixed inset-0 z-[1000] bg-black/60" aria-hidden="true" />
-        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
-          <Dialog.Panel className={`relative z-[1002] w-full ${modalSection === "location" ? "max-w-sm" : "max-w-md"} rounded-2xl bg-white p-6 shadow-2xl border border-gray-200`}>
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-1000">
+        <div className="fixed inset-0 z-1000 bg-black/60" aria-hidden="true" />
+        <div className="fixed inset-0 z-1001] flex items-center justify-center p-4">
+          <Dialog.Panel className={`relative z-1002 w-full ${modalSection === "location" ? "max-w-sm" : "max-w-md"} rounded-2xl bg-white p-6 shadow-2xl border border-gray-200`}>
             <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
             <Dialog.Title className="text-lg font-semibold text-black">
               {modalSection === "activity" ? "Choose activity" : "Choose location"}
@@ -1276,10 +1276,10 @@ const VehicleRentalForm: React.FC<{
           Rent Vehicle
         </button>
       </div>
-      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-[1000]">
-        <div className="fixed inset-0 z-[1000] bg-black/60" aria-hidden="true" />
-        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-4">
-          <Dialog.Panel className="relative z-[1002] w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-200">
+      <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-1000">
+        <div className="fixed inset-0 z-1000 bg-black/60" aria-hidden="true" />
+        <div className="fixed inset-0 z-1001 flex items-center justify-center p-4">
+          <Dialog.Panel className="relative z-1002 w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-gray-200">
             <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
             <Dialog.Title className="text-lg font-semibold text-black">
               {modalSection === "pickup" ? "Choose pick-up" : "Choose drop-off"}

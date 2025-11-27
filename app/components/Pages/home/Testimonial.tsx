@@ -49,15 +49,15 @@ const TestimonialSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-2">
 
         {/* Decorative Airplane */}
-        <div className="absolute top-8 right-12">
+        {/* <div className="absolute top-8 right-12">
           <Image
-            src="/Testimonial/plane3.png"
+            src="/home/homepage7.png"
             alt="plane"
             width={100}
             height={100}
             className="opacity-80"
           />
-        </div>
+        </div> */}
 
         {/* ✅ Heading Motion From Center */}
         <motion.div

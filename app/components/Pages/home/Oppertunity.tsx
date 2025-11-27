@@ -76,7 +76,7 @@ export default function AdventureSection() {
               transition={{ repeat: Infinity, duration: 3 }}
             >
               <Image
-                src="/oppertunity/airplane.png"
+                src="/home/homepage6.png"
                 alt="Plane Illustration"
                 width={100}
                 height={100}

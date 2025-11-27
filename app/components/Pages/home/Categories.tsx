@@ -56,7 +56,7 @@ export default function TourCategories() {
           className="absolute top-10 lg:left-70 left-5 opacity-70 lg:block hidden"
         >
           <Image
-            src="/categories/Plane1.png"
+            src="/home/homepage4.png"
             alt="plane icon"
             width={50}
             height={50}
@@ -69,13 +69,13 @@ export default function TourCategories() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
-          className="absolute top-10 lg:right-80 right-10 opacity-70 lg:block hidden"
+          className="absolute top-10 lg:right-70 right-10 opacity-70 lg:block hidden"
         >
           <Image
-            src="/categories/Camera.png"
+            src="/home/homepage5.png"
             alt="camera icon"
-            width={45}
-            height={45}
+            width={100}
+            height={100}
             className="animate-float-slow"
           />
         </motion.div>

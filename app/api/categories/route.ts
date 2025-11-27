@@ -5,7 +5,20 @@ import { auth } from "@/lib/middlewares/auth";
 import jwt from "jsonwebtoken";
 
 // GET - Get all categories (public)
-export const GET = auth(async (req: NextRequest) => {
+const getOptionalUser = (req: NextRequest) => {
+  try {
+    const authHeader = req.headers.get("authorization");
+    const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+    const cookieToken = req.cookies.get("token")?.value;
+    const token = headerToken || cookieToken;
+    if (!token || !process.env.JWT_SECRET) return null;
+    return jwt.verify(token, process.env.JWT_SECRET) as any;
+  } catch {
+    return null;
+  }
+};
+
+export const GET = async (req: NextRequest) => {
   await dbConnect();
   
   const { searchParams } = new URL(req.url);
@@ -14,7 +27,7 @@ export const GET = auth(async (req: NextRequest) => {
 
   try {
     const query: any = {};
-    const user = (req as any).user;
+    const user = getOptionalUser(req);
     
     if (mine) {
       // For vendor's own categories
@@ -32,6 +45,7 @@ export const GET = auth(async (req: NextRequest) => {
       query.$or = [
         { ownerType: { $exists: false } },
         { ownerType: "admin" },
+        { ownerType: "vendor" },
         { ownerType: null },
       ];
     }
@@ -47,7 +61,7 @@ export const GET = auth(async (req: NextRequest) => {
       { status: 500 }
     );
   }
-});
+};
 
 // POST - Create a new category
 export const POST = auth(async (req: NextRequest) => {

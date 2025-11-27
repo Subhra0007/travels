@@ -29,7 +29,7 @@ export default function OffersSection() {
     <section className="bg-sky-50 py-15 relative">
       <div className="max-w-7xl mx-auto px-6 lg:px-2">
         {/* Airplane line icon */}
-        <div className="absolute left-8 top-8">
+        {/* <div className="absolute left-8 top-8">
           <Image
             src="/offers/Plane5.png"
             alt="Plane Path"
@@ -37,7 +37,7 @@ export default function OffersSection() {
             height={100}
             className="opacity-80"
           />
-        </div>
+        </div> */}
 
         {/* Section Heading */}
         <motion.div

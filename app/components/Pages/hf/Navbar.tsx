@@ -662,7 +662,13 @@ const Navbar: React.FC = () => {
                           }}
                           className="flex items-center gap-3 p-3 rounded-lg bg-white border border-gray-100 hover:border-green-200 hover:bg-green-50/60 transition-all duration-200 shadow-sm"
                         >
-                          <span className="text-green-500">{sub.icon}</span>
+                          {"image" in sub && sub.image ? (
+                            <div className="w-12 h-12 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                              <Image src={sub.image} alt={sub.name} width={48} height={48} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <span className="text-green-500">{sub.icon}</span>
+                          )}
                           <span className="font-medium text-gray-700">{sub.name}</span>
                         </Link>
                       ))}
