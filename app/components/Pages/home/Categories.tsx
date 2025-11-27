@@ -88,7 +88,7 @@ export default function TourCategories() {
           transition={{ duration: 0.7 }}
           className="text-center mb-12"
         >
-          <p className="text-sky-500 text-sm font-medium tracking-wider">
+          <p className="text-green-600 text-sm font-medium tracking-wider">
             We Offer You The Best
           </p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">

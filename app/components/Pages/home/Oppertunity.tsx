@@ -37,7 +37,7 @@ export default function AdventureSection() {
               whileInView={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.7 }}
               viewport={{ once: true }}
-              className="bg-cyan-500 text-white rounded-xl flex items-center justify-center w-60 h-24 text-lg font-semibold shadow-md"
+              className="bg-green-600 text-white rounded-xl flex items-center justify-center w-60 h-24 text-lg font-semibold shadow-md"
             >
               Stories of Adventures
             </motion.div>
@@ -91,7 +91,7 @@ export default function AdventureSection() {
             transition={{ duration: 0.7 }}
             viewport={{ once: true }}
           >
-            <p className="text-cyan-500 font-medium mb-2 lg:text-left text-center">
+            <p className="text-green-600 font-medium mb-2 lg:text-left text-center">
               Start Exploring
             </p>
 
@@ -115,7 +115,7 @@ export default function AdventureSection() {
             className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8"
           >
             <div className="flex items-start gap-3">
-              <FaUserFriends className="text-cyan-500 text-2xl mt-1" />
+              <FaUserFriends className="text-green-600 text-2xl mt-1" />
               <div>
                 <h4 className="text-lg font-semibold text-gray-800">
                   Trusted Travel Guide
@@ -127,7 +127,7 @@ export default function AdventureSection() {
             </div>
 
             <div className="flex items-start gap-3">
-              <FaUmbrellaBeach className="text-cyan-500 text-2xl mt-1" />
+              <FaUmbrellaBeach className="text-green-600 text-2xl mt-1" />
               <div>
                 <h4 className="text-lg font-semibold text-gray-800">
                   Memorable Holidays
@@ -147,7 +147,7 @@ export default function AdventureSection() {
             viewport={{ once: true }}
             className="flex items-center gap-6"
           >
-            <button className="bg-cyan-500 text-white px-6 py-3 rounded-full font-medium shadow-md hover:bg-cyan-600 transition">
+            <button className="bg-green-600 text-white px-6 py-3 rounded-full font-medium shadow-md hover:bg-green-700 transition">
               Book Now
             </button>
 

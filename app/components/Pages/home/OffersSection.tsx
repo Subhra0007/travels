@@ -47,7 +47,7 @@ export default function OffersSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <p className="text-cyan-500 font-medium">Special Offers</p>
+          <p className="text-green-600 font-medium">Special Offers</p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
             Offers To Inspire You
           </h2>
@@ -86,7 +86,7 @@ export default function OffersSection() {
                 {/* Content Overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                   {/* Top Tag */}
-                  <span className="bg-cyan-500 text-xs px-3 py-1 rounded-full">
+                  <span className="bg-green-600 text-xs px-3 py-1 rounded-full">
                     {offer.tag}
                   </span>
 

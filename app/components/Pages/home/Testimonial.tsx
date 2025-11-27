@@ -67,7 +67,7 @@ const TestimonialSection: React.FC = () => {
           viewport={{ once: true }}
           className="text-center lg:mb-2 mb-12"
         >
-          <p className="text-cyan-500 font-semibold text-lg">Our Travelers</p>
+          <p className="text-green-600 font-semibold text-lg">Our Travelers</p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
             What they are talking about
           </h2>
@@ -114,7 +114,7 @@ const TestimonialSection: React.FC = () => {
               }}
               pagination={{
                 clickable: true,
-                bulletClass: "swiper-pagination-bullet !bg-cyan-500",
+                bulletClass: "swiper-pagination-bullet !bg-green-600",
               }}
               breakpoints={{
                 768: { slidesPerView: 1 },
@@ -138,7 +138,7 @@ const TestimonialSection: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900">
                           {item.name}
                         </h3>
-                        <p className="text-sm text-cyan-600">{item.role}</p>
+                        <p className="text-sm text-green-600">{item.role}</p>
                       </div>
                     </div>
 

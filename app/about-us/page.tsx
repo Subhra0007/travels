@@ -124,8 +124,8 @@ export default function HomePage() {
           <AnimateOnce>
             <div className="flex lg:flex-row flex-col lg:gap-40 gap-10 items-center justify-center">
               <div className="space-y-6">
-                <span className="text-sm font-semibold text-indigo-600 flex items-center gap-2 justify-center lg:justify-start">
-                  <span className="w-8 h-px bg-indigo-600" /> Explore The World
+                <span className="text-sm font-semibold text-green-600 flex items-center gap-2 justify-center lg:justify-start">
+                  <span className="w-8 h-px bg-green-600" /> Explore The World
                 </span>
 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#0d1b44] lg:text-left text-center">
@@ -171,9 +171,9 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { icon: <Globe className="w-8 h-8 text-indigo-600" />, title: "Lot Of Choices", desc: "460+ destinations we work with." },
-                { icon: <Backpack className="w-8 h-8 text-indigo-600" />, title: "Best Tour Guide", desc: "Guided by experts with 15+ years experience." },
-                { icon: <BadgeCheck className="w-8 h-8 text-indigo-600" />, title: "Easy Booking", desc: "Fast & simple ticket booking process." },
+                { icon: <Globe className="w-8 h-8 text-green-600" />, title: "Lot Of Choices", desc: "460+ destinations we work with." },
+                { icon: <Backpack className="w-8 h-8 text-green-600" />, title: "Best Tour Guide", desc: "Guided by experts with 15+ years experience." },
+                { icon: <BadgeCheck className="w-8 h-8 text-green-600" />, title: "Easy Booking", desc: "Fast & simple ticket booking process." },
               ].map((item, i) => (
                 <AnimateOnce key={i} delay={i * 0.1}>
                   <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-start">
@@ -203,7 +203,7 @@ export default function HomePage() {
                 >←</button>
                 <button
                   onClick={() => swiperRef.current?.slideNext()}
-                  className="w-9 h-9 rounded-full bg-[#6366f1] text-white flex items-center justify-center"
+                  className="w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center"
                 >→</button>
               </div>
 
@@ -215,7 +215,7 @@ export default function HomePage() {
                 >←</button>
                 <button
                   onClick={() => swiperRef.current?.slideNext()}
-                  className="w-10 h-10 rounded-full bg-[#6366f1] text-white flex items-center justify-center"
+                  className="w-10 h-10 rounded-full bg-green-600 text-white flex items-center justify-center"
                 >→</button>
               </div>
             </div>
@@ -226,7 +226,10 @@ export default function HomePage() {
             spaceBetween={24}
             slidesPerView={1.2}
             autoplay={{ delay: 2000, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
+            pagination={{
+                clickable: true,
+                bulletClass: "swiper-pagination-bullet !bg-green-600",
+              }}
             modules={[Autoplay, Pagination]}
             breakpoints={{
               640: { slidesPerView: 2, spaceBetween: 20 },
@@ -279,7 +282,7 @@ export default function HomePage() {
 
             <div className="space-y-6 items-start">
               <AnimateOnce>
-                <span className="text-sm font-semibold text-indigo-600">Our Experience</span>
+                <span className="text-sm font-semibold text-green-600">Our Experience</span>
                 <h2 className="text-3xl md:text-4xl font-bold text-[#0d1b44]">
                   With Our Experience We Will Serve You
                 </h2>
@@ -332,7 +335,7 @@ export default function HomePage() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-[#6366f1] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition"
+                className="px-8 py-4 bg-green-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition"
               >
                 Get Started
               </motion.button>

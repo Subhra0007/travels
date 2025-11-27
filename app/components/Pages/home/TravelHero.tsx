@@ -31,7 +31,7 @@ const TravelHeroSection: React.FC = () => {
   return (
     <section className="bg-sky-50 py-16">
       <div className="max-w-7xl mx-auto px-6 lg:px-2">
-        <div className="relative bg-cyan-500 text-white rounded-3xl overflow-hidden p-10 flex flex-col md:flex-row justify-between items-center">
+        <div className="relative bg-green-600 text-white rounded-3xl overflow-hidden p-10 flex flex-col md:flex-row justify-between items-center">
           {/* Left Text Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -44,7 +44,7 @@ const TravelHeroSection: React.FC = () => {
               Start your Journey With <br className="hidden md:block" /> a
               Single Click
             </h1>
-            <button className="bg-white text-cyan-600 font-semibold px-6 py-3 rounded-xl shadow hover:bg-cyan-50 transition">
+            <button className="bg-white text-green-600 font-semibold px-6 py-3 rounded-xl shadow hover:bg-green-50 transition cursor-pointer">
               Explore Now
             </button>
           </motion.div>

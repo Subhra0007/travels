@@ -530,7 +530,7 @@ const Navbar: React.FC = () => {
           {user.accountType === "user" && (
             <button
               onClick={() => router.push("/profile/cart")}
-              className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white shadow-md transition hover:bg-green-700 cursor-pointer"
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white shadow-md transition hover:bg-green-700"
               aria-label="Go to cart"
             >
               <MdShoppingCart size={18} />

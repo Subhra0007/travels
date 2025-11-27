@@ -120,8 +120,8 @@ const VendorProductsPage: React.FC = () => {
       <button
         onClick={() =>
           navigate
-            ? navigate("/vendor/properties/seller/products/add")
-            : router.push("/vendor/properties/seller/products/add")
+            ? navigate("/vendor/products/add")
+            : router.push("/vendor/products/add")
         }
         className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
       >
@@ -145,7 +145,7 @@ const VendorProductsPage: React.FC = () => {
               <FaShoppingCart className="mx-auto mb-4 text-4xl text-gray-400" />
               <p className="text-gray-600 mb-4">You have not added any products yet.</p>
               <button
-                onClick={() => navigate ? navigate("/vendor/properties/seller/products/add") : router.push("/vendor/properties/seller/products/add")}
+                onClick={() => navigate ? navigate("/vendor/products/add") : router.push("/vendor/products/add")}
                 className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
               >
                 <FaPlus /> Add First Product
@@ -239,7 +239,7 @@ const VendorProductsPage: React.FC = () => {
                                 <FaEye /> View
                               </button>
                               <button
-                                onClick={() => navigate ? navigate(`/vendor/properties/seller/products/edit/${product._id}`) : router.push(`/vendor/properties/seller/products/edit/${product._id}`)}
+                                onClick={() => navigate ? navigate(`/vendor/products/edit/${product._id}`) : router.push(`/vendor/products/edit/${product._id}`)}
                                 className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-yellow-600"
                               >
                                 <FaEdit /> Edit
@@ -324,7 +324,7 @@ const VendorProductsPage: React.FC = () => {
                                 <FaEye size={10} />
                               </button>
                               <button
-                                onClick={() => navigate ? navigate(`/vendor/properties/seller/products/edit/${product._id}`) : router.push(`/vendor/properties/seller/products/edit/${product._id}`)}
+                                onClick={() => navigate ? navigate(`/vendor/products/edit/${product._id}`) : router.push(`/vendor/products/edit/${product._id}`)}
                                 className="inline-flex items-center gap-1 rounded-full bg-yellow-500 px-2 py-1 text-xs font-semibold text-white hover:bg-yellow-600"
                               >
                                 <FaEdit size={10} />

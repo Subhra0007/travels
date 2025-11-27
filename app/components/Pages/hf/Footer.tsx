@@ -84,10 +84,10 @@ const Footer: React.FC = () => {
           <strong className="">SafarHub</strong> offers cozy stays, curated tours, thrilling adventures, and flexible vehicle rentals — everything you need for a seamless and memorable journey.
           </p>
           <div className="flex space-x-4 text-xl justify-center lg:justify-start">
-            <a href="#" className="hover:text-cyan-400"><FaFacebookF /></a>
-            <a href="#" className="hover:text-cyan-400"><FaTwitter /></a>
-            <a href="#" className="hover:text-cyan-400"><FaInstagram /></a>
-            <a href="#" className="hover:text-cyan-400"><FaLinkedinIn /></a>
+            <a href="#" className="hover:text-green-400"><FaFacebookF /></a>
+            <a href="#" className="hover:text-green-400"><FaTwitter /></a>
+            <a href="#" className="hover:text-green-400"><FaInstagram /></a>
+            <a href="#" className="hover:text-green-400"><FaLinkedinIn /></a>
           </div>
         </div>
 
@@ -95,10 +95,10 @@ const Footer: React.FC = () => {
         <div className="lg:text-left text-center">
           <h2 className="text-white text-xl font-semibold mb-4">Quick Links</h2>
           <ul className="space-y-2 text-sm">
-            <li><Link href="/privacy-policy" className="hover:text-cyan-400 transition">Privacy Policy</Link></li>
-            <li><Link href="/terms-conditions" className="hover:text-cyan-400 transition">Terms & Conditions</Link></li>
-            <li><Link href="/refund-policy" className="hover:text-cyan-400 transition">Refund Policy</Link></li>
-            <li><Link href="/blogs" className="hover:text-cyan-400 transition">Blogs</Link></li>
+            <li><Link href="/privacy-policy" className="hover:text-green-400 transition">Privacy Policy</Link></li>
+            <li><Link href="/terms-conditions" className="hover:text-green-400 transition">Terms & Conditions</Link></li>
+            <li><Link href="/refund-policy" className="hover:text-green-400 transition">Refund Policy</Link></li>
+            <li><Link href="/blogs" className="hover:text-green-400 transition">Blogs</Link></li>
           </ul>
         </div>
 
@@ -106,9 +106,9 @@ const Footer: React.FC = () => {
         <div className="lg:text-left text-center">
           <h2 className="text-white text-xl font-semibold mb-4">Contact Info</h2>
           <ul className="space-y-3">
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdLocationOn className="text-cyan-400" /> Kolkata, India</li>
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdPhone className="text-cyan-400" />+91 7980715765</li>
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdEmail className="text-cyan-400" />cyberspaceworksofficial@gmail.com</li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdLocationOn className="text-green-600" /> Kolkata, India</li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdPhone className="text-green-600" />+91 7980715765</li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdEmail className="text-green-600" />cyberspaceworksofficial@gmail.com</li>
           </ul>
         </div>
 
@@ -118,7 +118,7 @@ const Footer: React.FC = () => {
           <p className="text-sm mb-3">Subscribe to our latest updates and offers.</p>
           <form
             onSubmit={handleNewsletterSubmit}
-            className="flex bg-white rounded-lg overflow-hidden w-full max-w-md mx-auto lg:mx-0 focus-within:ring-2 focus-within:ring-cyan-500"
+            className="flex bg-white rounded-lg overflow-hidden w-full max-w-md mx-auto lg:mx-0 focus-within:ring-2 focus-within:ring-green-600"
           >
             <input
               type="email"
@@ -132,7 +132,7 @@ const Footer: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-1/3 bg-cyan-500 py-2 text-white font-semibold hover:bg-cyan-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-1/3 bg-green-600 py-2 text-white font-semibold hover:bg-green-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {submitting ? "Sending..." : "Subscribe"}
             </button>
@@ -141,7 +141,7 @@ const Footer: React.FC = () => {
             <label className="flex items-center text-xs text-gray-400 space-x-2 justify-center lg:justify-start">
               <input
                 type="checkbox"
-                className="accent-cyan-500"
+                className="accent-green-500"
                 checked={consent}
                 onChange={(e) => setConsent(e.target.checked)}
               />

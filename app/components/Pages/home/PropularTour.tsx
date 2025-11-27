@@ -10,21 +10,21 @@ const tours = [
     description: "Experience the timeless charm and elegance of the world's most romantic city.",
     image: "/popular/paris.jpg",
     duration: "5 Days / 4 Nights",
-    price: "$1,200",
+    price: "₹1,200",
   },
   {
     title: "Sun-Kissed Santorini",
     description: "Explore beautiful beaches, stunning sunsets, and iconic white-washed houses.",
     image: "/popular/sunkissed.webp",
     duration: "6 Days / 5 Nights",
-    price: "$1,350",
+    price: "₹1,350",
   },
   {
     title: "Tokyo Culture Immersion",
     description: "Experience modern innovation and Japan’s deep-rooted traditions in one amazing trip.",
     image: "/popular/Tokyo.jpg",
     duration: "7 Days / 6 Nights",
-    price: "$1,600",
+    price: "₹1,600",
   },
 ];
 
@@ -50,7 +50,7 @@ export default function PopularTours() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <p className="text-cyan-500 font-medium">World Awaits for You</p>
+          <p className="text-green-600 font-medium">World Awaits for You</p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
             Most Popular Tour
           </h2>
@@ -66,7 +66,7 @@ export default function PopularTours() {
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.7, delay: index * 0.15 }}
                 viewport={{ once: true }}
-                className={`bg-white w-[390px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300  ${offsets[index]}`}
+                className={`bg-white w-[390px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300  ₹{offsets[index]}`}
               >
                 {/* Image */}
                 <div className="relative w-full h-52">
@@ -84,13 +84,13 @@ export default function PopularTours() {
                   <p className="text-gray-600 text-sm mt-1 line-clamp-2">{tour.description}</p>
 
                   <div className="flex items-center gap-2 text-gray-500 text-sm mt-3">
-                    <FaClock className="text-cyan-500" />
+                    <FaClock className="text-green-600" />
                     <span>{tour.duration}</span>
                   </div>
 
                   <div className="flex items-center justify-between mt-5">
                     <p className="text-lg font-semibold text-gray-800">{tour.price}</p>
-                    <button className="px-4 py-2 bg-cyan-500 text-white text-sm font-medium rounded-full hover:bg-cyan-600 transition">
+                    <button className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-full hover:bg-green-700 transition">
                       View Details
                     </button>
                   </div>
@@ -128,13 +128,13 @@ export default function PopularTours() {
                   <p className="text-gray-600 text-sm mt-1 line-clamp-2">{tour.description}</p>
 
                   <div className="flex items-center gap-2 text-gray-500 text-sm mt-3">
-                    <FaClock className="text-cyan-500" />
+                    <FaClock className="text-green-600" />
                     <span>{tour.duration}</span>
                   </div>
 
                   <div className="flex items-center justify-between mt-5">
                     <p className="text-lg font-semibold text-gray-800">{tour.price}</p>
-                    <button className="px-4 py-2 bg-cyan-500 text-white text-sm font-medium rounded-full hover:bg-cyan-600 transition">
+                    <button className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-full hover:bg-green-700 transition">
                       View Details
                     </button>
                   </div>

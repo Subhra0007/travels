@@ -17,7 +17,7 @@ const RecentGallerySection: React.FC = () => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <p className="text-cyan-500 font-semibold text-lg">It’s Your Travel Photo</p>
+          <p className="text-green-600 font-semibold text-lg">It’s Your Travel Photo</p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
             Recent Gallery
           </h2>

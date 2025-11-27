@@ -11,6 +11,8 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
+import { MdOutlineCancel } from "react-icons/md";
+
 import {
   FaCar,
   FaCompass,
@@ -112,7 +114,7 @@ export default function Sidebar({ onNavigate, onLogout }: SidebarProps) {
 
   // Full Properties list with ids to filter by vendor selection
   const propertiesSubmenu = [
-    { id: "stays", name: "Stays", icon: <FaBed size={16} />, href: "/vendor/stays" },
+    { id: "stays", name: "Stays", icon: <FaBed size={16} />, href: "/vendor/properties/stays" },
     { id: "tours", name: "Tours", icon: <FaCompass size={16} />, href: "/vendor/properties/tours" },
     { id: "adventures", name: "Adventures", icon: <FaMountain size={16} />, href: "/vendor/properties/adventures" },
     { id: "vehicle-rental", name: "Vehicle Rental", icon: <FaCar size={16} />, href: "/vendor/properties/vehicle-rental" },
@@ -161,18 +163,18 @@ export default function Sidebar({ onNavigate, onLogout }: SidebarProps) {
       ? [{
           name: "Products",
           icon: <FaShoppingCart size={18} />,
-          href: "/vendor/properties/seller/products",
+          href: "/vendor/products",
         },
         {
           name: "Categories",
           icon: <FaTag size={18} />,
-          href: "/vendor/properties/seller/categories",
+          href: "/vendor/categories",
         }]
       : []
     ),
 
     { name: "Purchases", icon: <CalendarCheck size={18} />, href: "/vendor/purchases" },
-    { name: "Cancellations", icon: <CalendarCheck size={18} />, href: "/vendor/cancellations" },
+    { name: "Cancellations", icon: <MdOutlineCancel size={18} />, href: "/vendor/cancellations" },
 
     { name: "Payment", icon: <CreditCard size={18} />, href: "/vendor/payments" },
 
@@ -208,8 +210,8 @@ export default function Sidebar({ onNavigate, onLogout }: SidebarProps) {
                   onClick={() => setOpenProperties(!openProperties)}
                   className={`flex items-center justify-between w-full p-2 rounded-md transition ${
                     anyPropertiesActive
-                      ? "text-indigo-600 bg-indigo-50"
-                      : "text-gray-700 hover:text-indigo-600"
+                      ? "text-green-600 bg-green-50"
+                      : "text-gray-700 hover:text-green-600"
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -234,8 +236,8 @@ export default function Sidebar({ onNavigate, onLogout }: SidebarProps) {
                         onClick={(event) => handleNavClick(event, sub.href)}
                         className={`flex items-center gap-2 p-2 rounded-md transition w-full text-left ${
                           isActiveHref(sub.href)
-                            ? "text-indigo-600 bg-indigo-50"
-                            : "text-gray-700 hover:text-indigo-600"
+                            ? "text-green-600 bg-green-50"
+                            : "text-gray-700 hover:text-green-600"
                         }`}
                       >
                         {sub.icon}
@@ -297,8 +299,8 @@ export default function Sidebar({ onNavigate, onLogout }: SidebarProps) {
                 onClick={(event) => handleNavClick(event, item.href!)}
                 className={`flex items-center gap-2 p-2 rounded-md transition w-full text-left ${
                   isActiveHref(item.href)
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
+                    ? "text-green-600 bg-green-50"
+                    : "text-gray-700 hover:text-green-600"
                 }`}
               >
                 {item.icon}

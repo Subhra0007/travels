@@ -11,7 +11,7 @@ export default function StatCard({ title, value, icon }: Props) {
         <p className="text-gray-900 text-sm">{title}</p>
         <h3 className="text-xl font-bold text-gray-800">{value}</h3>
       </div>
-      <div className="text-blue-600">{icon}</div>
+      <div className="text-green-600">{icon}</div>
     </div>
   );
 }

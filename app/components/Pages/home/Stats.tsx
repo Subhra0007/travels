@@ -83,7 +83,7 @@ const TravelStatsSection: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-6 text-center relative z-10">
                 <div>
-                  <FaGlobeAsia className="text-cyan-500 text-3xl mx-auto mb-2" />
+                  <FaGlobeAsia className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
                     <Counter target={100} start={inView} />
                   </h3>
@@ -91,7 +91,7 @@ const TravelStatsSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <FaUsers className="text-cyan-500 text-3xl mx-auto mb-2" />
+                  <FaUsers className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
                     <Counter target={5180} start={inView} />
                   </h3>
@@ -99,7 +99,7 @@ const TravelStatsSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <FaMapMarkedAlt className="text-cyan-500 text-3xl mx-auto mb-2" />
+                  <FaMapMarkedAlt className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
                     <Counter target={4650} start={inView} />
                   </h3>
@@ -107,7 +107,7 @@ const TravelStatsSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <FaPlane className="text-cyan-500 text-3xl mx-auto mb-2" />
+                  <FaPlane className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
                     <Counter target={24} start={inView} />
                   </h3>
@@ -121,7 +121,7 @@ const TravelStatsSection: React.FC = () => {
               initial={{ scale: 0, opacity: 0 }}
               animate={hasAnimated ? { scale: 1, opacity: 1 } : {}}
               transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-              className="bg-cyan-500 text-white rounded-full w-44 h-44 flex flex-col items-center justify-center text-center shadow-2xl p-3"
+              className="bg-green-600 text-white rounded-full w-44 h-44 flex flex-col items-center justify-center text-center shadow-2xl p-3"
             >
               <p className="text-lg font-medium leading-tight">
                 Travel <br />
