@@ -71,7 +71,7 @@ const VendorPurchasesPage = () => {
   if (!user) return <PageLoader fullscreen={false} />;
 
   return (
-    <div className="space-y-8 lg:pt-6">
+    <div className="space-y-8 lg:pt-15 pt-0">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-gray-900">Purchases</h1>
         <p className="text-sm text-gray-600">

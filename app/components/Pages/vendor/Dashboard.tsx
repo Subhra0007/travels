@@ -4,9 +4,9 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import StatCard from "./StatCard";
-import SalesChart from "./SalesChart";
+import PurchasesChart from "./PurchasesChart";
 import OrderTable from "./OrderTable";
-import SalesDonutChart from "./SalesDonutChart";
+import EarningsOverviewChart from "./EarningsOverviewChart";
 import { CreditCard, Wallet, Clock, CheckCircle } from "lucide-react";
 
 type DashboardProps = {
@@ -16,8 +16,8 @@ type DashboardProps = {
 
 export default function Dashboard({ locked, isSeller = false }: DashboardProps) {
   const [stats, setStats] = useState({
-    todayBookings: 0,
-    totalBookings: 0,
+    todayPurchases: 0,
+    totalPurchases: 0,
     todayEarnings: 0,
     totalEarnings: 0,
   });
@@ -67,7 +67,10 @@ export default function Dashboard({ locked, isSeller = false }: DashboardProps) 
         });
         const data = await res.json();
         if (data.success && data.stats) {
-          setStats(data.stats);
+          setStats((prev) => ({
+            ...prev,
+            ...data.stats,
+          }));
         }
       } catch (error) {
         console.error("Failed to fetch stats", error);
@@ -156,13 +159,13 @@ export default function Dashboard({ locked, isSeller = false }: DashboardProps) 
       <div className={`space-y-6 transition-all ${locked ? "blur-[1.5px] pointer-events-none" : ""}`}>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
             <StatCard
-              title="Today's Bookings"
-              value={loading ? "..." : formatNumber(stats.todayBookings)}
+              title="Today's Purchases"
+              value={loading ? "..." : formatNumber(stats.todayPurchases)}
               icon={<Clock />}
             />
             <StatCard
-              title="Total Bookings"
-              value={loading ? "..." : formatNumber(stats.totalBookings)}
+              title="Total Purchases"
+              value={loading ? "..." : formatNumber(stats.totalPurchases)}
               icon={<Wallet />}
             />
             <StatCard
@@ -178,8 +181,8 @@ export default function Dashboard({ locked, isSeller = false }: DashboardProps) 
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
-            <div className="lg:col-span-2"><SalesChart refreshKey={refreshKey} /></div>
-            <div className="lg:col-span-1"><SalesDonutChart refreshKey={refreshKey} /></div>
+            <div className="lg:col-span-2"><PurchasesChart refreshKey={refreshKey} /></div>
+            <div className="lg:col-span-1"><EarningsOverviewChart refreshKey={refreshKey} /></div>
           </div>
 
           <div className="grid grid-cols-1 gap-6 w-full">

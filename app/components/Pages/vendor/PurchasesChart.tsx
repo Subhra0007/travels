@@ -10,18 +10,18 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-type SalesData = {
+type PurchasesData = {
   name: string;
   value: number;
 };
 
-export default function SalesChart({ refreshKey = 0 }: { refreshKey?: number }) {
-  const [data, setData] = useState<SalesData[]>([]);
+export default function PurchasesChart({ refreshKey = 0 }: { refreshKey?: number }) {
+  const [data, setData] = useState<PurchasesData[]>([]);
   const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("month");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSalesData = async () => {
+    const fetchPurchasesData = async () => {
       try {
         if (data.length === 0) setLoading(true);
         const res = await fetch(`/api/vendor/stats?t=${Date.now()}`, { 
@@ -29,18 +29,18 @@ export default function SalesChart({ refreshKey = 0 }: { refreshKey?: number }) 
           cache: "no-store"
         });
         const result = await res.json();
-        if (result.success && result.salesData) {
-          const salesData = result.salesData[timeRange] || [];
-          setData(salesData);
+        if (result.success && result.purchasesData) {
+          const chartData = result.purchasesData[timeRange] || [];
+          setData(chartData);
         }
       } catch (error) {
-        console.error("Failed to fetch sales data", error);
+        console.error("Failed to fetch purchases data", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSalesData();
+    fetchPurchasesData();
   }, [timeRange, refreshKey]);
 
   const formatLabel = (name: string) => {
@@ -76,7 +76,7 @@ export default function SalesChart({ refreshKey = 0 }: { refreshKey?: number }) 
   return (
     <div className="bg-white p-6 rounded-lg shadow text-gray-800">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold">Bookings</h3>
+        <h3 className="font-semibold">Purchases Overview</h3>
         <select
           className="text-sm border p-1 rounded"
           value={timeRange}
