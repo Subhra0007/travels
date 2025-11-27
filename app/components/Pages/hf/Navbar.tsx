@@ -198,9 +198,9 @@ const Navbar: React.FC = () => {
       href: "/services/products",
       icon: <MdShoppingCart  />,
       subServices: [
-        { name: "Pahar", href: "/services/products?category=pahar", icon: <MdShoppingCart />, image: "/nav/pahar.webp" },
-        { name: "Jacket", href: "/services/products?category=jacket", icon: <MdShoppingCart />, image: "/nav/jacket.webp" },
-        { name: "T-Shirt", href: "/services/products?category=t-shirt", icon: <MdShoppingCart />, image: "/nav/t-shirt.webp" },
+        { name: "Pahar", href: "/services/products", icon: <MdShoppingCart />, image: "/nav/pahar.webp" },
+        { name: "Jacket", href: "/services/products", icon: <MdShoppingCart />, image: "/nav/jacket.webp" },
+        { name: "T-Shirt", href: "/services/products", icon: <MdShoppingCart />, image: "/nav/t-shirt.webp" },
       ],
     },
   ];
@@ -389,7 +389,7 @@ const Navbar: React.FC = () => {
                                       <div className="grid grid-cols-3 gap-4">
                                         {category.subServices.map((sub: any) => (
                                           <Link
-                                            key={sub.href}
+                                            key={`${sub.href}-${sub.name}`}
                                             href={sub.href}
                                             onClick={() => setIsServicesOpen(false)}
                                             className="group flex flex-col items-center p-4 rounded-xl bg-white/60 backdrop-blur-sm border border-white/30 hover:border-green-200/50 hover:bg-white/80 transition-all duration-300 shadow-sm hover:shadow-lg"
@@ -526,30 +526,39 @@ const Navbar: React.FC = () => {
           Admin
         </button>
       ) : (
-        <div className="relative group">
-          <button
-            onClick={() => {
-              const accountType = user.accountType;
-              router.push(accountType === "vendor" ? "/vendor" : "/profile");
-            }}
-          className="flex items-center justify-center w-11 h-11 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
-          >
-            <UserAvatar />
-          </button>
-          {/* Tooltip */}
-          <div className="absolute right-0 top-full mt-2 w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
-            <div className="bg-white rounded-lg shadow-lg py-2 px-4 whitespace-nowrap flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Hi,</span>
-              <span className="text-sm font-semibold text-green-600 truncate max-w-[180px]">
-                {user.fullName}
-              </span>
+        <>
+          {user.accountType === "user" && (
+            <button
+              onClick={() => router.push("/profile/cart")}
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white shadow-md transition hover:bg-green-700 cursor-pointer"
+              aria-label="Go to cart"
+            >
+              <MdShoppingCart size={18} />
+            </button>
+          )}
+          <div className="relative group">
+            <button
+              onClick={() => {
+                const accountType = user.accountType;
+                router.push(accountType === "vendor" ? "/vendor" : "/profile");
+              }}
+              className="flex items-center justify-center w-11 h-11 rounded-full overflow-hidden ring-2 ring-green-400 ring-offset-2 transition-all hover:ring-green-500 hover:scale-105 cursor-pointer"
+            >
+              <UserAvatar />
+            </button>
+            {/* Tooltip */}
+            <div className="absolute right-0 top-full mt-2 w-max opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none">
+              <div className="bg-white rounded-lg shadow-lg py-2 px-4 whitespace-nowrap flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700">Hi,</span>
+                <span className="text-sm font-semibold text-green-600 truncate max-w-[180px]">
+                  {user.fullName}
+                </span>
+              </div>
+              <div className="absolute -top-1 right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-white"></div>
             </div>
-            <div className="absolute -top-1 right-3 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-white"></div>
           </div>
-        </div>
+        </>
       )}
-
-    
     </div>
   )}
 </motion.div>
@@ -645,7 +654,7 @@ const Navbar: React.FC = () => {
                     <div className="space-y-2">
                       {service.subServices.map((sub) => (
                         <Link
-                          key={sub.href}
+                          key={`${sub.href}-${sub.name}`}
                           href={sub.href}
                           onClick={() => {
                             setIsOpen(false);
@@ -692,22 +701,34 @@ const Navbar: React.FC = () => {
           Admin
         </button>
       ) : (
-        <button
-          onClick={() => {
-            setIsOpen(false);
-            const accountType = user.accountType;
-            router.push(accountType === "vendor" ? "/vendor" : "/profile");
-          }}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-green-300 text-green-700 rounded-full text-sm font-medium hover:bg-green-50 transition shadow-sm"
-        >
-          <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
-            <UserAvatar size={36} />
-          </div>
-          <span className="truncate text-sm">{user.fullName.split(" ")[0]}</span>
-        </button>
+        <>
+          {user.accountType === "user" && (
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/profile/cart");
+              }}
+              className="flex items-center justify-center w-12 h-12 rounded-full bg-green-600 text-white shadow-md hover:bg-green-700 transition"
+              aria-label="Go to cart"
+            >
+              <MdShoppingCart size={20} />
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              const accountType = user.accountType;
+              router.push(accountType === "vendor" ? "/vendor" : "/profile");
+            }}
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-white border border-green-300 text-green-700 rounded-full text-sm font-medium hover:bg-green-50 transition shadow-sm"
+          >
+            <div className="w-9 h-9 rounded-full overflow-hidden shrink-0">
+              <UserAvatar size={36} />
+            </div>
+            <span className="truncate text-sm">{user.fullName.split(" ")[0]}</span>
+          </button>
+        </>
       )}
-
-     
     </div>
   )}
 </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { FaShoppingBag, FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
-import PageLoader from "../../components/common/PageLoader";
+import LocalLoader from "../../components/common/LocalLoader";
 import CancellationModal from "../../components/common/CancellationModal";
 
 const PRESET_ORDER_REASONS = [
@@ -142,7 +142,7 @@ export default function OrdersPage() {
   };
 
   if (loading) {
-    return <PageLoader />;
+    return <LocalLoader />;
   }
 
   return (

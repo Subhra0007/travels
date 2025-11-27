@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { FaShoppingCart, FaTrash, FaPlus, FaMinus, FaArrowRight, FaStar, FaMapMarkerAlt } from "react-icons/fa";
 import { useCart } from "../../hooks/useCart";
-import PageLoader from "../../components/common/PageLoader";
+import LocalLoader from "../../components/common/LocalLoader";
 
 export default function CartPage() {
   const router = useRouter();
@@ -96,7 +96,7 @@ export default function CartPage() {
   };
 
   if (loading) {
-    return <PageLoader />;
+    return <LocalLoader />;
   }
 
   const productItems = items.filter((item) => item.itemType === "Product");
