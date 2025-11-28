@@ -999,7 +999,7 @@ const AdventuresForm: React.FC<{
       </div>
       <Dialog open={detailsOpen} onClose={closeDetails} className="relative z-1000">
         <div className="fixed inset-0 z-1000 bg-black/60" aria-hidden="true" />
-        <div className="fixed inset-0 z-1001] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-1001 flex items-center justify-center p-4">
           <Dialog.Panel className={`relative z-1002 w-full ${modalSection === "location" ? "max-w-sm" : "max-w-md"} rounded-2xl bg-white p-6 shadow-2xl border border-gray-200`}>
             <button onClick={closeDetails} aria-label="Close" className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 w-8 h-8">×</button>
             <Dialog.Title className="text-lg font-semibold text-black">
