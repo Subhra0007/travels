@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Sidebar from "@/app/components/Pages/admin/Sidebar";
 import Link from "next/link";
 import { FaClock, FaEye, FaMapMarkerAlt } from "react-icons/fa";
 
@@ -30,7 +29,6 @@ interface TourSummary {
 }
 
 export default function AdminToursPage() {
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tours, setTours] = useState<TourSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -67,29 +65,13 @@ export default function AdminToursPage() {
   };
 
   return (
-    <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
-        <Sidebar />
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Tours catalogue</h1>
+        <p className="mt-1 text-sm text-gray-600">Monitor all vendor-submitted tours and their options.</p>
       </div>
 
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
-        <div className="sticky top-0 z-40 bg-sky-50">
-          <div className="flex items-center justify-between gap-3 p-3 border-b">
-            <div className="flex items-center gap-3">
-              <button
-                className="lg:hidden px-3 py-2 rounded border text-gray-700"
-                onClick={() => setMobileSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                Menu
-              </button>
-              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Tours catalogue</h1>
-            </div>
-            <p className="text-sm text-gray-600">Monitor all vendor-submitted tours and their options.</p>
-          </div>
-        </div>
-
-        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 sm:p-6">
+      <div>
           {loading ? (
             <div className="flex justify-center py-10">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
@@ -245,30 +227,7 @@ export default function AdminToursPage() {
               </div>
             </div>
           )}
-        </main>
       </div>
-
-      {/* Mobile Sidebar */}
-      {mobileSidebarOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-          <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl z-50 p-0 lg:hidden overflow-y-auto">
-            <div className="p-4 border-b flex items-center justify-between">
-              <span className="text-lg font-semibold text-gray-900">Menu</span>
-              <button
-                onClick={() => setMobileSidebarOpen(false)}
-                className="px-3 py-1.5 rounded-md border text-gray-900"
-              >
-                Close
-              </button>
-            </div>
-            <Sidebar />
-          </div>
-        </>
-      )}
     </div>
   );
 }

@@ -195,19 +195,19 @@ export default function AdminTransactionsPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 relative overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
+      {/* <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
-      </div>
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
+      </div> */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center gap-3 p-3 border-b">
-            <button
+            {/* <button
               className="lg:hidden px-3 py-2 rounded border text-gray-700"
               onClick={() => setMobileSidebarOpen(true)}
               aria-label="Open menu"
             >
               ☰
-            </button>
+            </button> */}
             <h1 className="text-2xl font-bold text-gray-800">Transactions</h1>
           </div>
         </div>

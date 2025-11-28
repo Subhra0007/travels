@@ -13,7 +13,10 @@ import {
   FaBed,
   FaShoppingBag,
   FaTimesCircle,
+  FaMountain,
+  FaCar,
 } from "react-icons/fa";
+import { MdCancelPresentation } from "react-icons/md";
 import { MdShoppingCart } from "react-icons/md";
 import { BiCategory } from "react-icons/bi";
 import { TbLogs } from "react-icons/tb";
@@ -69,12 +72,13 @@ const Sidebar: React.FC = () => {
       className={`flex w-full items-center justify-between p-2 rounded font-medium transition-colors
         ${
           openMenu === key
-            ? "text-indigo-600 bg-indigo-50"
-            : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+            ? "text-green-600 bg-green-50"
+            : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
         }`}
     >
-      <span className="flex items-center gap-3">
-        {icon} {label}
+      <span className="flex items-center gap-3 whitespace-nowrap">
+        {icon}
+        <span className="block truncate">{label}</span>
       </span>
       {openMenu === key ? (
         <IoIosArrowUp size={16} className="text-gray-500" />
@@ -85,7 +89,7 @@ const Sidebar: React.FC = () => {
   );
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 overflow-y-auto">
+    <aside className="w-65 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 overflow-y-auto ">
       <div className="p-4 flex-1 overflow-y-auto">
       <nav className="flex-1 space-y-2 text-sm mt-15 ">
         {/* Dashboard */}
@@ -94,8 +98,8 @@ const Sidebar: React.FC = () => {
           className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer
             ${
               isActive("/admin")
-                ? "text-indigo-600 bg-indigo-50"
-                : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
             }`}
         >
           <FaChartPie size={14} /> Dashboard
@@ -106,10 +110,10 @@ const Sidebar: React.FC = () => {
         {/* Products */}
         <button
           onClick={() => router.push("/admin/products")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/products")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <MdShoppingCart size={14} /> Products
@@ -118,10 +122,10 @@ const Sidebar: React.FC = () => {
         {/* Orders */}
         <button
           onClick={() => router.push("/admin/orders")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/orders")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <FaShoppingBag size={14} /> Orders
@@ -130,10 +134,10 @@ const Sidebar: React.FC = () => {
         {/* Product Purchase Manage */}
         <button
           onClick={() => router.push("/admin/product-purchase-manage")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/product-purchase-manage")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <FaShoppingBag size={14} /> Product Purchase Manage
@@ -142,10 +146,10 @@ const Sidebar: React.FC = () => {
         {/* Categories */}
         <button
           onClick={() => router.push("/admin/categories")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/categories")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <BiCategory size={14} /> Categories
@@ -154,10 +158,10 @@ const Sidebar: React.FC = () => {
         {/* Sellers */}
         <button
           onClick={() => router.push("/admin/sellers")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/sellers")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <MdShoppingCart size={14} /> Sellers
@@ -178,10 +182,10 @@ const Sidebar: React.FC = () => {
         {/* Coupons */}
         <button
           onClick={() => router.push("/admin/coupons")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/coupons")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <RiCouponLine  size={14} /> Coupons
@@ -192,56 +196,26 @@ const Sidebar: React.FC = () => {
           {menuItem("partners", "Travel Partners", <FaUmbrellaBeach size={14} />)}
           {openMenu === "partners" && (
             <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
-              <div
-                onClick={() => router.push("/admin/partners")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
-                  isActive("/admin/partners")
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
-                }`}
-              >
-                All Partners
-              </div>
-              <div
-                onClick={() => router.push("/admin/partners/stays")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors  ${
-                  isActive("/admin/partners/stays")
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
-                }`}
-              >
-                Stays
-              </div>
-              <div
-                onClick={() => router.push("/admin/partners/tours")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
-                  isActive("/admin/partners/tours")
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
-                }`}
-              >
-                Tours
-              </div>
-              <div
-                onClick={() => router.push("/admin/partners/adventures")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
-                  isActive("/admin/partners/adventures")
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
-                }`}
-              >
-                Adventures
-              </div>
-              <div
-                onClick={() => router.push("/admin/partners/vehicle-rental")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
-                  isActive("/admin/partners/vehicle-rental")
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
-                }`}
-              >
-                Vehicle Rental
-              </div>
+              {[
+                { label: "All Partners", path: "/admin/partners", icon: <FaUmbrellaBeach size={12} /> },
+                { label: "Stays", path: "/admin/partners/stays", icon: <FaBed size={12} /> },
+                { label: "Tours", path: "/admin/partners/tours", icon: <FaPlaneDeparture size={12} /> },
+                { label: "Adventures", path: "/admin/partners/adventures", icon: <FaMountain size={12} /> },
+                { label: "Vehicle Rental", path: "/admin/partners/vehicle-rental", icon: <FaCar size={12} /> },
+              ].map((item) => (
+                <div
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
+                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
+                    isActive(item.path)
+                      ? "text-green-600 bg-green-50"
+                      : "text-gray-700 hover:text-green-600"
+                  }`}
+                >
+                  {item.icon}
+                  <span className="truncate">{item.label}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -252,21 +226,22 @@ const Sidebar: React.FC = () => {
           {openMenu === "bookings" && (
             <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
               {[
-                { label: "Stays", path: "/admin/bookings/stays" },
-                { label: "Tours", path: "/admin/bookings/tours" },
-                { label: "Adventures", path: "/admin/bookings/adventures" },
-                { label: "Vehicle Rental", path: "/admin/bookings/vehicle-rental" },
+                { label: "Stays", path: "/admin/bookings/stays", icon: <FaBed size={12} /> },
+                { label: "Tours", path: "/admin/bookings/tours", icon: <FaPlaneDeparture size={12} /> },
+                { label: "Adventures", path: "/admin/bookings/adventures", icon: <FaMountain size={12} /> },
+                { label: "Vehicle Rental", path: "/admin/bookings/vehicle-rental", icon: <FaCar size={12} /> },
               ].map((item) => (
                 <div
                   key={item.path}
                   onClick={() => router.push(item.path)}
-                  className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
                     isActive(item.path)
-                      ? "text-indigo-600 bg-indigo-50"
-                      : "text-gray-700 hover:text-indigo-600"
+                      ? "text-green-600 bg-green-50"
+                      : "text-gray-700 hover:text-green-600"
                   }`}
                 >
-                  {item.label}
+                  {item.icon}
+                  <span className="truncate">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -275,25 +250,25 @@ const Sidebar: React.FC = () => {
 
         <button
           onClick={() => router.push("/admin/cancellation")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/cancellation")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <FaTimesCircle size={14} /> Order Cancellation
         </button>
 
-        <button
+        {/* <button
           onClick={() => router.push("/admin/admin-product-cancellations")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/admin-product-cancellations")
               ? "text-indigo-600 bg-indigo-50"
               : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
           }`}
         >
-          <FaTimesCircle size={14} /> Admin Product Cancellations
-        </button>
+          <MdCancelPresentation size={14} /> Admin Product Cancellations
+        </button> */}
 
         {/* Accounting */}
         <div>
@@ -301,20 +276,21 @@ const Sidebar: React.FC = () => {
           {openMenu === "accounting" && (
             <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
               {[
-                { label: "Transactions", path: "/admin/accounting/transactions" },
-                { label: "Invoices", path: "/admin/accounting/invoices" },
-                { label: "Refunds", path: "/admin/accounting/refunds" },
+                { label: "Transactions", path: "/admin/accounting/transactions", icon: <FaMoneyCheckAlt size={12} /> },
+                { label: "Invoices", path: "/admin/accounting/invoices", icon: <FaFileAlt size={12} /> },
+                { label: "Refunds", path: "/admin/accounting/refunds", icon: <FaTimesCircle size={12} /> },
               ].map((item) => (
                 <div
                   key={item.path}
                   onClick={() => router.push(item.path)}
-                  className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
                     isActive(item.path)
-                      ? "text-indigo-600 bg-indigo-50"
-                      : "text-gray-700 hover:text-indigo-600"
+                      ? "text-green-600 bg-green-50"
+                      : "text-gray-700 hover:text-green-600"
                   }`}
                 >
-                  {item.label}
+                  {item.icon}
+                  <span className="truncate">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -326,26 +302,23 @@ const Sidebar: React.FC = () => {
           {menuItem("customers", "Customers", <FaUsers size={14} />)}
           {openMenu === "customers" && (
             <div className="ml-8 mt-2 text-sm space-y-1">
-              <div
-                onClick={() => router.push("/admin/customers")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
-                  isActive("/admin/customers")
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
-                }`}
-              >
-                All Customers
-              </div>
-              <div
-                onClick={() => router.push("/admin/customers/reviews")}
-                className={`cursor-pointer rounded px-2 py-1 transition-colors ${
-                  isActive("/admin/customers/reviews")
-                    ? "text-indigo-600 bg-indigo-50"
-                    : "text-gray-700 hover:text-indigo-600"
-                }`}
-              >
-                Reviews
-              </div>
+              {[
+                { label: "All Customers", path: "/admin/customers", icon: <FaUsers size={12} /> },
+                { label: "Reviews", path: "/admin/customers/reviews", icon: <TbLogs size={12} /> },
+              ].map((item) => (
+                <div
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
+                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
+                    isActive(item.path)
+                      ? "text-green-600 bg-green-50"
+                      : "text-gray-700 hover:text-green-600"
+                  }`}
+                >
+                  {item.icon}
+                  <span className="truncate">{item.label}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -356,20 +329,21 @@ const Sidebar: React.FC = () => {
           {openMenu === "reports" && (
             <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
               {[
-                { label: "Sales", path: "/admin/reports/sales" },
-                { label: "Bookings", path: "/admin/reports/bookings" },
-                { label: "Performance", path: "/admin/reports/performance" },
+                { label: "Sales", path: "/admin/reports/sales", icon: <FaShoppingBag size={12} /> },
+                { label: "Bookings", path: "/admin/reports/bookings", icon: <FaPlaneDeparture size={12} /> },
+                { label: "Performance", path: "/admin/reports/performance", icon: <FaChartPie size={12} /> },
               ].map((item) => (
                 <div
                   key={item.path}
                   onClick={() => router.push(item.path)}
-                  className={`cursor-pointer rounded px-2 py-1 transition-colors ${
+                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
                     isActive(item.path)
-                      ? "text-indigo-600 bg-indigo-50"
-                      : "text-gray-700 hover:text-indigo-600"
+                      ? "text-green-600 bg-green-50"
+                      : "text-gray-700 hover:text-green-600"
                   }`}
                 >
-                  {item.label}
+                  {item.icon}
+                  <span className="truncate">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -379,10 +353,10 @@ const Sidebar: React.FC = () => {
         {/* Customer Support */}
         <button
           onClick={() => router.push("/admin/support")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/support")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <FaComments size={14} /> Customer Support
@@ -390,10 +364,10 @@ const Sidebar: React.FC = () => {
          {/* Blogs */}
         <button
           onClick={() => router.push("/admin/blogs")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer  ${
+          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap  ${
             isActive("/admin/blogs")
-              ? "text-indigo-600 bg-indigo-50"
-              : "text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              ? "text-green-600 bg-green-50"
+              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
           }`}
         >
           <TbLogs size={14} /> Blogs
@@ -406,7 +380,7 @@ const Sidebar: React.FC = () => {
       <div className=" space-y-2 p-2 mt-10 ">
         <button
           onClick={() => router.push("/admin/profile")}
-          className="flex items-center gap-3 w-full text-gray-700 hover:text-indigo-600 text-sm cursor-pointer"
+          className="flex items-center gap-3 w-full text-gray-700 hover:text-green-600 text-sm cursor-pointer"
         >
           <FaUserCircle size={14} /> Profile
         </button>

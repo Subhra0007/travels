@@ -309,12 +309,12 @@ export default function EditProductPage() {
   if (loading) {
     return (
       <div className="flex h-screen bg-sky-50 text-black">
-        <div className="hidden lg:block">
+        {/* <div className="hidden lg:block">
           <Sidebar />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-lg text-gray-600">Loading product...</div>
-        </div>
+        </div> */}
       </div>
     );
   }
@@ -325,11 +325,11 @@ export default function EditProductPage() {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black">
-      <div className="hidden lg:block">
+      {/* <div className="hidden lg:block">
         <Sidebar />
-      </div>
+      </div> */}
 
-      <div className="flex-1 flex flex-col mt-15 overflow-y-auto">
+      <div className="flex-1 flex flex-col  overflow-y-auto">
         <div className="sticky top-0 z-40 bg-sky-50 border-b p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold text-gray-900">Edit Product</h1>

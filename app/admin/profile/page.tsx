@@ -79,21 +79,21 @@ export default function AdminProfilePage() {
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 text-gray-900">
       {/* Sidebar */}
       <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen">
-        <div className="w-64 h-full bg-white shadow-lg flex flex-col overflow-y-auto overflow-x-hidden">
+        {/* <div className="w-64 h-full bg-white shadow-lg flex flex-col overflow-y-auto overflow-x-hidden">
           <ProfileSidebar
             user={{ fullName: "Admin", email: admin.email }}
             active={activeTab as any}
             onLogout={handleLogout}
             onNavigate={handleNavigation}
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-4 md:p-10 pt-20 overflow-y-auto">
         {/* Mobile toggle button for sidebar */}
         <div className="md:hidden mb-4">
-          <button
+          {/* <button
             onClick={() => setMobileSidebarOpen(true)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white shadow border text-gray-800"
           >
@@ -105,7 +105,7 @@ export default function AdminProfilePage() {
               />
             </svg>
             <span className="text-sm font-medium">Menu</span>
-          </button>
+          </button> */}
         </div>
 
         {/* Profile Tab Content */}

@@ -82,24 +82,24 @@ export default function AdminAdventuresPage() {
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block lg:flex-shrink-0">
+      {/* <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
-      </div>
+      </div> */}
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
             <div className="flex items-center gap-3">
-              <button
+              {/* <button
                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
                 onClick={() => setMobileSidebarOpen(true)}
                 aria-label="Open menu"
               >
                 Menu
-              </button>
+              </button> */}
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                <FaMountain className="text-green-600" />
+                {/* <FaMountain className="text-green-600" /> */}
                 Adventures catalogue
               </h1>
             </div>

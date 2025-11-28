@@ -64,21 +64,21 @@ export default function AdminBlogsPage() {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black">
-      <div className="hidden lg:block">
+      {/* <div className="hidden lg:block">
         <Sidebar />
-      </div>
+      </div> */}
 
-      <div className="flex-1 flex flex-col mt-15">
+      <div className="flex-1 flex flex-col ">
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
             <div className="flex items-center gap-3">
-              <button
+              {/* <button
                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
                 onClick={() => setMobileSidebarOpen(true)}
                 aria-label="Open menu"
               >
                 ☰
-              </button>
+              </button> */}
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Blogs Management</h1>
             </div>
             <div className="flex items-center gap-3">

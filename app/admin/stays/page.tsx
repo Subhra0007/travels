@@ -64,21 +64,21 @@ export default function AdminStaysPage() {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
+      {/* <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
-      </div>
+      </div> */}
 
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
             <div className="flex items-center gap-3">
-              <button
+              {/* <button
                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
                 onClick={() => setMobileSidebarOpen(true)}
                 aria-label="Open menu"
               >
                 ☰
-              </button>
+              </button> */}
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Stays catalogue</h1>
             </div>
             <p className="text-sm text-gray-600">Monitor vendor submitted stays and their room inventory.</p>

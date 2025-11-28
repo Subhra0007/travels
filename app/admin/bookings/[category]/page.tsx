@@ -123,21 +123,21 @@ const AdminBookingsCategoryPage = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
+      {/* <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
-      </div>
+      </div> */}
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-40 bg-slate-50 px-4 pt-6 pb-4 shadow-sm lg:hidden">
-          <button
+          {/* <button
             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm"
             onClick={() => setMobileSidebarOpen(true)}
           >
             ☰ Menu
-          </button>
+          </button> */}
         </header>
 
-        <main className="flex-1 px-4 pb-16 pt-6 sm:px-6 lg:px-10 lg:pt-16 overflow-x-auto max-w-5xl mx-auto">
+        <main className="flex-1 px-4 pb-16  sm:px-6 lg:px-10  overflow-x-auto max-w-6xl mx-auto">
           <div className="mb-6 flex flex-col gap-2">
             <h1 className="text-3xl font-bold text-gray-900">{CATEGORY_LABELS[category]}</h1>
             <p className="text-sm text-gray-600">

@@ -275,11 +275,11 @@ export default function AddProductPage() {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black">
-      <div className="hidden lg:block">
+      {/* <div className="hidden lg:block">
         <Sidebar />
-      </div>
+      </div> */}
 
-      <div className="flex-1 flex flex-col mt-15 overflow-y-auto">
+      <div className="flex-1 flex flex-col overflow-y-auto">
         <div className="sticky top-0 z-40 bg-sky-50 border-b p-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-semibold text-gray-900">Add New Product</h1>
@@ -293,7 +293,7 @@ export default function AddProductPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 p-6">
-          <div className="mx-auto max-w-4xl space-y-6">
+          <div className="mx-auto max-w-6xl space-y-6">
             {/* Basic Information */}
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>

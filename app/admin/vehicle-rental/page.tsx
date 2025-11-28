@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import Sidebar from "@/app/components/Pages/admin/Sidebar";
 import Link from "next/link";
-import { FaCar, FaEye, FaMapMarkerAlt, FaClock } from "react-icons/fa";
+import { FaCar, FaEye, FaMapMarkerAlt, FaClock, } from "react-icons/fa";
+import { LuBike } from "react-icons/lu";
+
 
 interface VehicleOptionSummary {
   model: string;
@@ -63,26 +65,26 @@ export default function AdminVehicleRentalsPage() {
   };
 
   const getCategoryIcon = (category: string) => {
-    return category === "bikes-rentals" ? <FaCar className="text-green-600" /> : <FaCar className="text-blue-600" />;
+    return category === "bikes-rentals" ? <LuBike className="text-green-600" /> : <FaCar className="text-blue-600" />;
   };
 
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
+      {/* <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
-      </div>
+      </div> */}
 
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
+      <div className="flex-1 flex flex-col  overflow-hidden">
         <div className="sticky top-0 z-40 bg-sky-50">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
             <div className="flex items-center gap-3">
-              <button
+              {/* <button
                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
                 onClick={() => setMobileSidebarOpen(true)}
                 aria-label="Open menu"
               >
                 Menu
-              </button>
+              </button> */}
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Vehicle Rentals</h1>
             </div>
             <p className="text-sm text-gray-600">Monitor all vendor-submitted vehicles for rent.</p>

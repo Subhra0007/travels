@@ -56,9 +56,9 @@ const AdminProductCancellationsPage = () => {
   }
 
   return (
-    <div className="space-y-8 lg:pt-6">
+    <div className="space-y-8 ">
       <header className="space-y-2">
-        <p className="text-xs uppercase tracking-wide text-indigo-600 font-semibold">Admin catalogue</p>
+        <p className="text-xs uppercase tracking-wide text-green-600 font-semibold">Admin catalogue</p>
         <h1 className="text-3xl font-bold text-gray-900">Admin product cancellations</h1>
         <p className="text-sm text-gray-600">
           Only cancellations from the admin-managed catalogue are included here so you can reconcile pricing, stock, and

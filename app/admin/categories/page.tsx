@@ -88,21 +88,21 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="flex h-screen bg-sky-50 text-black overflow-hidden">
-      <div className="hidden lg:block lg:flex-shrink-0">
+      {/* <div className="hidden lg:block lg:flex-shrink-0">
         <Sidebar />
-      </div>
+      </div> */}
 
-      <div className="flex-1 flex flex-col mt-15 overflow-hidden">
-        <div className="sticky top-0 z-40 bg-sky-50">
+      <div className="flex-1 flex flex-col  overflow-hidden">
+        <div className="sticky top-0 z-40 bg-sky-50  pt-0">
           <div className="flex items-center justify-between gap-3 p-3 border-b">
             <div className="flex items-center gap-3">
-              <button
+              {/* <button
                 className="lg:hidden px-3 py-2 rounded border text-gray-700"
                 onClick={() => setMobileSidebarOpen(true)}
                 aria-label="Open menu"
               >
                 ☰
-              </button>
+              </button> */}
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Product Categories</h1>
             </div>
             <div className="flex items-center gap-3">
@@ -292,7 +292,7 @@ export default function AdminCategoriesPage() {
 
       {/* Add/Edit Category Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-50">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
