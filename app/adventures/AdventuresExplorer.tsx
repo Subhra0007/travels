@@ -143,7 +143,7 @@ export const AdventureCard = ({
                   e.stopPropagation();
                   onSelectTag?.(tag);
                 }}
-                className="rounded-full border border-orange-200 px-3 py-1 text-orange-700 transition hover:border-orange-400 hover:bg-orange-50"
+                className="rounded-full border border-green-200 px-3 py-1 text-green-700 transition hover:border-green-400 hover:bg-green-50"
               >
                 {tag}
               </button>
@@ -331,7 +331,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
             >
               <div className="col-span-1">
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Search</label>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-orange-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500">
                   <FaSearch className="text-gray-500" />
                   <input
                     type="text"
@@ -345,7 +345,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
 
               <div className="col-span-1">
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Participants</label>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-orange-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500">
                   <FaUsers className="text-gray-500" />
                   <input
                     type="number"
@@ -362,7 +362,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 <select
                   value={formDifficultyFilter}
                   onChange={(e) => setFormDifficultyFilter(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus:border-green-500 focus:outline-none"
                 >
                   <option value="">All levels</option>
                   <option value="Easy">Easy</option>
@@ -377,7 +377,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 <select
                   value={formActiveCategory}
                   onChange={(e) => setFormActiveCategory(e.target.value as CategoryValue)}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus:border-orange-500 focus:outline-none"
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus:border-green-500 focus:outline-none"
                 >
                   {ADVENTURE_CATEGORIES.map((c) => (
                     <option key={c.value} value={c.value}>

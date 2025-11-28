@@ -57,6 +57,16 @@ export type Stay = {
   curatedHighlights?: Array<{ title: string; description?: string; icon?: string }>;
   popularFacilities: string[];
   rooms: Room[];
+  bnb?: {
+    unitType: string;
+    bedrooms: number;
+    bathrooms: number;
+    kitchenAvailable: boolean;
+    beds: number;
+    capacity: number;
+    features: string[];
+    price: number;
+  };
   amenities: Record<string, string[]>;
   rating?: { average: number; count: number };
   tags?: string[];
@@ -101,12 +111,24 @@ export const StayCard = ({
   checkIn,
   checkOut,
 }: StayCardProps) => {
+  const isBnb = stay.category === "bnbs" && Boolean(stay.bnb);
   const roomCount = stay.rooms?.length ?? 0;
-  const startingPrice = roomCount
-    ? Math.min(...stay.rooms.map((room) => room.price)).toLocaleString()
+  const startingPriceValue = isBnb
+    ? stay.bnb?.price ?? null
+    : roomCount
+    ? Math.min(...stay.rooms.map((room) => room.price))
     : null;
-  const heroHighlights = stay.heroHighlights?.slice(0, 3) ?? [];
-  const primaryFeatures = stay.rooms?.[0]?.features?.slice(0, 4) ?? [];
+  const startingPrice = startingPriceValue != null ? startingPriceValue.toLocaleString() : null;
+  const heroHighlights =
+    (stay.heroHighlights && stay.heroHighlights.length
+      ? stay.heroHighlights
+      : stay.popularFacilities && stay.popularFacilities.length
+      ? stay.popularFacilities
+      : []
+    ).slice(0, 3);
+  const primaryFeatures = isBnb
+    ? stay.bnb?.features?.slice(0, 4) ?? []
+    : stay.rooms?.[0]?.features?.slice(0, 4) ?? [];
   const ratingValue = stay.rating?.count ? stay.rating.average : null;
   const tags = stay.tags ?? [];
   const hasDates = Boolean(checkIn && checkOut);
@@ -209,9 +231,11 @@ export const StayCard = ({
           </div>
         )}
 
-        {stay.popularFacilities?.length ? (
+        {(stay.popularFacilities?.length || stay.heroHighlights?.length) ? (
           <div className="flex flex-wrap gap-2">
-            {stay.popularFacilities.slice(0, 4).map((facility) => (
+            {(stay.popularFacilities?.length ? stay.popularFacilities : stay.heroHighlights || [])
+              .slice(0, 4)
+              .map((facility) => (
               <span
                 key={facility}
                 className="inline-flex items-center gap-2 rounded-2xl border border-green-100 bg-white/80 px-3 py-2 text-xs text-gray-700 shadow-sm"
@@ -224,24 +248,43 @@ export const StayCard = ({
         ) : null}
 
         <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3 text-sm">
-          <div className="flex flex-1 flex-wrap gap-3 text-xs text-gray-600">
-            <div className="flex flex-1 min-w-[120px] items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
-              <FaBed className="text-green-600" />
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-green-700">Rooms</p>
-                <p className="text-sm font-semibold text-gray-900">{roomCount}</p>
+          {isBnb ? (
+            <div className="flex flex-1 flex-wrap gap-3 text-xs text-gray-600">
+              <div className="flex min-w-[120px] flex-1 items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
+                <FaBed className="text-green-600" />
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-green-700">Bedrooms</p>
+                  <p className="text-sm font-semibold text-gray-900">{stay.bnb?.bedrooms ?? "-"}</p>
+                </div>
+              </div>
+              <div className="flex min-w-[120px] flex-1 items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
+                <FaUsers className="text-green-600" />
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-green-700">Guests</p>
+                  <p className="text-sm font-semibold text-gray-900">{stay.bnb?.capacity ?? "-"}</p>
+                </div>
               </div>
             </div>
-            <div className="flex flex-1 min-w-[120px] items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
-              <FaUsers className="text-green-600" />
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-green-700">Max guests</p>
-                <p className="text-sm font-semibold text-gray-900">
-                  {stay.rooms?.[0]?.capacity ?? guestsFallback(stay)}
-                </p>
+          ) : (
+            <div className="flex flex-1 flex-wrap gap-3 text-xs text-gray-600">
+              <div className="flex flex-1 min-w-[120px] items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
+                <FaBed className="text-green-600" />
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-green-700">Rooms</p>
+                  <p className="text-sm font-semibold text-gray-900">{roomCount}</p>
+                </div>
+              </div>
+              <div className="flex flex-1 min-w-[120px] items-center gap-2 rounded-2xl bg-green-50/80 px-3 py-2">
+                <FaUsers className="text-green-600" />
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-green-700">Max guests</p>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {stay.rooms?.[0]?.capacity ?? guestsFallback(stay)}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
           <div className="text-right">
             {startingPrice ? (
               <>
@@ -259,7 +302,23 @@ export const StayCard = ({
   );
 };
 
-const guestsFallback = (stay: Stay) => stay.rooms?.reduce((max, room) => Math.max(max, room.capacity), 0) ?? 2;
+const getStayMinPriceValue = (stay: Stay) => {
+  if (stay.category === "bnbs" && stay.bnb) return stay.bnb.price ?? null;
+  return stay.rooms?.length ? Math.min(...stay.rooms.map((room) => room.price)) : null;
+};
+
+const guestsFallback = (stay: Stay) =>
+  stay.category === "bnbs" && stay.bnb
+    ? stay.bnb.capacity || 2
+    : stay.rooms?.reduce((max, room) => Math.max(max, room.capacity), 0) ?? 2;
+
+const canHostGuests = (stay: Stay, guests: number) => {
+  if (!guests) return true;
+  if (stay.category === "bnbs" && stay.bnb) {
+    return (stay.bnb.capacity ?? 0) >= guests;
+  }
+  return stay.rooms?.some((room) => room.capacity >= guests) ?? false;
+};
 
 export default function StaysExplorer({ initialCategory = "all" }: StaysExplorerProps) {
   const params = useSearchParams();
@@ -345,7 +404,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
   const priceBounds = useMemo(() => {
     if (!stays.length) return { min: 0, max: 0 };
     const prices = stays
-      .map((stay) => (stay.rooms?.length ? Math.min(...stay.rooms.map((room) => room.price)) : null))
+      .map((stay) => getStayMinPriceValue(stay))
       .filter((price): price is number => typeof price === "number" && !Number.isNaN(price));
     if (!prices.length) return { min: 0, max: 0 };
     return {
@@ -378,14 +437,14 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
           return (b.rating?.count ?? 0) - (a.rating?.count ?? 0);
         }
         case "price-asc": {
-          const priceA = a.rooms?.length ? Math.min(...a.rooms.map(r => r.price)) : Infinity;
-          const priceB = b.rooms?.length ? Math.min(...b.rooms.map(r => r.price)) : Infinity;
-          return priceA - priceB;
+          const priceA = getStayMinPriceValue(a);
+          const priceB = getStayMinPriceValue(b);
+          return (priceA ?? Infinity) - (priceB ?? Infinity);
         }
         case "price-desc": {
-          const priceA = a.rooms?.length ? Math.min(...a.rooms.map(r => r.price)) : -Infinity;
-          const priceB = b.rooms?.length ? Math.min(...b.rooms.map(r => r.price)) : -Infinity;
-          return priceB - priceA;
+          const priceA = getStayMinPriceValue(a);
+          const priceB = getStayMinPriceValue(b);
+          return (priceB ?? -Infinity) - (priceA ?? -Infinity);
         }
         case "location-asc": {
           const locA = `${a.location.city}, ${a.location.state}`.toLowerCase();
@@ -409,14 +468,11 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
         if (!matchesName && !matchesCity && !matchesHighlights) return false;
       }
 
-      if (guests) {
-        const hasRoom = stay.rooms?.some((room) => room.capacity >= guests);
-        if (!hasRoom) return false;
+      if (guests && !canHostGuests(stay, guests)) {
+        return false;
       }
 
-      const minStayPrice = stay.rooms?.length
-        ? Math.min(...stay.rooms.map((room) => room.price))
-        : null;
+      const minStayPrice = getStayMinPriceValue(stay);
 
       if (priceMin !== "" && typeof minStayPrice === "number" && minStayPrice < priceMin) return false;
       if (priceMax !== "" && typeof minStayPrice === "number" && minStayPrice > priceMax) return false;

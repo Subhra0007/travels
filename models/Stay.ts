@@ -34,6 +34,17 @@ export interface IStay extends Document {
   };
   popularFacilities: string[]; // Quick badges with icons
   amenities: Record<string, string[]>; // Grouped facilities (e.g. Bathroom, Activities…)
+  meals?: string[]; // For homestays: breakfast, lunch, evening snacks, dinner
+  bnb?: {
+    unitType: string;
+    bedrooms: number;
+    bathrooms: number;
+    kitchenAvailable: boolean;
+    beds: number;
+    capacity: number;
+    features: string[];
+    price: number;
+  };
   rooms: Array<{
     _id?: mongoose.Types.ObjectId;
     name: string;
@@ -127,11 +138,22 @@ const staySchema = new Schema<IStay>(
     },
     popularFacilities: { type: [String], default: [] },
     amenities: { type: Map, of: [String], default: {} },
+    meals: { type: [String], default: [] },
+    bnb: {
+      unitType: String,
+      bedrooms: { type: Number, default: 0 },
+      bathrooms: { type: Number, default: 0 },
+      kitchenAvailable: { type: Boolean, default: false },
+      beds: { type: Number, default: 0 },
+      capacity: { type: Number, default: 0 },
+      features: { type: [String], default: [] },
+      price: { type: Number, default: 0 },
+    },
     rooms: [
       {
-        name: { type: String, required: true },
+        name: { type: String, required: false }, // Not required for "rooms" category
         description: String,
-        bedType: { type: String, required: true },
+        bedType: { type: String, required: false }, // Not required for "rooms" category
         beds: { type: Number, required: true, min: 1 },
         capacity: { type: Number, required: true, min: 1 },
         price: { type: Number, required: true, min: 0 },
@@ -143,13 +165,7 @@ const staySchema = new Schema<IStay>(
         available: { type: Number, required: true, min: 0 },
         images: {
           type: [String],
-          required: true,
-          validate: {
-            validator: function (v: string[]) {
-              return Array.isArray(v) && v.length >= 3;
-            },
-            message: "Each room needs at least 3 images",
-          },
+          default: [],
         },
         isRefundable: { type: Boolean, default: true },
         refundableUntilHours: { type: Number, default: 48 },

@@ -20,6 +20,8 @@ const normalizeStayPayload = (body: any) => {
     amenities = {},
     tags = [],
     rooms,
+    meals = [],
+    bnb,
     about,
     checkInOutRules,
     vendorMessage = "",
@@ -35,47 +37,122 @@ const normalizeStayPayload = (body: any) => {
     return { error: "Invalid category" };
   }
 
-  if (!Array.isArray(rooms) || rooms.length === 0) {
-    return { error: "Please add at least one room" };
-  }
+  // Category-specific validation
+  if (category === "hotels" || category === "homestays") {
+    // Hotels and Homestays require full room details
+    if (!Array.isArray(rooms) || rooms.length === 0) {
+      return { error: "Please add at least one room" };
+    }
 
-  for (const room of rooms) {
-    const availabilityValue = room?.available ?? room?.inventory ?? 1;
+    for (const room of rooms) {
+      const availabilityValue = room?.available ?? room?.inventory ?? 1;
+      if (
+        !room?.name ||
+        !room?.bedType ||
+        typeof room?.beds !== "number" ||
+        typeof room?.capacity !== "number" ||
+        typeof room?.price !== "number" ||
+        !Number.isFinite(Number(availabilityValue)) ||
+        !Array.isArray(room?.images) ||
+        room.images.length < 3
+      ) {
+        return {
+          error:
+            "Every room must include name, bed type, beds, capacity, price, availability and at least 3 images",
+        };
+      }
+    }
+  } else if (category === "rooms") {
+    // Rooms category - simplified room data (no name, bedType, or images required)
+    if (!Array.isArray(rooms) || rooms.length === 0) {
+      return { error: "Room information is required" };
+    }
+
+    const room = rooms[0];
     if (
-      !room?.name ||
-      !room?.bedType ||
       typeof room?.beds !== "number" ||
       typeof room?.capacity !== "number" ||
       typeof room?.price !== "number" ||
-      !Number.isFinite(Number(availabilityValue)) ||
-      !Array.isArray(room?.images) ||
-      room.images.length < 3
+      room.beds < 1 ||
+      room.capacity < 1 ||
+      room.price <= 0
     ) {
       return {
-        error:
-          "Every room must include name, bed type, beds, capacity, price, availability and at least 3 images",
+        error: "Room must include beds (≥1), capacity (≥1), and price (>0)",
+      };
+    }
+  } else if (category === "bnbs") {
+    // BnBs category - requires bnb data, not rooms
+    if (!bnb || typeof bnb !== "object") {
+      return { error: "BnB details are required" };
+    }
+
+    if (
+      !bnb.unitType ||
+      typeof bnb.bedrooms !== "number" ||
+      typeof bnb.bathrooms !== "number" ||
+      typeof bnb.beds !== "number" ||
+      typeof bnb.capacity !== "number" ||
+      typeof bnb.price !== "number" ||
+      bnb.bedrooms < 1 ||
+      bnb.bathrooms < 1 ||
+      bnb.beds < 1 ||
+      bnb.capacity < 1 ||
+      bnb.price <= 0
+    ) {
+      return {
+        error: "BnB must include unit type, bedrooms (≥1), bathrooms (≥1), beds (≥1), capacity (≥1), and price (>0)",
       };
     }
   }
 
-  const normalizedRooms = rooms.map((room: any) => ({
-    name: room.name,
-    description: room.description ?? "",
-    bedType: room.bedType,
-    beds: Number(room.beds),
-    capacity: Number(room.capacity),
-    price: Number(room.price),
-    taxes: room.taxes != null ? Number(room.taxes) : 0,
-    currency: typeof room.currency === "string" && room.currency.trim().length ? room.currency : "INR",
-    size: room.size ?? "",
-    features: Array.isArray(room.features) ? room.features : [],
-    amenities: Array.isArray(room.amenities) ? room.amenities : [],
-    available: Number(room.available ?? room.inventory ?? 1),
-    isRefundable: room.isRefundable !== undefined ? Boolean(room.isRefundable) : true,
-    refundableUntilHours:
-      room.refundableUntilHours !== undefined ? Number(room.refundableUntilHours) : 48,
-    images: room.images,
-  }));
+  // Normalize rooms based on category
+  let normalizedRooms: any[] = [];
+  
+  if (category === "hotels" || category === "homestays") {
+    normalizedRooms = rooms.map((room: any) => ({
+      name: room.name,
+      description: room.description ?? "",
+      bedType: room.bedType,
+      beds: Number(room.beds),
+      capacity: Number(room.capacity),
+      price: Number(room.price),
+      taxes: room.taxes != null ? Number(room.taxes) : 0,
+      currency: typeof room.currency === "string" && room.currency.trim().length ? room.currency : "INR",
+      size: room.size ?? "",
+      features: Array.isArray(room.features) ? room.features : [],
+      amenities: Array.isArray(room.amenities) ? room.amenities : [],
+      available: Number(room.available ?? room.inventory ?? 1),
+      isRefundable: room.isRefundable !== undefined ? Boolean(room.isRefundable) : true,
+      refundableUntilHours:
+        room.refundableUntilHours !== undefined ? Number(room.refundableUntilHours) : 48,
+      images: room.images,
+    }));
+  } else if (category === "rooms") {
+    // For rooms category, create a minimal room entry
+    const room = rooms[0];
+    normalizedRooms = [
+      {
+        name: room?.name || "Room",
+        description: room?.description ?? "",
+        bedType: room?.bedType || "Queen Bed",
+        beds: Number(room.beds),
+        capacity: Number(room.capacity),
+        price: Number(room.price),
+        taxes: room.taxes != null ? Number(room.taxes) : 0,
+        currency: typeof room.currency === "string" && room.currency.trim().length ? room.currency : "INR",
+        size: room.size ?? "",
+        features: Array.isArray(room.features) ? room.features : [],
+        amenities: Array.isArray(room.amenities) ? room.amenities : [],
+        available: Number(room.available ?? room.inventory ?? 1),
+        isRefundable: room.isRefundable !== undefined ? Boolean(room.isRefundable) : true,
+        refundableUntilHours:
+          room.refundableUntilHours !== undefined ? Number(room.refundableUntilHours) : 48,
+        images: Array.isArray(room.images) ? room.images : [],
+      },
+    ];
+  }
+  // For bnbs, normalizedRooms remains empty array
 
   const normalizedVideos = {
     inside: Array.isArray(videos?.inside) ? videos.inside : [],
@@ -113,6 +190,24 @@ const normalizeStayPayload = (body: any) => {
         }))
     : [];
 
+  // Normalize meals (for homestays)
+  const normalizedMeals = Array.isArray(meals) ? meals.filter((m: any) => typeof m === "string" && m.trim().length) : [];
+
+  // Normalize bnb (for bnbs)
+  let normalizedBnb = null;
+  if (category === "bnbs" && bnb && typeof bnb === "object") {
+    normalizedBnb = {
+      unitType: typeof bnb.unitType === "string" ? bnb.unitType.trim() : "",
+      bedrooms: Number(bnb.bedrooms) || 0,
+      bathrooms: Number(bnb.bathrooms) || 0,
+      kitchenAvailable: Boolean(bnb.kitchenAvailable),
+      beds: Number(bnb.beds) || 0,
+      capacity: Number(bnb.capacity) || 0,
+      features: Array.isArray(bnb.features) ? bnb.features.filter((f: any) => typeof f === "string") : [],
+      price: Number(bnb.price) || 0,
+    };
+  }
+
   return {
     payload: {
       name,
@@ -127,6 +222,8 @@ const normalizeStayPayload = (body: any) => {
       popularFacilities,
       amenities: normalizedAmenities,
       rooms: normalizedRooms,
+      meals: normalizedMeals,
+      bnb: normalizedBnb,
       about,
       checkInOutRules,
       vendorMessage,

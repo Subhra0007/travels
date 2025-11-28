@@ -32,6 +32,16 @@ interface Stay {
   heroHighlights: string[];
   popularFacilities: string[];
   rooms: Room[];
+  bnb?: {
+    unitType: string;
+    bedrooms: number;
+    bathrooms: number;
+    kitchenAvailable: boolean;
+    beds: number;
+    capacity: number;
+    features: string[];
+    price: number;
+  };
   vendorMessage?: string;
   isActive: boolean;
   createdAt: string;
@@ -119,9 +129,11 @@ export default function VendorStaysPage() {
   // ───── Render Stay Card (unchanged – kept exactly as you had it) ─────
   const renderStayCard = (stay: Stay) => {
     const roomCount = stay.rooms.length;
-    const minCapacity = roomCount ? Math.min(...stay.rooms.map(r => r.capacity)) : null;
-    const maxCapacity = roomCount ? Math.max(...stay.rooms.map(r => r.capacity)) : null;
-    const minPrice = roomCount ? Math.min(...stay.rooms.map(r => r.price)) : null;
+    const isBnb = stay.category === "bnbs" && stay.bnb;
+    const minCapacity = roomCount ? Math.min(...stay.rooms.map((r) => r.capacity)) : null;
+    const maxCapacity = roomCount ? Math.max(...stay.rooms.map((r) => r.capacity)) : null;
+    const minPrice = roomCount ? Math.min(...stay.rooms.map((r) => r.price)) : null;
+    const displayPrice = isBnb ? stay.bnb!.price : minPrice;
 
     return (
       <div key={stay._id} className="overflow-hidden rounded-xl bg-white shadow-md transition hover:shadow-lg">
@@ -148,14 +160,37 @@ export default function VendorStaysPage() {
           </div>
 
           <div className="text-sm text-gray-700">
-            <div className="mb-2 flex items-center gap-2">
-              <FaBed className="text-gray-600" />
-              <span>
-                {roomCount} room{roomCount > 1 ? "s" : ""}{" "}
-                {minCapacity && maxCapacity && `• ${minCapacity} - ${maxCapacity} guests`}
-              </span>
-            </div>
-            {minPrice && <p className="text-xs text-gray-600">Starting at ₹{minPrice.toLocaleString()}</p>}
+            {isBnb ? (
+              <>
+                <div className="mb-2 flex flex-wrap gap-2 text-xs text-gray-600">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1">
+                    Bedrooms: {stay.bnb!.bedrooms}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1">
+                    Bathrooms: {stay.bnb!.bathrooms}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1">
+                    Guests: {stay.bnb!.capacity}
+                  </span>
+                </div>
+                {displayPrice != null && (
+                  <p className="text-xs text-gray-600">Price per night ₹{displayPrice.toLocaleString()}</p>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="mb-2 flex items-center gap-2">
+                  <FaBed className="text-gray-600" />
+                  <span>
+                    {roomCount} room{roomCount > 1 ? "s" : ""}{" "}
+                    {minCapacity && maxCapacity && `• ${minCapacity} - ${maxCapacity} guests`}
+                  </span>
+                </div>
+                {displayPrice != null && (
+                  <p className="text-xs text-gray-600">Starting at ₹{displayPrice.toLocaleString()}</p>
+                )}
+              </>
+            )}
           </div>
 
           {/* Highlights & Features kept exactly as you wrote them */}
@@ -169,15 +204,21 @@ export default function VendorStaysPage() {
             </div>
           )}
 
-          {stay.rooms[0]?.features?.length > 0 && (
+          {(
+            (stay.category === "bnbs" ? stay.bnb?.features : stay.rooms[0]?.features) || []
+          ).length > 0 && (
             <div className="mt-3">
               <p className="text-xs font-semibold text-gray-800">Popular room features</p>
               <div className="mt-1 flex flex-wrap gap-2">
-                {stay.rooms[0].features.slice(0, 4).map((f) => (
+                {(
+                  stay.category === "bnbs" ? stay.bnb?.features : stay.rooms[0]?.features
+                )
+                  ?.slice(0, 4)
+                  .map((f) => (
                   <span key={f} className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700">
                     {f}
                   </span>
-                ))}
+                ))} 
               </div>
             </div>
           )}

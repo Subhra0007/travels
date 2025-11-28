@@ -23,7 +23,19 @@ export async function GET(req: NextRequest) {
     }
 
     if (typeof guests === "number" && !Number.isNaN(guests) && guests > 0) {
-      query.rooms = { $elemMatch: { capacity: { $gte: guests } } };
+      if (query.category === "bnbs") {
+        query["bnb.capacity"] = { $gte: guests };
+      } else if (query.category && query.category !== "bnbs") {
+        query.rooms = { $elemMatch: { capacity: { $gte: guests } } };
+      } else {
+        query.$or = [
+          { category: "bnbs", "bnb.capacity": { $gte: guests } },
+          {
+            category: { $ne: "bnbs" },
+            rooms: { $elemMatch: { capacity: { $gte: guests } } },
+          },
+        ];
+      }
     }
 
     const allowedVendors = await User.find({ accountType: "vendor", isVendorApproved: true, isVendorLocked: false }).select("_id");

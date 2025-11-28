@@ -65,6 +65,17 @@ export type StayDetailPayload = {
   };
   popularFacilities: string[];
   amenities: Record<string, string[]>;
+  meals?: string[]; // For homestays
+  bnb?: {
+    unitType: string;
+    bedrooms: number;
+    bathrooms: number;
+    kitchenAvailable: boolean;
+    beds: number;
+    capacity: number;
+    features: string[];
+    price: number;
+  };
   rooms: Array<{
     _id?: string;
     name: string;
@@ -202,9 +213,15 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [activeRoomIndex, setActiveRoomIndex] = useState<number | null>(null);
   const [roomImageIndex, setRoomImageIndex] = useState(0);
+  const activeRoomImages =
+    activeRoomIndex !== null
+      ? ((stay.rooms[activeRoomIndex]?.images || []) as string[]).filter(Boolean)
+      : [];
+  const showActiveRoomGallery = activeRoomIndex !== null && activeRoomImages.length > 0;
 
   const nights = useMemo(() => calculateNights(checkIn, checkOut), [checkIn, checkOut]);
 
+  const isBnb = stay.category === "bnbs" && Boolean(stay.bnb);
   const availability = useAvailability("stay", stay._id, checkIn, checkOut);
   const availableRoomKeys = availability.availableOptionKeys ?? [];
   const bookedSummaries = availability.bookedRanges.slice(0, 3);
@@ -245,6 +262,17 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
     };
   }, [roomSelections, stay.rooms, nights]);
 
+  const bnbPricing = useMemo(() => {
+    if (!isBnb || !stay.bnb) return null;
+    const pricePerNight = stay.bnb.price;
+    const subtotal = pricePerNight * nights;
+    return {
+      pricePerNight,
+      subtotal,
+      total: subtotal,
+    };
+  }, [isBnb, stay.bnb, nights]);
+
   const platformFee = pricing.totalRooms ? 15 : 0;
   const grandTotal = pricing.total + platformFee;
 
@@ -269,7 +297,24 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
     });
   };
 
+  const handleBnbBooking = () => {
+    if (!isBnb || !stay.bnb) return;
+    const params = new URLSearchParams({
+      checkIn,
+      checkOut,
+      adults: String(adults),
+      children: String(children),
+      infants: String(infants),
+      bnb: "1",
+    });
+    router.push(`/stays/${stay._id}/book?${params.toString()}`);
+  };
+
   const handleBookNow = () => {
+    if (isBnb) {
+      handleBnbBooking();
+      return;
+    }
     if (!pricing.totalRooms || soldOutForDates) return;
 
     const params = new URLSearchParams({
@@ -497,7 +542,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
         </div>
       </header>
 
-      <main className="mx-auto mt-10 flex max-w-6xl flex-col gap-12 px-6 pb-16">
+      <main className="mx-auto mt-10 flex max-w-7xl flex-col gap-12 px-6 pb-16 lg:px-2">
         <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <div className="flex flex-col justify-between space-y-4">
             <div>
@@ -640,6 +685,87 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
           </section>
         )}
 
+        {/* Meals section for Homestays */}
+        {stay.category === "homestays" && stay.meals && stay.meals.length > 0 && (
+          <section className="rounded-3xl bg-white p-6 shadow">
+            <h2 className="text-xl font-semibold text-gray-900">Meals Provided</h2>
+            <p className="mt-2 text-sm text-gray-600">The following meals are provided during your stay:</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {stay.meals.map((meal) => (
+                <span
+                  key={meal}
+                  className="inline-flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 text-sm font-medium text-green-700"
+                >
+                  <FaUtensils className="text-green-600" />
+                  {meal}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* BnB Details section */}
+        {stay.category === "bnbs" && stay.bnb && (
+          <section className="rounded-3xl bg-white p-6 shadow">
+            <h2 className="text-xl font-semibold text-gray-900">BnB Details</h2>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-gray-200 p-4">
+                <p className="text-sm font-medium text-gray-500">Unit Type</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">{stay.bnb.unitType}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4">
+                <p className="text-sm font-medium text-gray-500">Bedrooms</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">{stay.bnb.bedrooms}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4">
+                <p className="text-sm font-medium text-gray-500">Bathrooms</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">{stay.bnb.bathrooms}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4">
+                <p className="text-sm font-medium text-gray-500">Kitchen</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">
+                  {stay.bnb.kitchenAvailable ? "Available" : "Not Available"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4">
+                <p className="text-sm font-medium text-gray-500">Total Beds</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">{stay.bnb.beds}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 p-4">
+                <p className="text-sm font-medium text-gray-500">Guest Capacity</p>
+                <p className="mt-1 text-lg font-semibold text-gray-900">{stay.bnb.capacity} guests</p>
+              </div>
+            </div>
+            {stay.bnb.features && stay.bnb.features.length > 0 && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-500">Features</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {stay.bnb.features.map((feature) => (
+                    <span
+                      key={feature}
+                      className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
+                    >
+                      <FaCheck className="text-green-600" />
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4">
+              <p className="text-sm font-medium text-gray-500">Price per night</p>
+              <p className="mt-1 text-2xl font-bold text-green-700">₹{stay.bnb.price.toLocaleString()}</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleBnbBooking}
+              className="mt-4 inline-flex items-center justify-center rounded-full bg-green-600 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-green-700"
+            >
+              Book this BnB
+            </button>
+          </section>
+        )}
+
         <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-2">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">About this stay</h2>
@@ -736,8 +862,10 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
             )}
           </div>
 
-          <div className={`overflow-x-auto rounded-2xl border border-gray-200 ${soldOutForDates ? "pointer-events-none opacity-60" : ""}`}>
-            <table className="min-w-full divide-y divide-gray-200">
+          {/* Rooms table - only show for hotels, homestays, and rooms categories */}
+          {(stay.category === "hotels" || stay.category === "homestays" || stay.category === "rooms") && (
+            <div className={`overflow-x-auto rounded-2xl border border-gray-200 ${soldOutForDates ? "pointer-events-none opacity-60" : ""}`}>
+              <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                 <tr>
                   <th className="px-4 py-3">Room type</th>
@@ -748,6 +876,8 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {stay.rooms.map((room, idx) => {
+                  const roomImages = ((room.images || []) as string[]).filter(Boolean);
+                  const hasRoomImages = roomImages.length > 0;
                   const roomKey = room._id?.toString() || room.name;
                   const quantity = roomSelections[roomKey] || 0;
                   const isSelected = quantity > 0;
@@ -871,12 +1001,12 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                                   <p className="text-sm leading-relaxed text-gray-700">{room.description}</p>
                                 )}
                                 <div className="grid gap-3 sm:grid-cols-3">
-                                  {room.images?.slice(0, 3).map((image, imageIdx) => (
+                                  {roomImages.slice(0, 3).map((image, imageIdx) => (
                                     <div key={image + imageIdx} className="relative h-28 overflow-hidden rounded-xl">
                                       <Image src={image} alt={`${room.name} photo ${imageIdx + 1}`} fill className="object-cover" />
                                     </div>
                                   ))}
-                                  {room.images && room.images.length > 3 && (
+                                  {roomImages.length > 3 && (
                                     <button
                                       type="button"
                                       onClick={() => {
@@ -885,7 +1015,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                                       }}
                                       className="flex h-28 items-center justify-center rounded-xl border border-dashed border-gray-300 text-xs font-semibold text-gray-600 transition hover:border-gray-400 hover:text-gray-800"
                                     >
-                                      View {room.images.length - 3} more photos
+                                      View {roomImages.length - 3} more photos
                                     </button>
                                   )}
                                 </div>
@@ -927,16 +1057,18 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                                     </div>
                                   </div>
                                 ) : null}
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setActiveRoomIndex(idx);
-                                    setRoomImageIndex(0);
-                                  }}
-                                  className="inline-flex items-center justify-center rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-100"
-                                >
-                                  Open full gallery
-                                </button>
+                                {hasRoomImages && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveRoomIndex(idx);
+                                      setRoomImageIndex(0);
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:bg-gray-100"
+                                  >
+                                    Open full gallery
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -948,100 +1080,148 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
               </tbody>
             </table>
           </div>
+          )}
         </section>
 
         <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Booking summary</h2>
-            <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
-              <p className="flex items-center gap-2">
-                <FaCalendarAlt /> {nights} night{nights === 1 ? "" : "s"}
-              </p>
-              <p className="mt-2 flex items-center gap-2">
-                <FaUsers /> {adults} adult{adults === 1 ? "" : "s"}
-                {children > 0 && ` · ${children} child${children === 1 ? "" : "ren"}`}
-                {infants > 0 && ` · ${infants} infant${infants === 1 ? "" : "s"}`}
-              </p>
-              <p className="mt-2 text-gray-600">Rooms selected: {pricing.totalRooms}</p>
-              <div className="mt-4 space-y-2 border-t border-gray-200 pt-3 text-sm">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>₹{pricing.subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Taxes & fees</span>
-                  <span>₹{pricing.taxes.toLocaleString()}</span>
-                </div>
-                {pricing.totalRooms > 0 && (
+            {isBnb && bnbPricing ? (
+              <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
+                <p className="flex items-center gap-2">
+                  <FaCalendarAlt /> {nights} night{nights === 1 ? "" : "s"}
+                </p>
+                <p className="mt-2 flex items-center gap-2">
+                  <FaUsers /> {adults} adult{adults === 1 ? "" : "s"}
+                  {children > 0 && ` · ${children} child${children === 1 ? "" : "ren"}`}
+                  {infants > 0 && ` · ${infants} infant${infants === 1 ? "" : "s"}`}
+                </p>
+                <div className="mt-4 space-y-2 border-t border-gray-200 pt-3 text-sm">
                   <div className="flex justify-between">
-                    <span>Platform fee</span>
-                    <span>₹{platformFee.toLocaleString()}</span>
+                    <span>Price per night</span>
+                    <span>₹{bnbPricing.pricePerNight.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-semibold text-gray-900">
+                    <span>Total for stay</span>
+                    <span>₹{bnbPricing.total.toLocaleString()}</span>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-gray-500">
+                  Contact the host to finalize booking details for this BnB unit.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleBnbBooking}
+                  className="mt-4 w-full rounded-full bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700"
+                >
+                  Book this BnB
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
+                  <p className="flex items-center gap-2">
+                    <FaCalendarAlt /> {nights} night{nights === 1 ? "" : "s"}
+                  </p>
+                  <p className="mt-2 flex items-center gap-2">
+                    <FaUsers /> {adults} adult{adults === 1 ? "" : "s"}
+                    {children > 0 && ` · ${children} child${children === 1 ? "" : "ren"}`}
+                    {infants > 0 && ` · ${infants} infant${infants === 1 ? "" : "s"}`}
+                  </p>
+                  <p className="mt-2 text-gray-600">Rooms selected: {pricing.totalRooms}</p>
+                  <div className="mt-4 space-y-2 border-t border-gray-200 pt-3 text-sm">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>₹{pricing.subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Taxes & fees</span>
+                      <span>₹{pricing.taxes.toLocaleString()}</span>
+                    </div>
+                    {pricing.totalRooms > 0 && (
+                      <div className="flex justify-between">
+                        <span>Platform fee</span>
+                        <span>₹{platformFee.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-base font-semibold text-gray-900">
+                      <span>Total</span>
+                      <span>₹{grandTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {pricing.selectedRooms.length > 0 && (
+                  <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 shadow-sm">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Selected rooms</p>
+                    <ul className="space-y-3">
+                      {pricing.selectedRooms.map(({ room, quantity }) => (
+                        <li key={(room._id as string) || room.name} className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-gray-900">{room.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {quantity} room{quantity === 1 ? "" : "s"} · Sleeps {room.capacity}
+                            </p>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            ₹{(room.price * quantity).toLocaleString()}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
-                <div className="flex justify-between text-base font-semibold text-gray-900">
-                  <span>Total</span>
-                  <span>₹{grandTotal.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
 
-            {pricing.selectedRooms.length > 0 && (
-              <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Selected rooms</p>
-                <ul className="space-y-3">
-                  {pricing.selectedRooms.map(({ room, quantity }) => (
-                    <li key={(room._id as string) || room.name} className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-gray-900">{room.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {quantity} room{quantity === 1 ? "" : "s"} · Sleeps {room.capacity}
-                        </p>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        ₹{(room.price * quantity).toLocaleString()}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {soldOutForDates && (
-              <p className="text-xs text-rose-600">
-                These dates are sold out. Choose different dates to continue.
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={handleBookNow}
-              className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={!pricing.totalRooms || soldOutForDates}
-            >
-              {soldOutForDates
-                ? "Unavailable for these dates"
-                : pricing.totalRooms
-                ? "Book now"
-                : "Select a room to book"}
-            </button>
-            {!pricing.totalRooms && (
-              <p className="text-xs text-amber-600">
-                Choose at least one room from the availability table above to continue.
-              </p>
+                {soldOutForDates && (
+                  <p className="text-xs text-rose-600">
+                    These dates are sold out. Choose different dates to continue.
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleBookNow}
+                  className="w-full rounded-lg bg-green-600 px-4 py-3 text-sm font-semibold text-white shadow transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={!pricing.totalRooms || soldOutForDates}
+                >
+                  {soldOutForDates
+                    ? "Unavailable for these dates"
+                    : pricing.totalRooms
+                    ? "Book now"
+                    : "Select a room to book"}
+                </button>
+                {!pricing.totalRooms && (
+                  <p className="text-xs text-amber-600">
+                    Choose at least one room from the availability table above to continue.
+                  </p>
+                )}
+              </>
             )}
           </div>
 
-          <div className="flex flex-col justify-between rounded-2xl bg-gradient-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
+          <div className="flex flex-col justify-between rounded-2xl bg-linear-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900">What happens next?</h3>
-              <p>Clicking <strong>Book now</strong> will take you to a dedicated page where you can:</p>
-              <ul className="ml-4 list-disc space-y-2 text-sm">
-                <li>Review your stay summary and price breakdown</li>
-                <li>Provide guest details like name, email, phone, and address</li>
-                <li>Add special requests before submitting the reservation</li>
-              </ul>
+              {isBnb ? (
+                <p>
+                  Reach out to the host to finalize your BnB reservation and coordinate arrival details.
+                </p>
+              ) : (
+                <>
+                  <p>
+                    Clicking <strong>Book now</strong> will take you to a dedicated page where you can:
+                  </p>
+                  <ul className="ml-4 list-disc space-y-2 text-sm">
+                    <li>Review your stay summary and price breakdown</li>
+                    <li>Provide guest details like name, email, phone, and address</li>
+                    <li>Add special requests before submitting the reservation</li>
+                  </ul>
+                </>
+              )}
             </div>
             <p className="mt-4 text-xs text-gray-500">
-              We hold your selection for a short time. Complete the guest form on the next page to confirm your booking.
+              {isBnb
+                ? "BnB bookings are coordinated directly with the host after submission."
+                : "We hold your selection for a short time. Complete the guest form on the next page to confirm your booking."}
             </p>
           </div>
         </section>
@@ -1101,11 +1281,11 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
       </main>
 
       {galleryOpen && images.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
+        <div className="fixed inset-0 z-1000 flex items-center justify-center bg-black/80 px-4">
           <button
             type="button"
             onClick={() => setGalleryOpen(false)}
-            className="absolute right-10 top-20 rounded-full bg-white/10 px-3 py-1 text-sm text-white shadow-lg z-100"
+            className="absolute right-10 top-30 rounded-full bg-white/10 px-3 py-1 text-sm text-white shadow-lg z-1000"
           >
             Close
           </button>
@@ -1129,12 +1309,12 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
         </div>
       )}
 
-      {activeRoomIndex !== null && (
+      {showActiveRoomGallery && activeRoomIndex !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
           <button
             type="button"
             onClick={() => setActiveRoomIndex(null)}
-            className="absolute right-6 top-6 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
+            className="absolute right-10 top-19 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
           >
             Close
           </button>
@@ -1142,7 +1322,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
             <h3 className="text-lg font-semibold text-gray-900">{stay.rooms[activeRoomIndex].name}</h3>
             <div className="relative mt-4 h-72 overflow-hidden rounded-2xl">
               <Image
-                src={stay.rooms[activeRoomIndex].images[roomImageIndex]}
+                src={activeRoomImages[roomImageIndex]}
                 alt={`${stay.rooms[activeRoomIndex].name} image ${roomImageIndex + 1}`}
                 fill
                 className="object-cover"
@@ -1151,8 +1331,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                 type="button"
                 onClick={() =>
                   setRoomImageIndex((prev) =>
-                    (prev - 1 + stay.rooms[activeRoomIndex].images.length) %
-                    stay.rooms[activeRoomIndex].images.length
+                    (prev - 1 + activeRoomImages.length) % activeRoomImages.length
                   )
                 }
                 className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white"
@@ -1163,7 +1342,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
                 type="button"
                 onClick={() =>
                   setRoomImageIndex((prev) =>
-                    (prev + 1) % stay.rooms[activeRoomIndex].images.length
+                    (prev + 1) % activeRoomImages.length
                   )
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white"
@@ -1172,7 +1351,7 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
               </button>
             </div>
             <div className="mt-4 grid grid-cols-4 gap-2">
-              {stay.rooms[activeRoomIndex].images.map((image, idx) => (
+              {activeRoomImages.map((image, idx) => (
                 <button
                   type="button"
                   key={image + idx}

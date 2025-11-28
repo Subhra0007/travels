@@ -48,6 +48,7 @@ type StayBookingFormProps = {
 
 const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchParams }) => {
   const router = useRouter();
+  const isBnbStay = stay.category === "bnbs" && Boolean(stay.bnb);
   const defaults = useMemo(() => getDefaultDates(), []);
 
   const checkIn = typeof searchParams.checkIn === "string" ? searchParams.checkIn : defaults.checkIn;
@@ -74,7 +75,48 @@ const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchPar
       .filter(Boolean) as Array<{ key: string; quantity: number }>;
   }, [searchParams.rooms]);
 
+  const isBnbBooking = isBnbStay && searchParams.bnb === "1";
+
   const selection = useMemo(() => {
+    if (isBnbBooking && stay.bnb) {
+      const pseudoRoom: StayDetailPayload["rooms"][number] = {
+        _id: undefined,
+        name: stay.bnb.unitType || stay.name,
+        description: stay.bnb.unitType || "",
+        bedType: "BnB Unit",
+        beds: stay.bnb.beds || 1,
+        capacity: stay.bnb.capacity || adults + children + infants,
+        price: stay.bnb.price,
+        taxes: 0,
+        currency: "INR",
+        size: "",
+        features: stay.bnb.features || [],
+        amenities: stay.bnb.features || [],
+        available: 1,
+        images: [],
+      };
+      const subtotal = pseudoRoom.price * nights;
+      return {
+        mode: "bnb" as const,
+        items: [
+          {
+            key: pseudoRoom.name,
+            room: pseudoRoom,
+            quantity: 1,
+            subtotal,
+            taxes: 0,
+            index: 0,
+          },
+        ],
+        subtotal,
+        taxes: 0,
+        totalBeforeFees: subtotal,
+        platformFee: 0,
+        total: subtotal,
+        totalRooms: 1,
+      };
+    }
+
     const items = parsedRoomParams
       .map(({ key, quantity }) => {
         const roomIndex = stay.rooms.findIndex(
@@ -111,6 +153,7 @@ const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchPar
     const totalBeforeFees = subtotal + taxes;
 
     return {
+      mode: "rooms" as const,
       items,
       subtotal,
       taxes,
@@ -119,19 +162,21 @@ const StayBookingFormClient: React.FC<StayBookingFormProps> = ({ stay, searchPar
       total: totalBeforeFees + platformFee,
       totalRooms,
     };
-  }, [parsedRoomParams, stay.rooms, nights]);
+  }, [isBnbBooking, stay.bnb, stay.rooms, parsedRoomParams, nights, adults, children, infants]);
 
   const availability = useAvailability("stay", stay._id, checkIn, checkOut);
   const availableRoomKeys = availability.availableOptionKeys ?? [];
   const soldOutForDates =
-    !availability.loading && stay.rooms.length > 0 && availableRoomKeys.length === 0;
-  const unavailableSelections = selection.items.filter(({ room }) => {
-    if (availability.loading) return false;
-    const key = room._id?.toString() || room.name;
-    if (soldOutForDates) return true;
-    if (!availableRoomKeys.length) return false;
-    return !availableRoomKeys.includes(key);
-  });
+    !isBnbBooking && !availability.loading && stay.rooms.length > 0 && availableRoomKeys.length === 0;
+  const unavailableSelections = isBnbBooking
+    ? []
+    : selection.items.filter(({ room }) => {
+        if (availability.loading) return false;
+        const key = room._id?.toString() || room.name;
+        if (soldOutForDates) return true;
+        if (!availableRoomKeys.length) return false;
+        return !availableRoomKeys.includes(key);
+      });
   const hasUnavailableSelections = unavailableSelections.length > 0;
 
   const [formData, setFormData] = useState({

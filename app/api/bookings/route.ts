@@ -211,9 +211,18 @@ export async function POST(req: NextRequest) {
       });
 
       const normalizedRooms = rooms.map((requested: any) => {
-        const stayRoom =
+        let stayRoom =
           stay.rooms.id(requested.roomId) ||
           stay.rooms.find((room: any) => room.name === requested.roomName);
+
+        if (!stayRoom && stay.category === "bnbs" && stay.bnb) {
+          stayRoom = {
+            _id: undefined,
+            name: stay.bnb.unitType || stay.name,
+            price: stay.bnb.price,
+            taxes: 0,
+          };
+        }
         if (!stayRoom) {
           throw new Error(`Room ${requested.roomName || requested.roomId} not found`);
         }
@@ -223,7 +232,9 @@ export async function POST(req: NextRequest) {
           throw new Error("Invalid room quantity");
         }
 
-        const pricePerNight = Number(requested.pricePerNight ?? stayRoom.price);
+        const pricePerNight = Number(
+          requested.pricePerNight ?? stayRoom.price ?? stay.bnb?.price ?? 0
+        );
         const roomTaxes = Number(requested.taxes ?? stayRoom.taxes ?? 0);
         const total = (pricePerNight + roomTaxes) * quantity * nights;
 

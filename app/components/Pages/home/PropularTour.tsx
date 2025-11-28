@@ -66,7 +66,7 @@ export default function PopularTours() {
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.7, delay: index * 0.15 }}
                 viewport={{ once: true }}
-                className={`bg-white w-[390px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300  ₹{offsets[index]}`}
+                className={`bg-white w-[390px] rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300  ${offsets[index]}`}
               >
                 {/* Image */}
                 <div className="relative w-full h-52">

@@ -263,10 +263,11 @@ export default function AddStayPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [customHighlight, setCustomHighlight] = useState("");
   const [newRule, setNewRule] = useState("");
-  const [roomFeatureDrafts, setRoomFeatureDrafts] = useState<Record<number, string>>({});
+  const [roomFeatureDrafts, setRoomFeatureDrafts] = useState<Record<number | string, string>>({});
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(isEditing);
+  const [bnbUnitTypeOther, setBnbUnitTypeOther] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -289,6 +290,17 @@ export default function AddStayPage() {
     popularFacilities: [] as string[],
     amenities: {} as Record<string, string[]>,
     rooms: [createDefaultRoom()],
+    meals: [] as string[], // For homestay: breakfast, lunch, evening snacks, dinner
+    bnb: {
+      unitType: "",
+      bedrooms: 0,
+      bathrooms: 0,
+      kitchenAvailable: false,
+      beds: 0,
+      capacity: 0,
+      features: [] as string[],
+      price: 0,
+    },
     about: {
       heading: "",
       description: "",
@@ -314,6 +326,23 @@ export default function AddStayPage() {
         [key]: exists ? collection.filter((item) => item !== value) : [...collection, value],
       };
     });
+  };
+
+  const toggleMeal = (meal: string) => {
+    setFormData((prev) => {
+      const exists = prev.meals.includes(meal);
+      return {
+        ...prev,
+        meals: exists ? prev.meals.filter((item) => item !== meal) : [...prev.meals, meal],
+      };
+    });
+  };
+
+  const updateBnb = <K extends keyof typeof formData.bnb>(key: K, value: typeof formData.bnb[K]) => {
+    setFormData((prev) => ({
+      ...prev,
+      bnb: { ...prev.bnb, [key]: value },
+    }));
   };
 
   const toggleAmenity = (sectionKey: string, option: string) => {
@@ -385,6 +414,17 @@ export default function AddStayPage() {
               images: room.images ?? [],
             }))
           : [createDefaultRoom()],
+      meals: stay.meals ?? [],
+      bnb: {
+        unitType: stay.bnb?.unitType ?? "",
+        bedrooms: stay.bnb?.bedrooms ?? 0,
+        bathrooms: stay.bnb?.bathrooms ?? 0,
+        kitchenAvailable: stay.bnb?.kitchenAvailable ?? false,
+        beds: stay.bnb?.beds ?? 0,
+        capacity: stay.bnb?.capacity ?? 0,
+        features: stay.bnb?.features ?? [],
+        price: stay.bnb?.price ?? 0,
+      },
       about: {
         heading: stay.about?.heading ?? "",
         description: stay.about?.description ?? "",
@@ -412,6 +452,14 @@ export default function AddStayPage() {
           throw new Error(data?.message || "Failed to load stay details");
         }
         hydrateForm(data.stay);
+        // Set bnbUnitTypeOther if unit type is not one of the predefined options
+        if (data.stay.bnb?.unitType) {
+          if (!["1 BHK", "2 BHK", "3 BHK"].includes(data.stay.bnb.unitType)) {
+            setBnbUnitTypeOther(true);
+          } else {
+            setBnbUnitTypeOther(false);
+          }
+        }
       } catch (error: any) {
         alert(error?.message || "Unable to load stay for editing");
         router.push("/vendor/properties/stays");
@@ -422,6 +470,17 @@ export default function AddStayPage() {
 
     loadStay();
   }, [editId, router]);
+
+  // Handle category changes - ensure Room category has exactly one room
+  useEffect(() => {
+    if (formData.category === "rooms") {
+      if (formData.rooms.length === 0) {
+        setFormData((prev) => ({ ...prev, rooms: [createDefaultRoom()] }));
+      } else if (formData.rooms.length > 1) {
+        setFormData((prev) => ({ ...prev, rooms: [prev.rooms[0]] }));
+      }
+    }
+  }, [formData.category]);
 
   const uploadMedia = async (files: File[], folder: string) => {
     if (!files.length) return [] as string[];
@@ -626,16 +685,35 @@ export default function AddStayPage() {
     if (!formData.about.description.trim()) errs.aboutDescription = "Please describe the stay";
     if (!formData.checkInOutRules.checkIn.trim()) errs.checkIn = "Provide check-in timing";
     if (!formData.checkInOutRules.checkOut.trim()) errs.checkOut = "Provide check-out timing";
-    if (!formData.rooms.length) errs.rooms = "Add at least one room";
 
-    formData.rooms.forEach((room, idx) => {
-      if (!room.name.trim()) errs[`room-${idx}-name`] = "Room name is required";
-      if (!room.bedType.trim()) errs[`room-${idx}-bedType`] = "Bed type is required";
-      if (room.beds < 1) errs[`room-${idx}-beds`] = "Beds must be at least 1";
-      if (room.capacity < 1) errs[`room-${idx}-capacity`] = "Capacity must be at least 1";
-      if (room.price <= 0) errs[`room-${idx}-price`] = "Price must be greater than 0";
-      if (room.images.length < 3) errs[`room-${idx}-images`] = "Upload at least 3 images for this room";
-    });
+    // Validate based on category
+    if (formData.category === "hotels" || formData.category === "homestays") {
+      if (!formData.rooms.length) errs.rooms = "Add at least one room";
+      formData.rooms.forEach((room, idx) => {
+        if (!room.name.trim()) errs[`room-${idx}-name`] = "Room name is required";
+        if (!room.bedType.trim()) errs[`room-${idx}-bedType`] = "Bed type is required";
+        if (room.beds < 1) errs[`room-${idx}-beds`] = "Beds must be at least 1";
+        if (room.capacity < 1) errs[`room-${idx}-capacity`] = "Capacity must be at least 1";
+        if (room.price <= 0) errs[`room-${idx}-price`] = "Price must be greater than 0";
+        if (room.images.length < 3) errs[`room-${idx}-images`] = "Upload at least 3 images for this room";
+      });
+    } else if (formData.category === "rooms") {
+      if (!formData.rooms.length || formData.rooms.length === 0) {
+        errs.rooms = "Room information is required";
+      } else {
+        const room = formData.rooms[0];
+        if (room.beds < 1) errs[`room-0-beds`] = "Beds must be at least 1";
+        if (room.capacity < 1) errs[`room-0-capacity`] = "Capacity must be at least 1";
+        if (room.price <= 0) errs[`room-0-price`] = "Price must be greater than 0";
+      }
+    } else if (formData.category === "bnbs") {
+      if (!formData.bnb.unitType.trim()) errs.bnbUnitType = "Unit type is required";
+      if (formData.bnb.bedrooms < 1) errs.bnbBedrooms = "Number of bedrooms must be at least 1";
+      if (formData.bnb.bathrooms < 1) errs.bnbBathrooms = "Number of bathrooms must be at least 1";
+      if (formData.bnb.beds < 1) errs.bnbBeds = "Total beds must be at least 1";
+      if (formData.bnb.capacity < 1) errs.bnbCapacity = "Guest capacity must be at least 1";
+      if (formData.bnb.price <= 0) errs.bnbPrice = "Price must be greater than 0";
+    }
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -1021,8 +1099,37 @@ export default function AddStayPage() {
               </div>
             </section>
 
-            {/* Rooms */}
-            <section className="bg-white rounded-xl shadow p-6 space-y-6">
+            {/* Meals - Only for Homestay */}
+            {formData.category === "homestays" && (
+              <section className="bg-white rounded-xl shadow p-6 space-y-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  How many times do you provide meals per day?
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {["Breakfast", "Lunch", "Evening Snacks", "Dinner"].map((meal) => {
+                    const selected = formData.meals.includes(meal);
+                    return (
+                      <button
+                        key={meal}
+                        type="button"
+                        onClick={() => toggleMeal(meal)}
+                        className={`px-4 py-3 rounded-lg border transition ${
+                          selected
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-gray-300 text-gray-900 hover:border-green-400"
+                        }`}
+                      >
+                        {meal}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Rooms - Only for Hotels and Homestays */}
+            {formData.category === "hotels" || formData.category === "homestays" ? (
+              <section className="bg-white rounded-xl shadow p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-gray-900">Rooms</h2>
                 <button
@@ -1265,6 +1372,347 @@ export default function AddStayPage() {
                 ))}
               </div>
             </section>
+            ) : null}
+
+            {/* Single Room Section - Only for Room category */}
+            {formData.category === "rooms" && (
+              <section className="bg-white rounded-xl shadow p-6 space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">Room Features</h2>
+                {formData.rooms.length > 0 && (
+                  <div className="border border-gray-200 rounded-xl p-5 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-1">
+                          Price per night (₹) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={formData.rooms[0].price}
+                          onChange={(e) => updateRoom(0, "price", Number(e.target.value))}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                        />
+                        {errors[`room-0-price`] && (
+                          <p className="text-red-600 text-sm mt-1">{errors[`room-0-price`]}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-1">
+                          Beds <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={formData.rooms[0].beds}
+                          onChange={(e) => updateRoom(0, "beds", Number(e.target.value))}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                        />
+                        {errors[`room-0-beds`] && (
+                          <p className="text-red-600 text-sm mt-1">{errors[`room-0-beds`]}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-1">
+                          Guest Capacity <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={formData.rooms[0].capacity}
+                          onChange={(e) => updateRoom(0, "capacity", Number(e.target.value))}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                        />
+                        {errors[`room-0-capacity`] && (
+                          <p className="text-red-600 text-sm mt-1">{errors[`room-0-capacity`]}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                        Room Features
+                      </label>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {ROOM_FEATURE_OPTIONS.map((feature) => {
+                          const selected = formData.rooms[0].features.includes(feature);
+                          return (
+                            <button
+                              key={feature}
+                              type="button"
+                              onClick={() => {
+                                if (selected) removeRoomFeature(0, feature);
+                                else updateRoom(0, "features", [...formData.rooms[0].features, feature]);
+                              }}
+                              className={`px-3 py-2 text-sm rounded-full border transition ${
+                                selected
+                                  ? "border-green-500 bg-green-50 text-green-700"
+                                  : "border-gray-300 text-gray-900 hover:border-green-400"
+                              }`}
+                            >
+                              {feature}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={roomFeatureDrafts[0] || ""}
+                          onChange={(e) =>
+                            setRoomFeatureDrafts((prev) => ({ ...prev, [0]: e.target.value }))
+                          }
+                          placeholder="Add custom feature"
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => addRoomFeature(0)}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        >
+                          Add
+                        </button>
+                      </div>
+                      {formData.rooms[0].features.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {formData.rooms[0].features.map((feature) => (
+                            <span
+                              key={feature}
+                              className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 rounded-full text-gray-900"
+                            >
+                              {feature}
+                              <button
+                                type="button"
+                                onClick={() => removeRoomFeature(0, feature)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <FaTimes />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* BnB Section - Only for BnBs category */}
+            {formData.category === "bnbs" && (
+              <section className="bg-white rounded-xl shadow p-6 space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">BnB Details</h2>
+                <div className="border border-gray-200 rounded-xl p-5 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Unit Type <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={
+                          ["1 BHK", "2 BHK", "3 BHK"].includes(formData.bnb.unitType)
+                            ? formData.bnb.unitType
+                            : bnbUnitTypeOther || (formData.bnb.unitType && !["1 BHK", "2 BHK", "3 BHK"].includes(formData.bnb.unitType))
+                            ? "Others"
+                            : ""
+                        }
+                        onChange={(e) => {
+                          if (e.target.value === "Others") {
+                            setBnbUnitTypeOther(true);
+                            // Don't clear unitType if it already has a custom value
+                            if (!formData.bnb.unitType || ["1 BHK", "2 BHK", "3 BHK"].includes(formData.bnb.unitType)) {
+                              updateBnb("unitType", "");
+                            }
+                          } else {
+                            setBnbUnitTypeOther(false);
+                            updateBnb("unitType", e.target.value);
+                          }
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      >
+                        <option value="">Select unit type</option>
+                        <option value="1 BHK">1 BHK</option>
+                        <option value="2 BHK">2 BHK</option>
+                        <option value="3 BHK">3 BHK</option>
+                        <option value="Others">Others</option>
+                      </select>
+                      {(bnbUnitTypeOther || (formData.bnb.unitType && !["1 BHK", "2 BHK", "3 BHK"].includes(formData.bnb.unitType))) && (
+                        <input
+                          type="text"
+                          value={formData.bnb.unitType}
+                          onChange={(e) => {
+                            updateBnb("unitType", e.target.value);
+                            if (!bnbUnitTypeOther) {
+                              setBnbUnitTypeOther(true);
+                            }
+                          }}
+                          placeholder="Specify unit type (e.g., 4 BHK, Studio, Penthouse, etc.)"
+                          className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Number of Bedrooms <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={formData.bnb.bedrooms}
+                        onChange={(e) => updateBnb("bedrooms", Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Number of Attached Bathrooms <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={formData.bnb.bathrooms}
+                        onChange={(e) => updateBnb("bathrooms", Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Kitchen Available <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={formData.bnb.kitchenAvailable ? "yes" : "no"}
+                        onChange={(e) => updateBnb("kitchenAvailable", e.target.value === "yes")}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      >
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Total Beds <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={formData.bnb.beds}
+                        onChange={(e) => updateBnb("beds", Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Guest Capacity <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={formData.bnb.capacity}
+                        onChange={(e) => updateBnb("capacity", Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Price per night (₹) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={formData.bnb.price}
+                        onChange={(e) => updateBnb("price", Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                      Features / Amenities
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {ROOM_FEATURE_OPTIONS.map((feature) => {
+                        const selected = formData.bnb.features.includes(feature);
+                        return (
+                          <button
+                            key={feature}
+                            type="button"
+                            onClick={() => {
+                              if (selected) {
+                                updateBnb("features", formData.bnb.features.filter((f) => f !== feature));
+                              } else {
+                                updateBnb("features", [...formData.bnb.features, feature]);
+                              }
+                            }}
+                            className={`px-3 py-2 text-sm rounded-full border transition ${
+                              selected
+                                ? "border-green-500 bg-green-50 text-green-700"
+                                : "border-gray-300 text-gray-900 hover:border-green-400"
+                            }`}
+                          >
+                            {feature}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={roomFeatureDrafts["bnb"] || ""}
+                        onChange={(e) =>
+                          setRoomFeatureDrafts((prev) => ({ ...prev, bnb: e.target.value }))
+                        }
+                        placeholder="Add custom feature"
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const draft = roomFeatureDrafts["bnb"]?.trim();
+                            if (draft && !formData.bnb.features.includes(draft)) {
+                              updateBnb("features", [...formData.bnb.features, draft]);
+                              setRoomFeatureDrafts((prev) => ({ ...prev, bnb: "" }));
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const draft = roomFeatureDrafts["bnb"]?.trim();
+                          if (draft && !formData.bnb.features.includes(draft)) {
+                            updateBnb("features", [...formData.bnb.features, draft]);
+                            setRoomFeatureDrafts((prev) => ({ ...prev, bnb: "" }));
+                          }
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {formData.bnb.features.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {formData.bnb.features.map((feature) => (
+                          <span
+                            key={feature}
+                            className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 rounded-full text-gray-900"
+                          >
+                            {feature}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateBnb("features", formData.bnb.features.filter((f) => f !== feature));
+                              }}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <FaTimes />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
 
             {/* About & rules */}
             <section className="bg-white rounded-xl shadow p-6 space-y-6">
