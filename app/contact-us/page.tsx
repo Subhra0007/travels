@@ -256,7 +256,7 @@ const ContactUsPage = () => {
             </div>
             <div className="flex gap-1 pt-6">
               <Link
-                href="https://www.instagram.com"
+                href="https://www.facebook.com/profile.php?id=61583838720082"
                 target="_blank"
                 rel="noreferrer"
                 className="w-11 h-11 rounded-full border border-white/20 flex items-center justify-center hover:bg-green-500 hover:text-black transition text-green-600"
@@ -264,7 +264,7 @@ const ContactUsPage = () => {
                 <FaInstagram />
               </Link>
               <Link
-                href="https://www.facebook.com"
+                href="https://www.instagram.com/safarhub1"
                 target="_blank"
                 rel="noreferrer"
                 className="w-11 h-11 rounded-full border border-white/20 flex items-center justify-center hover:bg-green-500 hover:text-black transition text-green-600"

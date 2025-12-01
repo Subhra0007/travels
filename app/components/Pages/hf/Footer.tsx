@@ -84,10 +84,8 @@ const Footer: React.FC = () => {
           <strong className="">SafarHub</strong> offers cozy stays, curated tours, thrilling adventures, and flexible vehicle rentals — everything you need for a seamless and memorable journey.
           </p>
           <div className="flex space-x-4 text-xl justify-center lg:justify-start">
-            <a href="#" className="hover:text-green-400"><FaFacebookF /></a>
-            <a href="#" className="hover:text-green-400"><FaTwitter /></a>
-            <a href="#" className="hover:text-green-400"><FaInstagram /></a>
-            <a href="#" className="hover:text-green-400"><FaLinkedinIn /></a>
+            <a href="https://www.facebook.com/profile.php?id=61583838720082" className="hover:text-green-400"><FaFacebookF /></a>
+            <a href="https://www.instagram.com/safarhub1" className="hover:text-green-400"><FaInstagram /></a>
           </div>
         </div>
 
@@ -106,9 +104,32 @@ const Footer: React.FC = () => {
         <div className="lg:text-left text-center">
           <h2 className="text-white text-xl font-semibold mb-4">Contact Info</h2>
           <ul className="space-y-3">
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdLocationOn className="text-green-600" /> Kolkata, India</li>
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdPhone className="text-green-600" />+91 7980715765</li>
-            <li className="flex items-center gap-2 justify-center lg:justify-start"><MdEmail className="text-green-600" />cyberspaceworksofficial@gmail.com</li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start">
+              <MdLocationOn className="text-green-600" />
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=19%20Krishna%20Chatterjee%20Ln%2C%20Bally%2C%20Howrah%2C%20West%20Bengal%20711201"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-green-400 transition text-sm"
+              >
+                Kolkata 19, Krishna Chatterjee Ln, Bally, Howrah, West Bengal 711201
+              </a>
+            </li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start">
+              <MdPhone className="text-green-600" />
+              <a href="tel:+917980715765" className="hover:text-green-400 transition">
+                +91 7980715765
+              </a>
+            </li>
+            <li className="flex items-center gap-2 justify-center lg:justify-start">
+              <MdEmail className="text-green-600" />
+              <a
+                href="mailto:cyberspaceworksofficial@gmail.com"
+                className="hover:text-green-400 transition"
+              >
+                cyberspaceworksofficial@gmail.com
+              </a>
+            </li>
           </ul>
         </div>
 
