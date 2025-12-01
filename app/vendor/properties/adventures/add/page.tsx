@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import {
@@ -14,6 +15,9 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import PageLoader from "@/app/components/common/PageLoader";
+import "react-quill-new/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 const HERO_HIGHLIGHTS = [
   "Expert guide",
@@ -105,6 +109,15 @@ const AMENITY_SECTIONS: Array<{
 ];
 
 const DIFFICULTY_LEVELS = ["Easy", "Moderate", "Challenging", "Expert"];
+const FEATURE_PRESETS = [
+  "Expert guides",
+  "Small group",
+  "Meals included",
+  "Photography stops",
+  "Safety gear included",
+  "Beginner friendly",
+];
+
 const DURATION_OPTIONS = [
   "2 hours",
   "4 hours",
@@ -115,39 +128,55 @@ const DURATION_OPTIONS = [
   "3+ days",
 ];
 
-type OptionForm = {
-  name: string;
-  description: string;
-  duration: string;
-  difficulty: string;
-  capacity: number;
-  price: number;
-  features: string[];
-  images: string[];
+const DIFFICULTY_CATEGORIES = ["trekking", "hiking", "water-rafting"] as const;
+
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, 4, false] }],
+    ["bold", "italic", "underline", "blockquote"],
+    [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+    [{ align: [] }],
+    ["link", "image"],
+    ["clean"],
+  ],
 };
 
-const createDefaultOption = (): OptionForm => ({
-  name: "",
+const quillFormats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "blockquote",
+  "list",
+  "indent",
+  "align",
+  "link",
+  "image",
+];
+
+type ItineraryDay = {
+  id: string;
+  heading: string;
+  description: string;
+};
+
+const createItineraryDay = (dayNumber: number): ItineraryDay => ({
+  id: `${Date.now()}-${dayNumber}`,
+  heading: `Day ${dayNumber}`,
   description: "",
-  duration: "4 hours",
-  difficulty: "Moderate",
-  capacity: 10,
-  price: 0,
-  features: [],
-  images: [],
 });
 
 export default function AddAdventurePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const editId = searchParams.get("editId");
+  const editId = searchParams.get("editId") ?? searchParams.get("id");
   const isEditing = Boolean(editId);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [customHighlight, setCustomHighlight] = useState("");
   const [newRule, setNewRule] = useState("");
-  const [optionFeatureDrafts, setOptionFeatureDrafts] = useState<Record<number, string>>({});
+  const [featureDraft, setFeatureDraft] = useState("");
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(isEditing);
@@ -155,6 +184,11 @@ export default function AddAdventurePage() {
   const [formData, setFormData] = useState({
     name: "",
     category: "trekking" as "trekking" | "hiking" | "camping" | "water-rafting",
+    duration: "4 hours",
+    price: 0,
+    capacity: 10,
+    difficultyLevel: "",
+    features: [] as string[],
     location: {
       address: "",
       city: "",
@@ -172,11 +206,14 @@ export default function AddAdventurePage() {
     },
     popularFacilities: [] as string[],
     amenities: {} as Record<string, string[]>,
-    options: [createDefaultOption()],
     about: {
       heading: "",
       description: "",
     },
+    itinerary: [createItineraryDay(1)],
+    inclusions: "",
+    exclusions: "",
+    policyTerms: "",
     vendorMessage: "",
     defaultCancellationPolicy: "",
     defaultHouseRules: [] as string[],
@@ -210,22 +247,86 @@ export default function AddAdventurePage() {
     });
   };
 
-  const updateOption = <K extends keyof OptionForm>(idx: number, key: K, value: OptionForm[K]) => {
+  const toggleFeature = (feature: string) => {
     setFormData((prev) => {
-      const opts = [...prev.options];
-      opts[idx] = { ...opts[idx], [key]: value };
-      return { ...prev, options: opts };
+      const exists = prev.features.includes(feature);
+      return {
+        ...prev,
+        features: exists ? prev.features.filter((item) => item !== feature) : [...prev.features, feature],
+      };
     });
   };
 
-  const addOption = () => setFormData((prev) => ({ ...prev, options: [...prev.options, createDefaultOption()] }));
-  const removeOption = (idx: number) =>
-    setFormData((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== idx) }));
+  const handleAddFeature = () => {
+    const draft = featureDraft.trim();
+    if (!draft) return;
+    setFormData((prev) => {
+      if (prev.features.includes(draft)) return prev;
+      return { ...prev, features: [...prev.features, draft] };
+    });
+    setFeatureDraft("");
+  };
+
+  const addItineraryDay = () => {
+    setFormData((prev) => ({
+      ...prev,
+      itinerary: [...prev.itinerary, createItineraryDay(prev.itinerary.length + 1)],
+    }));
+  };
+
+  const updateItineraryDay = (id: string, key: "heading" | "description", value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      itinerary: prev.itinerary.map((day) => (day.id === id ? { ...day, [key]: value } : day)),
+    }));
+  };
+
+  const removeItineraryDay = (id: string) => {
+    setFormData((prev) => {
+      const filtered = prev.itinerary.filter((day) => day.id !== id);
+      if (!filtered.length) return prev;
+      return { ...prev, itinerary: filtered };
+    });
+  };
+
+  const categoryRequiresDifficulty = (category: typeof formData.category) =>
+    category === "trekking" || category === "hiking" || category === "water-rafting";
+
+  const shouldShowDifficultyField = categoryRequiresDifficulty(formData.category);
+
+  const handleCategoryChange = (value: typeof formData.category) => {
+    setFormData((prev) => ({
+      ...prev,
+      category: value,
+      difficultyLevel: categoryRequiresDifficulty(value) ? prev.difficultyLevel : "",
+    }));
+  };
 
   const hydrateForm = (adventure: any) => {
+    const primaryOption =
+      Array.isArray(adventure.options) && adventure.options.length ? adventure.options[0] : null;
+
     setFormData({
       name: adventure.name ?? "",
       category: (adventure.category as "trekking" | "hiking" | "camping" | "water-rafting") ?? "trekking",
+      duration: adventure.duration ?? primaryOption?.duration ?? "4 hours",
+      price:
+        typeof adventure.price === "number"
+          ? adventure.price
+          : typeof primaryOption?.price === "number"
+          ? primaryOption.price
+          : 0,
+      capacity:
+        typeof adventure.capacity === "number"
+          ? adventure.capacity
+          : typeof primaryOption?.capacity === "number"
+          ? primaryOption.capacity
+          : 10,
+      difficultyLevel: adventure.difficultyLevel ?? primaryOption?.difficulty ?? "",
+      features:
+        Array.isArray(adventure.features) && adventure.features.length
+          ? adventure.features
+          : primaryOption?.features ?? [],
       location: {
         address: adventure.location?.address ?? "",
         city: adventure.location?.city ?? "",
@@ -245,26 +346,22 @@ export default function AddAdventurePage() {
         outside: adventure.videos?.outside ?? [],
       },
       popularFacilities: adventure.popularFacilities ?? [],
-      amenities: adventure.amenities
-        ? Object.fromEntries(Object.entries(adventure.amenities))
-        : {},
-      options:
-        Array.isArray(adventure.options) && adventure.options.length
-          ? adventure.options.map((option: any) => ({
-              name: option.name ?? "",
-              description: option.description ?? "",
-              duration: option.duration ?? "4 hours",
-              difficulty: option.difficulty ?? "Moderate",
-              capacity: option.capacity ?? 0,
-              price: option.price ?? 0,
-              features: option.features ?? [],
-              images: option.images ?? [],
-            }))
-          : [createDefaultOption()],
+      amenities: adventure.amenities ? Object.fromEntries(Object.entries(adventure.amenities)) : {},
       about: {
         heading: adventure.about?.heading ?? "",
         description: adventure.about?.description ?? "",
       },
+      itinerary:
+        Array.isArray(adventure.itinerary) && adventure.itinerary.length
+          ? adventure.itinerary.map((day: any, index: number) => ({
+              id: `${Date.now()}-${index}`,
+              heading: day.heading ?? `Day ${index + 1}`,
+              description: day.description ?? "",
+            }))
+          : [createItineraryDay(1)],
+      inclusions: adventure.inclusions ?? "",
+      exclusions: adventure.exclusions ?? "",
+      policyTerms: adventure.policyTerms ?? "",
       vendorMessage: adventure.vendorMessage ?? "",
       defaultCancellationPolicy: adventure.defaultCancellationPolicy ?? "",
       defaultHouseRules: adventure.defaultHouseRules ?? [],
@@ -364,17 +461,6 @@ export default function AddAdventurePage() {
   };
 
   // ──────────────────────────────────────────────────────
-  // Option images (min 3 per option)
-  // ──────────────────────────────────────────────────────
-  const handleOptionImages = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    const uploaded = await uploadMedia(files, `adventures/${formData.category}/options/${idx + 1}`);
-    if (uploaded.length) updateOption(idx, "images", [...formData.options[idx].images, ...uploaded]);
-    e.target.value = "";
-  };
-
-  // ──────────────────────────────────────────────────────
   // Media removal helpers
   // ──────────────────────────────────────────────────────
   const removeMedia = (key: "images" | "gallery", i: number) => {
@@ -385,9 +471,6 @@ export default function AddAdventurePage() {
       ...p,
       videos: { ...p.videos, [type]: p.videos[type].filter((_, idx) => idx !== i) },
     }));
-  };
-  const removeOptionImage = (optIdx: number, imgIdx: number) => {
-    updateOption(optIdx, "images", formData.options[optIdx].images.filter((_, i) => i !== imgIdx));
   };
 
   // ──────────────────────────────────────────────────────
@@ -406,16 +489,6 @@ export default function AddAdventurePage() {
   const removeRule = (i: number) =>
     setFormData((p) => ({ ...p, defaultHouseRules: p.defaultHouseRules.filter((_, idx) => idx !== i) }));
 
-  const addOptionFeature = (idx: number) => {
-    const draft = optionFeatureDrafts[idx]?.trim();
-    if (!draft) return;
-    updateOption(idx, "features", [...formData.options[idx].features, draft]);
-    setOptionFeatureDrafts((p) => ({ ...p, [idx]: "" }));
-  };
-  const removeOptionFeature = (optIdx: number, feat: string) => {
-    updateOption(optIdx, "features", formData.options[optIdx].features.filter((f) => f !== feat));
-  };
-
   const handleGetLocation = () => {
     if (!navigator.geolocation) return alert("Geolocation not supported");
     navigator.geolocation.getCurrentPosition(
@@ -432,12 +505,47 @@ export default function AddAdventurePage() {
     );
   };
 
+  const buildDefaultAdventureOptions = (data: typeof formData) => {
+    const optionImages = data.images.slice(0, 3);
+    if (optionImages.length < 3) {
+      throw new Error("Upload at least 3 images so we can create the booking option");
+    }
+    const flattenedAmenities = Object.values(data.amenities || {}).reduce<string[]>(
+      (acc, section) => (Array.isArray(section) ? acc.concat(section) : acc),
+      []
+    );
+    return [
+      {
+        name: `${data.name} experience`.trim(),
+        description: data.about.description,
+        duration: data.duration,
+        difficulty: data.difficultyLevel || "Moderate",
+        capacity: data.capacity,
+        price: data.price,
+        taxes: 0,
+        currency: "INR",
+        features: data.features,
+        amenities: flattenedAmenities,
+        available: data.capacity,
+        images: optionImages,
+        isRefundable: true,
+        refundableUntilHours: 48,
+      },
+    ];
+  };
+
   // ──────────────────────────────────────────────────────
   // Validation
   // ──────────────────────────────────────────────────────
   const validate = () => {
     const err: Record<string, string> = {};
     if (!formData.name.trim()) err.name = "Adventure name required";
+    if (!formData.duration) err.duration = "Duration required";
+    if (formData.price <= 0) err.price = "Price must be greater than 0";
+    if (formData.capacity < 1) err.capacity = "Capacity must be at least 1";
+    if (shouldShowDifficultyField && !formData.difficultyLevel.trim()) {
+      err.difficultyLevel = "Select a difficulty level";
+    }
     if (!formData.location.address.trim()) err.address = "Address required";
     if (!formData.location.city.trim()) err.city = "City required";
     if (!formData.location.state.trim()) err.state = "State required";
@@ -445,16 +553,14 @@ export default function AddAdventurePage() {
     if (formData.images.length < 5) err.images = "Upload at least 5 images";
     if (!formData.about.heading.trim()) err.aboutHeading = "About heading required";
     if (!formData.about.description.trim()) err.aboutDesc = "About description required";
-    if (!formData.options.length) err.options = "Add at least one option";
-
-    formData.options.forEach((opt, i) => {
-      if (!opt.name.trim()) err[`opt-${i}-name`] = "Option name required";
-      if (!opt.duration) err[`opt-${i}-duration`] = "Duration required";
-      if (!opt.difficulty) err[`opt-${i}-difficulty`] = "Difficulty required";
-      if (opt.capacity < 1) err[`opt-${i}-capacity`] = "Capacity ≥ 1";
-      if (opt.price <= 0) err[`opt-${i}-price`] = "Price > 0";
-      if (opt.images.length < 3) err[`opt-${i}-images`] = "Min 3 images per option";
+    if (!formData.itinerary.length) err.itinerary = "Add at least one itinerary day";
+    formData.itinerary.forEach((day, idx) => {
+      if (!day.heading.trim()) err[`itinerary-${idx}-heading`] = "Heading required";
+      if (!day.description.trim()) err[`itinerary-${idx}-description`] = "Description required";
     });
+    if (!formData.inclusions.trim()) err.inclusions = "Add inclusions";
+    if (!formData.exclusions.trim()) err.exclusions = "Add exclusions";
+    if (!formData.policyTerms.trim()) err.policyTerms = "Add policy & terms";
 
     setErrors(err);
     return Object.keys(err).length === 0;
@@ -472,19 +578,30 @@ export default function AddAdventurePage() {
 
     setSubmitting(true);
     try {
+      const optionsPayload = buildDefaultAdventureOptions(formData);
+      const sanitizedItinerary = formData.itinerary.map((day) => ({
+        heading: day.heading,
+        description: day.description,
+      }));
       const endpoint = editId ? `/api/vendor/adventures?id=${editId}` : "/api/vendor/adventures";
       const method = editId ? "PUT" : "POST";
       const res = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          itinerary: sanitizedItinerary,
+          options: optionsPayload,
+        }),
       });
       const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data?.message ?? "Failed");
+        if (!res.ok || !data.success) {
+        throw new Error(data?.message || "Failed to create tour");
+      }
       router.push("/vendor/properties/adventures");
-    } catch (err: any) {
-      alert(err?.message ?? "Failed to save adventure");
+    } catch (error: any) {
+      alert(error?.message || "Failed to save tour");
     } finally {
       setSubmitting(false);
     }
@@ -549,7 +666,7 @@ export default function AddAdventurePage() {
                   <label className="block text-sm font-medium mb-1">Category</label>
                   <select
                     value={formData.category}
-                    onChange={(e) => setField("category", e.target.value as any)}
+                    onChange={(e) => handleCategoryChange(e.target.value as typeof formData.category)}
                     className="w-full px-4 py-2 border rounded-lg"
                   >
                     <option value="trekking">Trekking</option>
@@ -558,6 +675,137 @@ export default function AddAdventurePage() {
                     <option value="water-rafting">Water Rafting</option>
                   </select>
                 </div>
+              </div>
+            </section>
+
+            {/* ── Adventure details ── */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Adventure details</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Duration <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.duration}
+                    onChange={(e) => setField("duration", e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  >
+                    {DURATION_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.duration && <p className="text-red-600 text-sm mt-1">{errors.duration}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Price (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formData.price}
+                    onChange={(e) => setField("price", Number(e.target.value))}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Capacity <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.capacity}
+                    onChange={(e) => setField("capacity", Number(e.target.value))}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  {errors.capacity && <p className="text-red-600 text-sm mt-1">{errors.capacity}</p>}
+                </div>
+              </div>
+
+              {shouldShowDifficultyField && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Difficulty level <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.difficultyLevel}
+                    onChange={(e) => setField("difficultyLevel", e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  >
+                    <option value="">Select difficulty</option>
+                    {DIFFICULTY_LEVELS.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.difficultyLevel && (
+                    <p className="text-red-600 text-sm mt-1">{errors.difficultyLevel}</p>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Features</label>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {FEATURE_PRESETS.map((feature) => {
+                    const selected = formData.features.includes(feature);
+                    return (
+                      <button
+                        key={feature}
+                        type="button"
+                        onClick={() => toggleFeature(feature)}
+                        className={`px-3 py-2 text-sm rounded-full border transition ${
+                          selected
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-gray-300 text-gray-900 hover:border-green-400"
+                        }`}
+                      >
+                        {feature}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={featureDraft}
+                    onChange={(e) => setFeatureDraft(e.target.value)}
+                    placeholder="Add custom feature"
+                    className="flex-1 px-4 py-2 border rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddFeature}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.features.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {formData.features.map((feature) => (
+                      <span
+                        key={feature}
+                        className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 rounded-full"
+                      >
+                        {feature}
+                        <button
+                          type="button"
+                          onClick={() => toggleFeature(feature)}
+                          className="text-red-600"
+                        >
+                          <FaTimes />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -903,217 +1151,123 @@ export default function AddAdventurePage() {
               </div>
             </section>
 
-            {/* ── Adventure Options ── */}
-            <section className="bg-white rounded-xl shadow p-6 space-y-6">
+            {/* ── Itinerary ── */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Adventure Options</h2>
+                <h2 className="text-xl font-semibold">Itinerary</h2>
                 <button
                   type="button"
-                  onClick={addOption}
+                  onClick={addItineraryDay}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
-                  <FaPlus /> Add Option
+                  <FaPlus /> Add day
                 </button>
               </div>
-
-              {formData.options.map((opt, idx) => (
-                <div key={idx} className="border rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Option {idx + 1}</h3>
-                    {formData.options.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeOption(idx)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <FaTrash />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={opt.name}
-                        onChange={(e) => updateOption(idx, "name", e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg"
-                      />
-                      {errors[`opt-${idx}-name`] && (
-                        <p className="text-red-600 text-sm">{errors[`opt-${idx}-name`]}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Difficulty <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={opt.difficulty}
-                        onChange={(e) => updateOption(idx, "difficulty", e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg"
-                      >
-                        {DIFFICULTY_LEVELS.map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
-                        ))}
-                      </select>
-                      {errors[`opt-${idx}-difficulty`] && (
-                        <p className="text-red-600 text-sm">{errors[`opt-${idx}-difficulty`]}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Duration <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        value={opt.duration}
-                        onChange={(e) => updateOption(idx, "duration", e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg"
-                      >
-                        {DURATION_OPTIONS.map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
-                        ))}
-                      </select>
-                      {errors[`opt-${idx}-duration`] && (
-                        <p className="text-red-600 text-sm">{errors[`opt-${idx}-duration`]}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Capacity <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        min={1}
-                        value={opt.capacity}
-                        onChange={(e) => updateOption(idx, "capacity", Number(e.target.value))}
-                        className="w-full px-4 py-2 border rounded-lg"
-                      />
-                      {errors[`opt-${idx}-capacity`] && (
-                        <p className="text-red-600 text-sm">{errors[`opt-${idx}-capacity`]}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Price (₹) <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={opt.price}
-                        onChange={(e) => updateOption(idx, "price", Number(e.target.value))}
-                        className="w-full px-4 py-2 border rounded-lg"
-                      />
-                      {errors[`opt-${idx}-price`] && (
-                        <p className="text-red-600 text-sm">{errors[`opt-${idx}-price`]}</p>
-                      )}
-                    </div>
-
-                    {/* Option Images */}
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-1">
-                        Images <span className="text-red-500">*</span> (min 3)
-                      </label>
-                      <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-green-500">
-                        <FaUpload className="text-green-600" />
-                        <span>Select images</span>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleOptionImages(e, idx)}
-                        />
-                      </label>
-                      {uploadingState[`adventures/${formData.category}/options/${idx + 1}`] && (
-                        <p className="text-sm text-gray-600 mt-1">Uploading…</p>
-                      )}
-                      {opt.images.length > 0 && (
-                        <div className="mt-3 grid grid-cols-3 gap-2">
-                          {opt.images.map((src, i) => (
-                            <div key={i} className="relative group">
-                              <img
-                                src={src}
-                                alt=""
-                                className="w-full h-24 object-cover rounded"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeOptionImage(idx, i)}
-                                className="absolute top-1 right-1 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                              >
-                                <FaTimes />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {errors[`opt-${idx}-images`] && (
-                        <p className="text-red-600 text-sm">{errors[`opt-${idx}-images`]}</p>
-                      )}
-                    </div>
-
-                    {/* Features (optional) */}
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-1">
-                        Features (optional)
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Add a feature"
-                          value={optionFeatureDrafts[idx] ?? ""}
-                          onChange={(e) =>
-                            setOptionFeatureDrafts((p) => ({
-                              ...p,
-                              [idx]: e.target.value,
-                            }))
-                          }
-                          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addOptionFeature(idx))}
-                          className="flex-1 px-4 py-2 border rounded-lg"
-                        />
+              {errors.itinerary && <p className="text-red-600 text-sm">{errors.itinerary}</p>}
+              <div className="space-y-4">
+                {formData.itinerary.map((day, index) => (
+                  <div key={day.id} className="rounded-xl border p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-gray-900">Day {index + 1}</h3>
+                      {formData.itinerary.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => addOptionFeature(idx)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          onClick={() => removeItineraryDay(day.id)}
+                          className="text-red-600 hover:text-red-800"
                         >
-                          Add
+                          <FaTrash />
                         </button>
-                      </div>
-                      {opt.features.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {opt.features.map((f, fi) => (
-                            <span
-                              key={fi}
-                              className="inline-flex items-center gap-1 bg-gray-100 px-3 py-1 rounded-full text-sm"
-                            >
-                              {f}
-                              <button
-                                type="button"
-                                onClick={() => removeOptionFeature(idx, f)}
-                                className="text-red-600 hover:text-red-800"
-                              >
-                                <FaTimes className="w-3 h-3" />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
                       )}
                     </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Heading <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={day.heading}
+                          onChange={(e) => updateItineraryDay(day.id, "heading", e.target.value)}
+                          className="w-full px-4 py-2 border rounded-lg"
+                        />
+                        {errors[`itinerary-${index}-heading`] && (
+                          <p className="text-red-600 text-sm">{errors[`itinerary-${index}-heading`]}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Description <span className="text-red-500">*</span>
+                        </label>
+                        <div className="bg-white text-gray-900">
+                          <ReactQuill
+                            value={day.description}
+                            onChange={(value: string) => updateItineraryDay(day.id, "description", value)}
+                            modules={quillModules}
+                            formats={quillFormats}
+                          />
+                        </div>
+                        {errors[`itinerary-${index}-description`] && (
+                          <p className="text-red-600 text-sm">{errors[`itinerary-${index}-description`]}</p>
+                        )}
+                      </div>
+                    </div>
                   </div>
+                ))}
+              </div>
+            </section>
+
+            {/* ── Inclusions & Exclusions ── */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Inclusions & Exclusions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Inclusions <span className="text-red-500">*</span>
+                  </label>
+                  <div className="bg-white text-gray-900">
+                    <ReactQuill
+                      value={formData.inclusions}
+                      onChange={(value: string) => setField("inclusions", value)}
+                      modules={quillModules}
+                      formats={quillFormats}
+                    />
+                  </div>
+                  {errors.inclusions && <p className="text-red-600 text-sm mt-1">{errors.inclusions}</p>}
                 </div>
-              ))}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Exclusions <span className="text-red-500">*</span>
+                  </label>
+                  <div className="bg-white text-gray-900">
+                    <ReactQuill
+                      value={formData.exclusions}
+                      onChange={(value: string) => setField("exclusions", value)}
+                      modules={quillModules}
+                      formats={quillFormats}
+                    />
+                  </div>
+                  {errors.exclusions && <p className="text-red-600 text-sm mt-1">{errors.exclusions}</p>}
+                </div>
+              </div>
+            </section>
+
+            {/* ── Policy & Terms ── */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Policy & Terms</h2>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Details <span className="text-red-500">*</span>
+                </label>
+                <div className="bg-white text-gray-900">
+                  <ReactQuill
+                    value={formData.policyTerms}
+                    onChange={(value: string) => setField("policyTerms", value)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                  />
+                </div>
+                {errors.policyTerms && <p className="text-red-600 text-sm mt-1">{errors.policyTerms}</p>}
+              </div>
             </section>
 
             {/* ── About & Policies ── */}

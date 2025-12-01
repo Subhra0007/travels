@@ -81,6 +81,7 @@ const AnimateOnce: React.FC<AnimateOnceProps> = ({
       variants={variants || { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0 } }}
       transition={{ duration: 0.6, delay, ease: "easeOut" }}
       className={className}
+      suppressHydrationWarning
     >
       {children}
     </motion.div>
@@ -110,9 +111,9 @@ export default function HomePage() {
   }, [statsInView, statsAnimated]);
 
   const stats = [
-    { num: 20, label: "Years Experience" },
-    { num: 460, label: "Destinations" },
-    { num: 50000, label: "Happy Customers" },
+    { num: 100, label: "Happy Guests" },
+    { num: 50, label: "Destinations" },
+    { num: 25, label: " verified Partners" },
   ];
 
   return (
@@ -120,40 +121,44 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto pt-16 md:pt-24 pb-10 lg:px-1.5 px-6">
 
         {/* HERO SECTION */}
-        <section className="relative">
-          <AnimateOnce>
-            <div className="flex lg:flex-row flex-col lg:gap-40 gap-10 items-center justify-center">
-              <div className="space-y-6">
-                <span className="text-sm font-semibold text-green-600 flex items-center gap-2 justify-center lg:justify-start">
-                  <span className="w-8 h-px bg-green-600" /> Explore The World
-                </span>
+       <section className="relative">
+  <AnimateOnce>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-15 justify-center">
+      
+      {/* Left Content */}
+      <div className="space-y-6">
+        <span className="text-sm font-semibold text-green-600 flex items-center gap-2 justify-center lg:justify-start">
+          <span className="w-8 h-px bg-green-600" /> Explore The India
+        </span>
 
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#0d1b44] lg:text-left text-center">
-  Discover Your Perfect Journey With SafarHub
-</h1>
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#0d1b44] lg:text-left text-center">
+          Discover Your Perfect Journey With SafarHub
+        </h1>
 
-               <p className="text-gray-800 max-w-md lg:text-left text-center">
-  SafarHub is your trusted travel companion, offering cozy stays, curated tours, thrilling adventure activities, and flexible vehicle rentals across top destinations.
-</p>
+        <p className="text-gray-800 max-w-md lg:text-left text-center">
+          SafarHub is your trusted travel companion, offering cozy stays, curated tours, thrilling adventure activities, and flexible vehicle rentals across top destinations.
+        </p>
 
-<p className="text-gray-800 max-w-md lg:text-left text-center">
-  Our mission is to make travel simple, seamless, and memorable by providing diverse choices, transparent service, and exceptional customer support every step of the way.
-</p>
+        <p className="text-gray-800 max-w-md lg:text-left text-center">
+          Our mission is to make travel simple, seamless, and memorable by providing diverse choices, transparent service, and exceptional customer support every step of the way.
+        </p>
+      </div>
 
-              </div>
+      {/* Right Image */}
+      <div className="flex ">
+        <Image
+          src="/DSC_0101.JPG"
+          alt="Explore the world"
+          width={800}
+          height={800}
+          className="relative z-10 rounded-3xl shadow-2xl h-full"
+        />
+      </div>
 
-              <div className="flex justify-center">
-                <Image
-                  src="/aboutpage/Hero-girl.jpg"
-                  alt="Explore the world"
-                  width={550}
-                  height={550}
-                  className="relative z-10 rounded-3xl shadow-2xl"
-                />
-              </div>
-            </div>
-          </AnimateOnce>
-        </section>
+    </div>
+  </AnimateOnce>
+</section>
+
 
         {/* VALUES SECTION */}
         <section className="pt-20">
@@ -171,17 +176,17 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
-                { icon: <Globe className="w-8 h-8 text-green-600" />, title: "Lot Of Choices", desc: "460+ destinations we work with." },
-                { icon: <Backpack className="w-8 h-8 text-green-600" />, title: "Best Tour Guide", desc: "Guided by experts with 15+ years experience." },
-                { icon: <BadgeCheck className="w-8 h-8 text-green-600" />, title: "Easy Booking", desc: "Fast & simple ticket booking process." },
+                { icon: <Globe className="w-8 h-8 text-green-600" />, title: "Lot Of Choices", desc: " From Rooms, Travel Packages to Vehicles and Travel Essential Products, we have all." },
+                { icon: <Backpack className="w-8 h-8 text-green-600" />, title: "Best Tour Guide", desc: "Best Partners” and description: We have the Best Verified Partners who can offer the best Experience." },
+                { icon: <BadgeCheck className="w-8 h-8 text-green-600" />, title: "Easy Booking", desc: "Fast and Simple Booking or Shopping Proccess.." },
               ].map((item, i) => (
                 <AnimateOnce key={i} delay={i * 0.1}>
-                  <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-start">
-                    <div className="mb-2">{item.icon}</div>
-                    <h3 className="font-semibold text-base text-[#0d1b44]">{item.title}</h3>
-                    <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
-                  </div>
-                </AnimateOnce>
+                <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition flex flex-col items-start h-full">
+                  <div className="mb-2">{item.icon}</div>
+                  <h3 className="font-semibold text-base text-[#0d1b44]">{item.title}</h3>
+                  <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
+                </div>
+              </AnimateOnce>
               ))}
             </div>
           </div>

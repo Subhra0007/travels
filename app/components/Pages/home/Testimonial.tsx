@@ -86,7 +86,7 @@ const TestimonialSection: React.FC = () => {
           >
             <div className="w-full rounded-2xl overflow-hidden shadow-lg h-[300px]">
               <Image
-                src="/Testimonial/Travelars.jpg"
+                src="/DSC_0144.JPG"
                 alt="Traveler"
                 width={500}
                 height={500}

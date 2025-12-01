@@ -207,8 +207,9 @@ const Navbar: React.FC = () => {
 
   const navItems = [
     { label: "Home", href: "/" },
-    { label: "Services", href: "#" },
+    { label: "Services", href: "/services" },
     { label: "About", href: "/about-us" },
+    { label: "Safar Partner", href: "/safar-partner" },
     { label: "Blogs", href: "/blogs" },
     { label: "Contact", href: "/contact-us" },
   ];

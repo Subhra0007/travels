@@ -16,6 +16,7 @@ import {
   FaVideo,
   FaStar,
   FaClock,
+  FaTimes,
   FaMountain,
   FaShieldAlt,
   FaSwimmer,
@@ -46,6 +47,10 @@ export type AdventureDetailPayload = {
   name: string;
   vendorId: string;
   category: "trekking" | "hiking" | "camping" | "water-rafting";
+  duration?: string;
+  price?: number;
+  capacity?: number;
+  difficultyLevel?: string;
   location: {
     address: string;
     city: string;
@@ -61,6 +66,7 @@ export type AdventureDetailPayload = {
   videos: { inside?: string[]; outside?: string[] };
   popularFacilities: string[];
   amenities: Record<string, string[]>;
+  features?: string[];
   options: Array<{
     _id?: string;
     name: string;
@@ -80,6 +86,13 @@ export type AdventureDetailPayload = {
   }>;
   defaultCancellationPolicy?: string;
   defaultHouseRules?: string[];
+  itinerary?: Array<{
+    heading: string;
+    description: string;
+  }>;
+  inclusions?: string | string[];
+  exclusions?: string | string[];
+  policyTerms?: string | string[];
   about: { heading: string; description: string };
   vendorMessage?: string;
 };
@@ -150,6 +163,47 @@ const getDefaultDates = () => {
   return { start: formatDateInput(today), end: formatDateInput(tomorrow) };
 };
 
+const stripRichTextTags = (value?: string) => {
+  if (!value || typeof value !== "string") return "";
+  return value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|ul|ol|h[1-6])>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\r?\n{2,}/g, "\n")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n\s+/g, "\n");
+};
+
+const splitRichTextEntries = (value?: string | string[]) => {
+  if (!value) return [];
+  const entries = Array.isArray(value) ? value : [value];
+  return entries
+    .flatMap((entry) =>
+      stripRichTextTags(entry)
+        .split(/\r?\n+/)
+        .map((text) => text.replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+    );
+};
+
+const flattenRichTextValue = (value?: string | string[]) =>
+  Array.isArray(value) ? value.join("\n") : value ?? "";
+
+const hasRichTextContent = (value?: string | string[]) =>
+  stripRichTextTags(flattenRichTextValue(value)).trim().length > 0;
+
+const sanitizeRichText = (value?: string | string[]) => {
+  const html = flattenRichTextValue(value);
+  if (!html) return "";
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/on\w+="[^"]*"/gi, "")
+    .replace(/javascript:/gi, "");
+};
+
+const DIFFICULTY_CATEGORIES = ["trekking", "hiking", "water-rafting"] as const;
+
 interface AdventureDetailClientProps {
   adventure: AdventureDetailPayload;
 }
@@ -157,11 +211,102 @@ interface AdventureDetailClientProps {
 const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure }) => {
   const router = useRouter();
   const { addToCart, loading: cartLoading } = useCart();
+  const primaryOption = adventure.options?.[0];
+  const displayDuration = adventure.duration || primaryOption?.duration || "";
+  const displayCapacity =
+    typeof adventure.capacity === "number"
+      ? adventure.capacity
+      : typeof primaryOption?.capacity === "number"
+      ? primaryOption.capacity
+      : null;
+  const displayPrice =
+    typeof adventure.price === "number"
+      ? adventure.price
+      : typeof primaryOption?.price === "number"
+      ? primaryOption.price
+      : null;
+  const showDifficulty =
+    adventure.category === "trekking" || adventure.category === "hiking" || adventure.category === "water-rafting";
+  const difficultyValue = adventure.difficultyLevel || primaryOption?.difficulty || "";
+  const displayFeatures = adventure.features?.length ? adventure.features : primaryOption?.features ?? [];
 
   const images = useMemo(() => {
     const gallery = Array.isArray(adventure.gallery) ? adventure.gallery : [];
     return [...adventure.images, ...gallery].filter(Boolean);
   }, [adventure.images, adventure.gallery]);
+
+  const itineraryItems = useMemo(
+    () =>
+      Array.isArray(adventure.itinerary)
+        ? adventure.itinerary
+            .map((item) => {
+              const heading = item.heading?.trim() || "";
+              const rawDescription = typeof item.description === "string" ? item.description : "";
+              const plainDescription = stripRichTextTags(rawDescription).trim();
+              return {
+                heading,
+                plainDescription,
+                rawDescription,
+              };
+            })
+            .filter((item) => item.heading || item.plainDescription)
+        : [],
+    [adventure.itinerary]
+  );
+  
+  const itineraryHtml = useMemo(
+    () =>
+      Array.isArray(adventure.itinerary)
+        ? adventure.itinerary.map((day) => sanitizeRichText(day.description))
+        : [],
+    [adventure.itinerary]
+  );
+  
+  // Handle inclusions, exclusions, and policyTerms as strings or arrays
+  const inclusionList = useMemo(() => {
+    if (!adventure.inclusions) return [];
+    return splitRichTextEntries(adventure.inclusions);
+  }, [adventure.inclusions]);
+  
+  const exclusionList = useMemo(() => {
+    if (!adventure.exclusions) return [];
+    return splitRichTextEntries(adventure.exclusions);
+  }, [adventure.exclusions]);
+  
+  const policyTermsList = useMemo(() => {
+    if (!adventure.policyTerms) return [];
+    return splitRichTextEntries(adventure.policyTerms);
+  }, [adventure.policyTerms]);
+  
+  const hasInclusions = useMemo(() => {
+    if (!adventure.inclusions) return false;
+    return hasRichTextContent(adventure.inclusions);
+  }, [adventure.inclusions]);
+  
+  const hasExclusions = useMemo(() => {
+    if (!adventure.exclusions) return false;
+    return hasRichTextContent(adventure.exclusions);
+  }, [adventure.exclusions]);
+  
+  const hasPolicyTerms = useMemo(() => {
+    if (!adventure.policyTerms) return false;
+    return hasRichTextContent(adventure.policyTerms);
+  }, [adventure.policyTerms]);
+  
+  const inclusionHtml = useMemo(() => {
+    if (!adventure.inclusions) return "";
+    return sanitizeRichText(adventure.inclusions);
+  }, [adventure.inclusions]);
+  
+  const exclusionHtml = useMemo(() => {
+    if (!adventure.exclusions) return "";
+    return sanitizeRichText(adventure.exclusions);
+  }, [adventure.exclusions]);
+  
+  const policyHtml = useMemo(() => {
+    if (!adventure.policyTerms) return "";
+    return sanitizeRichText(adventure.policyTerms);
+  }, [adventure.policyTerms]);
 
   const { start: defaultStart, end: defaultEnd } = useMemo(() => getDefaultDates(), []);
 
@@ -376,6 +521,49 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                               >
                                 {highlight}
                               </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {(displayDuration || displayCapacity || displayPrice || (showDifficulty && difficultyValue)) && (
+                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            {displayDuration && (
+                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                                <p className="text-xs uppercase tracking-wide text-white/70">Duration</p>
+                                <p className="mt-1 text-base font-semibold">{displayDuration}</p>
+                              </div>
+                            )}
+                            {displayCapacity != null && (
+                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                                <p className="text-xs uppercase tracking-wide text-white/70">Capacity</p>
+                                <p className="mt-1 text-base font-semibold">{displayCapacity} guests</p>
+                              </div>
+                            )}
+                            {displayPrice != null && (
+                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                                <p className="text-xs uppercase tracking-wide text-white/70">Price</p>
+                                <p className="mt-1 text-base font-semibold">₹{displayPrice.toLocaleString()}</p>
+                                <p className="text-xs text-white/70">per day</p>
+                              </div>
+                            )}
+                            {showDifficulty && difficultyValue && (
+                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                                <p className="text-xs uppercase tracking-wide text-white/70">Difficulty</p>
+                                <p className="mt-1 text-base font-semibold">{difficultyValue}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {displayFeatures.length > 0 && (
+                          <div className="flex flex-wrap gap-2 text-xs text-white/90">
+                            {displayFeatures.slice(0, 6).map((feature) => (
+                              <span
+                                key={feature}
+                                className="rounded-full bg-white/15 px-3 py-1 font-semibold backdrop-blur"
+                              >
+                                {feature}
+                              </span>
                             ))}
                           </div>
                         )}
@@ -596,6 +784,129 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
             </div>
           </section>
         )}
+
+        <section className="rounded-3xl bg-white p-6 shadow mt-10">
+          <h2 className="text-xl font-semibold text-gray-900">Detailed itinerary</h2>
+          <p className="mt-2 text-sm text-gray-600">Get a day-by-day look at how the experience unfolds.</p>
+          {(Array.isArray(adventure.itinerary) && adventure.itinerary.length > 0) ? (
+            <div className="mt-4 space-y-4">
+              {adventure.itinerary.map((day, idx) => {
+                const html = idx < itineraryHtml.length ? itineraryHtml[idx] : "";
+                const heading = day.heading?.trim() || "";
+                const rawDescription = typeof day.description === "string" ? day.description : "";
+                const plainDescription = stripRichTextTags(rawDescription).trim();
+                
+                return (
+                  <div
+                    key={(heading || "day") + idx}
+                    className="flex gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4 shadow-sm"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 text-lg font-semibold text-green-700">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{heading || `Day ${idx + 1}`}</h3>
+                      {html ? (
+                        <div
+                          className="mt-2 text-sm leading-relaxed text-gray-700"
+                          dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                      ) : plainDescription ? (
+                        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-700">
+                          {plainDescription}
+                        </p>
+                      ) : (
+                        <p className="mt-2 text-sm text-gray-500">Vendor will add more details soon.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+              The vendor will publish a day-by-day schedule soon.
+            </p>
+          )}
+        </section>
+
+        <section className="rounded-3xl bg-white p-6 shadow mt-10">
+          <h2 className="text-xl font-semibold text-gray-900">What&apos;s included</h2>
+          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Inclusions</h3>
+              {(adventure.inclusions && hasRichTextContent(adventure.inclusions)) ? (
+                inclusionList.length > 0 ? (
+                  <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                    {inclusionList.map((item, idx) => (
+                      <li key={item + idx} className="flex items-start gap-2">
+                        <FaCheck className="mt-0.5 text-green-600" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : inclusionHtml ? (
+                  <div
+                    className="mt-3 text-sm leading-relaxed text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: inclusionHtml }}
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">Inclusion details coming soon.</p>
+                )
+              ) : (
+                <p className="mt-3 text-sm text-gray-500">Inclusion details coming soon.</p>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Exclusions</h3>
+              {(adventure.exclusions && hasRichTextContent(adventure.exclusions)) ? (
+                exclusionList.length > 0 ? (
+                  <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                    {exclusionList.map((item, idx) => (
+                      <li key={item + idx} className="flex items-start gap-2">
+                        <FaTimes className="mt-0.5 text-rose-500" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : exclusionHtml ? (
+                  <div
+                    className="mt-3 text-sm leading-relaxed text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: exclusionHtml }}
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">Exclusion details coming soon.</p>
+                )
+              ) : (
+                <p className="mt-3 text-sm text-gray-500">Exclusion details coming soon.</p>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Policy & terms</h3>
+              {(adventure.policyTerms && hasRichTextContent(adventure.policyTerms)) ? (
+                policyTermsList.length > 0 ? (
+                  <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                    {policyTermsList.map((item, idx) => (
+                      <li key={item + idx} className="flex items-start gap-2">
+                        <FaShieldAlt className="mt-0.5 text-indigo-500" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : policyHtml ? (
+                  <div
+                    className="mt-3 text-sm leading-relaxed text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: policyHtml }}
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">Policy details coming soon.</p>
+                )
+              ) : (
+                <p className="mt-3 text-sm text-gray-500">Policy details coming soon.</p>
+              )}
+            </div>
+          </div>
+        </section>
 
         <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-2 mt-10">
           <div>

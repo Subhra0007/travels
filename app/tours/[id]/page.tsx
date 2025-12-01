@@ -4,6 +4,9 @@ import Tour from "@/models/Tour";
 import dbConnect from "@/lib/config/database";
 import TourDetailClient, { type TourDetailPayload } from "../tourDetailClient";
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 async function fetchTour(id: string): Promise<TourDetailPayload | null> {
   await dbConnect();
   const tourDoc = await Tour.findById(id).lean();

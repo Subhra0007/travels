@@ -616,7 +616,7 @@ export default function AddVehicleRentalPage() {
                 <button
                   type="button"
                   onClick={handleGetLocation}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
                   <FaMapMarkerAlt /> Use current location
                 </button>
@@ -634,7 +634,7 @@ export default function AddVehicleRentalPage() {
                     onClick={() => toggleArrayValue("heroHighlights", h)}
                     className={`px-3 py-2 rounded-lg border text-sm ${
                       formData.heroHighlights.includes(h)
-                        ? "bg-blue-50 border-blue-500 text-blue-700"
+                        ? "bg-green-50 border-green-500 text-green-700"
                         : "border-gray-300"
                     }`}
                   >
@@ -653,7 +653,7 @@ export default function AddVehicleRentalPage() {
                 <button
                   type="button"
                   onClick={addCustomHighlight}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
                   Add
                 </button>
@@ -669,8 +669,8 @@ export default function AddVehicleRentalPage() {
                 <label className="block text-sm font-medium mb-1">
                   Rental Images <span className="text-red-500">*</span> (min 5)
                 </label>
-                <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500">
-                  <FaUpload className="text-blue-600" />
+                <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-green-500">
+                  <FaUpload className="text-green-600" />
                   <span>Choose images</span>
                   <input
                     type="file"
@@ -707,7 +707,7 @@ export default function AddVehicleRentalPage() {
                 <button
                   type="button"
                   onClick={addOption}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
                   <FaPlus /> Add Vehicle
                 </button>
@@ -815,7 +815,7 @@ export default function AddVehicleRentalPage() {
                         <button
                           type="button"
                           onClick={() => addOptionFeature(idx)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                         >
                           Add
                         </button>
@@ -892,8 +892,8 @@ export default function AddVehicleRentalPage() {
                       <label className="block text-sm font-medium mb-1">
                         Vehicle Images <span className="text-red-500">*</span> (min 3)
                       </label>
-                      <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500">
-                        <FaUpload className="text-blue-600" />
+                      <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-green-500">
+                        <FaUpload className="text-green-600" />
                         <span>Select images</span>
                         <input
                           type="file"
@@ -931,8 +931,8 @@ export default function AddVehicleRentalPage() {
             {/* Gallery */}
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold">Gallery Images (optional)</h2>
-              <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500">
-                <FaUpload className="text-blue-600" />
+              <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-green-500">
+                <FaUpload className="text-green-600" />
                 <span>Add gallery images</span>
                 <input
                   type="file"
@@ -966,8 +966,8 @@ export default function AddVehicleRentalPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Inside Videos</label>
-                  <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500">
-                    <FaUpload className="text-blue-600" />
+                  <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-green-500">
+                    <FaUpload className="text-green-600" />
                     <span>Select videos</span>
                     <input
                       type="file"
@@ -996,8 +996,8 @@ export default function AddVehicleRentalPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Outside Videos</label>
-                  <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-blue-500">
-                    <FaUpload className="text-blue-600" />
+                  <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-green-500">
+                    <FaUpload className="text-green-600" />
                     <span>Select videos</span>
                     <input
                       type="file"
@@ -1038,7 +1038,7 @@ export default function AddVehicleRentalPage() {
                     onClick={() => toggleArrayValue("popularFacilities", f)}
                     className={`px-3 py-1 rounded-full text-sm border ${
                       formData.popularFacilities.includes(f)
-                        ? "bg-blue-50 border-blue-500 text-blue-700"
+                        ? "bg-green-50 border-green-500 text-green-700"
                         : "border-gray-300"
                     }`}
                   >
@@ -1063,7 +1063,7 @@ export default function AddVehicleRentalPage() {
                           onClick={() => toggleAmenity(sec.key, opt)}
                           className={`px-3 py-1 rounded-full text-sm border ${
                             formData.amenities[sec.key]?.includes(opt)
-                              ? "bg-blue-50 border-blue-500 text-blue-700"
+                              ? "bg-green-50 border-green-500 text-green-700"
                               : "border-gray-300"
                           }`}
                         >
@@ -1161,7 +1161,7 @@ export default function AddVehicleRentalPage() {
                   <button
                     type="button"
                     onClick={addRule}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   >
                     Add
                   </button>
@@ -1247,7 +1247,7 @@ export default function AddVehicleRentalPage() {
                         setNewHouseRule("");
                       }
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                   >
                     Add
                   </button>
@@ -1275,7 +1275,7 @@ export default function AddVehicleRentalPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-lg font-semibold disabled:opacity-60 hover:bg-blue-700"
+                className="flex-1 py-3 bg-green-600 text-white rounded-lg font-semibold disabled:opacity-60 hover:bg-green-700"
               >
                 {submitting
                   ? isEditing

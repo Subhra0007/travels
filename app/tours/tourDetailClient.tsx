@@ -33,6 +33,7 @@ import {
   FaSnowflake,
   FaSwimmer,
   FaStar,
+  FaTimes,
 } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useCart } from "../hooks/useCart";
@@ -82,6 +83,13 @@ export type TourDetailPayload = {
   }>;
   defaultCancellationPolicy?: string;
   defaultHouseRules?: string[];
+  itinerary?: Array<{
+    heading: string;
+    description: string;
+  }>;
+  inclusions?: string | string[];
+  exclusions?: string | string[];
+  policyTerms?: string | string[];
   about: {
     heading: string;
     description: string;
@@ -158,6 +166,43 @@ const getDefaultDates = () => {
   };
 };
 
+const stripRichTextTags = (value?: string) => {
+  if (!value || typeof value !== "string") return "";
+  return value
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|ul|ol|h[1-6])>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\r?\n{2,}/g, "\n")
+    .replace(/\s+\n/g, "\n")
+    .replace(/\n\s+/g, "\n");
+};
+
+const splitRichTextEntries = (value?: string | string[]) => {
+  if (!value) return [];
+  const entries = Array.isArray(value) ? value : [value];
+  return entries
+    .flatMap((entry) =>
+      stripRichTextTags(entry)
+        .split(/\r?\n+/)
+        .map((text) => text.replace(/\s+/g, " ").trim())
+        .filter(Boolean)
+    );
+};
+
+const flattenRichTextValue = (value?: string | string[]) => (Array.isArray(value) ? value.join("\n") : value ?? "");
+
+const hasRichTextContent = (value?: string | string[]) => stripRichTextTags(flattenRichTextValue(value)).trim().length > 0;
+
+const sanitizeRichText = (value?: string | string[]) => {
+  const html = flattenRichTextValue(value);
+  if (!html) return "";
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/on\w+="[^"]*"/gi, "")
+    .replace(/javascript:/gi, "");
+};
+
 interface TourDetailClientProps {
   tour: TourDetailPayload;
 }
@@ -165,6 +210,35 @@ interface TourDetailClientProps {
 const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
   const router = useRouter();
   const { addToCart, loading: cartLoading } = useCart();
+  const tourOptions = Array.isArray(tour.options) ? tour.options : [];
+  const inclusionList = useMemo(() => splitRichTextEntries(tour.inclusions), [tour.inclusions]);
+  const exclusionList = useMemo(() => splitRichTextEntries(tour.exclusions), [tour.exclusions]);
+  const policyTermsList = useMemo(() => splitRichTextEntries(tour.policyTerms), [tour.policyTerms]);
+  const hasInclusions = useMemo(() => hasRichTextContent(tour.inclusions), [tour.inclusions]);
+  const hasExclusions = useMemo(() => hasRichTextContent(tour.exclusions), [tour.exclusions]);
+  const hasPolicyTerms = useMemo(() => hasRichTextContent(tour.policyTerms), [tour.policyTerms]);
+  const inclusionFallbackText = useMemo(
+    () => stripRichTextTags(flattenRichTextValue(tour.inclusions)).trim(),
+    [tour.inclusions]
+  );
+  const exclusionFallbackText = useMemo(
+    () => stripRichTextTags(flattenRichTextValue(tour.exclusions)).trim(),
+    [tour.exclusions]
+  );
+  const policyFallbackText = useMemo(
+    () => stripRichTextTags(flattenRichTextValue(tour.policyTerms)).trim(),
+    [tour.policyTerms]
+  );
+  const inclusionHtml = useMemo(() => sanitizeRichText(tour.inclusions), [tour.inclusions]);
+  const exclusionHtml = useMemo(() => sanitizeRichText(tour.exclusions), [tour.exclusions]);
+  const policyHtml = useMemo(() => sanitizeRichText(tour.policyTerms), [tour.policyTerms]);
+  const itineraryHtml = useMemo(
+    () =>
+      Array.isArray(tour.itinerary)
+        ? tour.itinerary.map((day) => sanitizeRichText(day.description))
+        : [],
+    [tour.itinerary]
+  );
 
   const images = useMemo(() => {
     const galleryImages = Array.isArray(tour.gallery) ? tour.gallery : [];
@@ -181,12 +255,12 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
 
   const initialSelections = useMemo(() => {
     const entries: Record<string, number> = {};
-    tour.options.forEach((opt) => {
+    tourOptions.forEach((opt) => {
       const key = opt._id?.toString() || opt.name;
       entries[key] = 0;
     });
     return entries;
-  }, [tour.options]);
+  }, [tourOptions]);
 
   const [optionSelections, setOptionSelections] = useState<Record<string, number>>(initialSelections);
   const [expandedOptionKey, setExpandedOptionKey] = useState<string | null>(null);
@@ -202,7 +276,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
   const availableOptionKeys = availability.availableOptionKeys ?? [];
   const bookedSummaries = availability.bookedRanges.slice(0, 3);
   const soldOutForDates =
-    !availability.loading && tour.options.length > 0 && availableOptionKeys.length === 0;
+    !availability.loading && tourOptions.length > 0 && availableOptionKeys.length === 0;
   const isOptionUnavailable = (key: string) => {
     if (availability.loading) return false;
     if (availableOptionKeys.length === 0) return soldOutForDates;
@@ -212,7 +286,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
   const pricing = useMemo(() => {
     let subtotal = 0;
     let taxes = 0;
-    const selectedOptions = tour.options.map((opt) => {
+    const selectedOptions = tourOptions.map((opt) => {
       const key = opt._id?.toString() || opt.name;
       const qty = optionSelections[key] || 0;
       if (!qty) return null;
@@ -236,7 +310,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
         optTaxes: number;
       }>,
     };
-  }, [optionSelections, tour.options, days]);
+  }, [optionSelections, tourOptions, days]);
 
   const platformFee = pricing.totalOptions ? 15 : 0;
   const grandTotal = pricing.total + platformFee;
@@ -644,6 +718,124 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
           </div>
         </section>
 
+        {/* Detailed itinerary */}
+        <section className="rounded-3xl bg-white p-6 shadow">
+          <h2 className="text-xl font-semibold text-gray-900">Detailed itinerary</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Get a day-by-day breakdown of what you can expect throughout the experience.
+          </p>
+          {(tour.itinerary && tour.itinerary.length > 0) ? (
+            <div className="mt-4 space-y-4">
+              {tour.itinerary.map((day, idx) => {
+                const html = idx < itineraryHtml.length ? itineraryHtml[idx] : null;
+                const plainDescription = stripRichTextTags(typeof day.description === "string" ? day.description : "").trim();
+                return (
+                  <div key={(day.heading || "day") + idx} className="flex gap-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4 shadow-sm">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-green-100 text-lg font-semibold text-green-700">
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{day.heading || `Day ${idx + 1}`}</h3>
+                      {html ? (
+                        <div
+                          className="mt-2 text-sm leading-relaxed text-gray-700"
+                          dangerouslySetInnerHTML={{ __html: html }}
+                        />
+                      ) : plainDescription ? (
+                        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-700">{plainDescription}</p>
+                      ) : (
+                        <p className="mt-2 text-sm text-gray-500">Detailed schedule coming soon.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
+              The vendor will publish a day-by-day schedule soon.
+            </p>
+          )}
+        </section>
+
+        <section className="rounded-3xl bg-white p-6 shadow">
+          <h2 className="text-xl font-semibold text-gray-900">What&apos;s included</h2>
+          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Inclusions</h3>
+              {(tour.inclusions && (Array.isArray(tour.inclusions) ? tour.inclusions.length > 0 : tour.inclusions.trim().length > 0)) ? (
+                inclusionList.length > 0 ? (
+                  <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                    {inclusionList.map((item, idx) => (
+                      <li key={item + idx} className="flex items-start gap-2">
+                        <FaCheck className="mt-0.5 text-green-600" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : inclusionHtml ? (
+                  <div
+                    className="mt-3 text-sm leading-relaxed text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: inclusionHtml }}
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">Inclusion details coming soon.</p>
+                )
+              ) : (
+                <p className="mt-3 text-sm text-gray-500">Inclusion details coming soon.</p>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Exclusions</h3>
+              {(tour.exclusions && (Array.isArray(tour.exclusions) ? tour.exclusions.length > 0 : tour.exclusions.trim().length > 0)) ? (
+                exclusionList.length > 0 ? (
+                  <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                    {exclusionList.map((item, idx) => (
+                      <li key={item + idx} className="flex items-start gap-2">
+                        <FaTimes className="mt-0.5 text-rose-500" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : exclusionHtml ? (
+                  <div
+                    className="mt-3 text-sm leading-relaxed text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: exclusionHtml }}
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">Exclusion details coming soon.</p>
+                )
+              ) : (
+                <p className="mt-3 text-sm text-gray-500">Exclusion details coming soon.</p>
+              )}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Policy & terms</h3>
+              {(tour.policyTerms && (Array.isArray(tour.policyTerms) ? tour.policyTerms.length > 0 : tour.policyTerms.trim().length > 0)) ? (
+                policyTermsList.length > 0 ? (
+                  <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                    {policyTermsList.map((item, idx) => (
+                      <li key={item + idx} className="flex items-start gap-2">
+                        <FaShieldAlt className="mt-0.5 text-indigo-500" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : policyHtml ? (
+                  <div
+                    className="mt-3 text-sm leading-relaxed text-gray-700"
+                    dangerouslySetInnerHTML={{ __html: policyHtml }}
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-gray-500">Policy details coming soon.</p>
+                )
+              ) : (
+                <p className="mt-3 text-sm text-gray-500">Policy details coming soon.</p>
+              )}
+            </div>
+          </div>
+        </section>
+
         {/* Availability Table */}
         <section id="availability-section" className="space-y-5 rounded-3xl bg-white p-6 shadow">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -694,7 +886,14 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
-                {tour.options.map((option, idx) => {
+                {tourOptions.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-sm text-gray-600">
+                      The vendor has not published any tour options yet. Please check back later or reach out to support.
+                    </td>
+                  </tr>
+                )}
+                {tourOptions.map((option, idx) => {
                   const optionKey = option._id?.toString() || option.name;
                   const quantity = optionSelections[optionKey] || 0;
                   const isSelected = quantity > 0;
@@ -1057,7 +1256,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
       )}
 
       {/* Option Image Lightbox */}
-      {activeOptionIndex !== null && tour.options[activeOptionIndex]?.images?.length > 0 && (
+      {activeOptionIndex !== null && tourOptions[activeOptionIndex]?.images?.length > 0 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
           <button
             type="button"
@@ -1067,11 +1266,11 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
             Close
           </button>
           <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-2xl">
-            <h3 className="text-lg font-semibold text-gray-900">{tour.options[activeOptionIndex].name}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{tourOptions[activeOptionIndex].name}</h3>
             <div className="relative mt-4 h-72 overflow-hidden rounded-2xl">
               <Image
-                src={tour.options[activeOptionIndex].images[optionImageIndex]}
-                alt={`${tour.options[activeOptionIndex].name} image ${optionImageIndex + 1}`}
+                src={tourOptions[activeOptionIndex].images[optionImageIndex]}
+                alt={`${tourOptions[activeOptionIndex].name} image ${optionImageIndex + 1}`}
                 fill
                 className="object-cover"
               />
@@ -1079,8 +1278,8 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                 type="button"
                 onClick={() =>
                   setOptionImageIndex((prev) =>
-                    (prev - 1 + tour.options[activeOptionIndex].images.length) %
-                    tour.options[activeOptionIndex].images.length
+                    (prev - 1 + tourOptions[activeOptionIndex].images.length) %
+                    tourOptions[activeOptionIndex].images.length
                   )
                 }
                 className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white"
@@ -1090,7 +1289,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
               <button
                 type="button"
                 onClick={() =>
-                  setOptionImageIndex((prev) => (prev + 1) % tour.options[activeOptionIndex].images.length)
+                  setOptionImageIndex((prev) => (prev + 1) % tourOptions[activeOptionIndex].images.length)
                 }
                 className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-2 text-white"
               >
@@ -1098,7 +1297,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
               </button>
             </div>
             <div className="mt-4 grid grid-cols-4 gap-2">
-              {tour.options[activeOptionIndex].images.map((image, idx) => (
+              {tourOptions[activeOptionIndex].images.map((image, idx) => (
                 <button
                   type="button"
                   key={image + idx}
@@ -1109,8 +1308,8 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                 </button>
               ))}
             </div>
-            {tour.options[activeOptionIndex].description && (
-              <p className="mt-4 text-sm text-gray-600">{tour.options[activeOptionIndex].description}</p>
+            {tourOptions[activeOptionIndex].description && (
+              <p className="mt-4 text-sm text-gray-600">{tourOptions[activeOptionIndex].description}</p>
             )}
           </div>
         </div>

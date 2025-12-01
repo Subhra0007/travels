@@ -2,7 +2,9 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { FaGlobeAsia, FaUsers, FaMapMarkedAlt, FaPlane } from "react-icons/fa";
+import { FaGlobeAsia, FaUsers, FaMapMarkerAlt, FaPlane } from "react-icons/fa";
+import { FaUserCheck, FaMap  } from "react-icons/fa"; 
+
 import { useInView } from "react-intersection-observer";
 
 /* ---------- Counter Animation ---------- */
@@ -56,7 +58,7 @@ const TravelStatsSection: React.FC = () => {
         {/* Background Image Wrapper */}
         <div className="relative rounded-2xl overflow-hidden shadow-2xl">
           <Image
-            src="/stats/Travels.jpg"
+            src="/DSC_0170.JPG"
             alt="Traveler Background"
             width={1400}
             height={800}
@@ -85,7 +87,7 @@ const TravelStatsSection: React.FC = () => {
                 <div>
                   <FaGlobeAsia className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
-                    <Counter target={100} start={inView} />
+                    <Counter target={ 50} start={inView} />
                   </h3>
                   <p className="text-gray-500 text-sm">Destinations</p>
                 </div>
@@ -93,25 +95,25 @@ const TravelStatsSection: React.FC = () => {
                 <div>
                   <FaUsers className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
-                    <Counter target={5180} start={inView} />
+                    <Counter target={100} start={inView} />
                   </h3>
                   <p className="text-gray-500 text-sm">Happy Tourists</p>
                 </div>
 
                 <div>
-                  <FaMapMarkedAlt className="text-green-600 text-3xl mx-auto mb-2" />
+                  <FaMapMarkerAlt className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
-                    <Counter target={4650} start={inView} />
+                    <Counter target={50} start={inView} />
                   </h3>
                   <p className="text-gray-500 text-sm">Places Visited</p>
                 </div>
 
                 <div>
-                  <FaPlane className="text-green-600 text-3xl mx-auto mb-2" />
+                  <FaUserCheck className="text-green-600 text-3xl mx-auto mb-2" />
                   <h3 className="text-xl font-bold text-gray-800">
-                    <Counter target={24} start={inView} />
+                    <Counter target={25} start={inView} />
                   </h3>
-                  <p className="text-gray-500 text-sm">Best Adventures</p>
+                  <p className="text-gray-500 text-sm">Verified Partners</p>
                 </div>
               </div>
             </motion.div>
@@ -123,10 +125,10 @@ const TravelStatsSection: React.FC = () => {
               transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
               className="bg-green-600 text-white rounded-full w-44 h-44 flex flex-col items-center justify-center text-center shadow-2xl p-3"
             >
-              <p className="text-lg font-medium leading-tight">
+              <p className="text-lg font-bold leading-tight">
                 Travel <br />
-                <span className="lg:text-2xl font-bold italic text-xl">
-                  is a Journey
+                <span className=" font-bold italic text-sm">
+                is the only thing you can buy that makes you richer.
                 </span>
               </p>
             </motion.div>

@@ -53,6 +53,13 @@ export interface ITour extends Document {
   }>;
   defaultCancellationPolicy?: string;
   defaultHouseRules?: string[];
+  itinerary: Array<{
+    heading: string;
+    description: string;
+  }>;
+  inclusions?: string;
+  exclusions?: string;
+  policyTerms?: string;
   about: {
     heading: string;
     description: string;
@@ -149,6 +156,18 @@ const tourSchema = new Schema<ITour>(
     ],
     defaultCancellationPolicy: String,
     defaultHouseRules: { type: [String], default: [] },
+    itinerary: {
+      type: [
+        {
+          heading: { type: String, required: true },
+          description: { type: String, required: true },
+        },
+      ],
+      default: [],
+    },
+    inclusions: { type: String, default: "" },
+    exclusions: { type: String, default: "" },
+    policyTerms: { type: String, default: "" },
     about: {
       heading: { type: String, required: true },
       description: { type: String, required: true },

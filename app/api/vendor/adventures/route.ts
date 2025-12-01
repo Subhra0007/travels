@@ -11,6 +11,10 @@ const normalizeAdventurePayload = (body: any) => {
   const {
     name,
     category,
+    duration,
+    price,
+    capacity,
+    difficultyLevel = "",
     location,
     heroHighlights = [],
     curatedHighlights = [],
@@ -25,14 +29,35 @@ const normalizeAdventurePayload = (body: any) => {
     vendorMessage = "",
     defaultCancellationPolicy = "",
     defaultHouseRules = [],
+    features = [],
+    itinerary = [],
+    inclusions = "",
+    exclusions = "",
+    policyTerms = "",
   } = body;
 
-  if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
+  if (
+    !name ||
+    !category ||
+    !location ||
+    !Array.isArray(images) ||
+    images.length < 5 ||
+    !duration ||
+    typeof price !== "number" ||
+    !Number.isFinite(price) ||
+    typeof capacity !== "number" ||
+    !Number.isFinite(capacity)
+  ) {
     return { error: "Missing required fields or insufficient images" };
   }
 
   if (!["trekking", "hiking", "camping", "water-rafting"].includes(category)) {
     return { error: "Invalid category" };
+  }
+
+  const requiresDifficulty = ["trekking", "hiking", "water-rafting"].includes(category);
+  if (requiresDifficulty && !difficultyLevel?.trim()) {
+    return { error: "Difficulty level is required for the selected category" };
   }
 
   if (!Array.isArray(options) || options.length === 0) {
@@ -57,6 +82,25 @@ const normalizeAdventurePayload = (body: any) => {
       };
     }
   }
+
+  const normalizedFeatures = Array.isArray(features)
+    ? features
+        .map((feature: any) => (typeof feature === "string" ? feature.trim() : ""))
+        .filter(Boolean)
+    : [];
+
+  const normalizedItinerary = Array.isArray(itinerary)
+    ? itinerary
+        .map((item: any, index: number) => {
+          const heading =
+            typeof item?.heading === "string" && item.heading.trim().length ? item.heading.trim() : `Day ${index + 1}`;
+          const description = typeof item?.description === "string" ? item.description.trim() : "";
+          return heading && description ? { heading, description } : null;
+        })
+        .filter((entry: any) => entry !== null)
+    : [];
+
+  const normalizeRichText = (value: any) => (typeof value === "string" ? value.trim() : "");
 
   const normalizedOptions = options.map((option: any) => ({
     name: option.name,
@@ -127,6 +171,15 @@ const normalizeAdventurePayload = (body: any) => {
       amenities: normalizedAmenities,
       options: normalizedOptions,
       about,
+      duration,
+      price: Number(price),
+      capacity: Number(capacity),
+      difficultyLevel: difficultyLevel?.trim() || undefined,
+      features: normalizedFeatures,
+      itinerary: normalizedItinerary,
+      inclusions: normalizeRichText(inclusions),
+      exclusions: normalizeRichText(exclusions),
+      policyTerms: normalizeRichText(policyTerms),
       vendorMessage,
       defaultCancellationPolicy,
       defaultHouseRules,

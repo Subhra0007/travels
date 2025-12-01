@@ -2,10 +2,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/app/components/Pages/vendor/Sidebar";
 import { FaMapMarkerAlt, FaPlus, FaTimes, FaUpload } from "react-icons/fa";
 import PageLoader from "@/app/components/common/PageLoader";
+import "react-quill-new/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 const HERO_HIGHLIGHTS = [
   "Guided tour",
@@ -115,24 +119,43 @@ const DURATION_OPTIONS = [
   "Multi-day",
 ];
 
-type OptionForm = {
-  name: string;
-  description: string;
-  duration: string;
-  capacity: number;
-  price: number;
-  features: string[];
-  images: string[];
+const FEATURE_PRESETS = ["Private", "Group", "Family-friendly", "Photography", "Food included"];
+
+const quillModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, 4, false] }],
+    ["bold", "italic", "underline", "blockquote"],
+    [{ list: "ordered" }, { list: "bullet" }, { indent: "-1" }, { indent: "+1" }],
+    [{ align: [] }],
+    ["link", "image"],
+    ["clean"],
+  ],
 };
 
-const createDefaultOption = (): OptionForm => ({
-  name: "",
+const quillFormats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "blockquote",
+  "list",
+  "indent",
+  "align",
+  "link",
+  "image",
+];
+
+
+type ItineraryDay = {
+  id: string;
+  heading: string;
+  description: string;
+};
+
+const createItineraryDay = (dayNumber: number): ItineraryDay => ({
+  id: `${Date.now()}-${dayNumber}`,
+  heading: `Day ${dayNumber}`,
   description: "",
-  duration: "3 hours",
-  capacity: 10,
-  price: 0,
-  features: [],
-  images: [],
 });
 
 export default function AddTourPage() {
@@ -145,14 +168,18 @@ export default function AddTourPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [customHighlight, setCustomHighlight] = useState("");
   const [newRule, setNewRule] = useState("");
-  const [optionFeatureDrafts, setOptionFeatureDrafts] = useState<Record<number, string>>({});
   const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(isEditing);
+  const [featureDraft, setFeatureDraft] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
     category: "group-tours" as "group-tours" | "tour-packages",
+    duration: "3 hours",
+    price: 0,
+    capacity: 10,
+    features: [] as string[],
     location: {
       address: "",
       city: "",
@@ -170,11 +197,14 @@ export default function AddTourPage() {
     },
     popularFacilities: [] as string[],
     amenities: {} as Record<string, string[]>,
-    options: [createDefaultOption()],
     about: {
       heading: "",
       description: "",
     },
+    itinerary: [createItineraryDay(1)],
+    inclusions: "",
+    exclusions: "",
+    policyTerms: "",
     vendorMessage: "",
     defaultCancellationPolicy: "",
     defaultHouseRules: [] as string[],
@@ -208,26 +238,62 @@ export default function AddTourPage() {
     });
   };
 
-  const updateOption = <K extends keyof OptionForm>(index: number, key: K, value: OptionForm[K]) => {
+  const toggleFeature = (feature: string) => {
     setFormData((prev) => {
-      const options = [...prev.options];
-      options[index] = { ...options[index], [key]: value };
-      return { ...prev, options };
+      const exists = prev.features.includes(feature);
+      return {
+        ...prev,
+        features: exists ? prev.features.filter((item) => item !== feature) : [...prev.features, feature],
+      };
     });
   };
 
-  const addOption = () => {
-    setFormData((prev) => ({ ...prev, options: [...prev.options, createDefaultOption()] }));
+  const handleAddFeature = () => {
+    const draft = featureDraft.trim();
+    if (!draft) return;
+    setFormData((prev) => {
+      if (prev.features.includes(draft)) return prev;
+      return { ...prev, features: [...prev.features, draft] };
+    });
+    setFeatureDraft("");
   };
 
-  const removeOption = (index: number) => {
-    setFormData((prev) => ({ ...prev, options: prev.options.filter((_, i) => i !== index) }));
+  const addItineraryDay = () => {
+    setFormData((prev) => ({
+      ...prev,
+      itinerary: [...prev.itinerary, createItineraryDay(prev.itinerary.length + 1)],
+    }));
+  };
+
+  const updateItineraryDay = (id: string, key: "heading" | "description", value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      itinerary: prev.itinerary.map((day) => (day.id === id ? { ...day, [key]: value } : day)),
+    }));
+  };
+
+  const removeItineraryDay = (id: string) => {
+    setFormData((prev) => {
+      const filtered = prev.itinerary.filter((day) => day.id !== id);
+      if (!filtered.length) return prev;
+      return { ...prev, itinerary: filtered };
+    });
   };
 
   const hydrateForm = (tour: any) => {
+    const primaryOption =
+      Array.isArray(tour?.options) && tour.options.length > 0 ? tour.options[0] : null;
     setFormData({
       name: tour.name ?? "",
       category: (tour.category as "group-tours" | "tour-packages") ?? "group-tours",
+      duration: tour.duration ?? primaryOption?.duration ?? "3 hours",
+      price: typeof tour.price === "number" ? tour.price : primaryOption?.price ?? 0,
+      capacity: typeof tour.capacity === "number" ? tour.capacity : primaryOption?.capacity ?? 10,
+      features: Array.isArray(tour.features) && tour.features.length
+        ? tour.features
+        : Array.isArray(primaryOption?.features)
+        ? primaryOption.features
+        : [],
       location: {
         address: tour.location?.address ?? "",
         city: tour.location?.city ?? "",
@@ -250,22 +316,21 @@ export default function AddTourPage() {
       amenities: tour.amenities
         ? Object.fromEntries(Object.entries(tour.amenities))
         : {},
-      options:
-        Array.isArray(tour.options) && tour.options.length
-          ? tour.options.map((option: any) => ({
-              name: option.name ?? "",
-              description: option.description ?? "",
-              duration: option.duration ?? "3 hours",
-              capacity: option.capacity ?? 0,
-              price: option.price ?? 0,
-              features: option.features ?? [],
-              images: option.images ?? [],
-            }))
-          : [createDefaultOption()],
       about: {
         heading: tour.about?.heading ?? "",
         description: tour.about?.description ?? "",
       },
+      itinerary:
+        Array.isArray(tour.itinerary) && tour.itinerary.length
+          ? tour.itinerary.map((day: any, index: number) => ({
+              id: `${Date.now()}-${index}`,
+              heading: day.heading ?? `Day ${index + 1}`,
+              description: day.description ?? "",
+            }))
+          : [createItineraryDay(1)],
+      inclusions: tour.inclusions ?? "",
+      exclusions: tour.exclusions ?? "",
+      policyTerms: tour.policyTerms ?? "",
       vendorMessage: tour.vendorMessage ?? "",
       defaultCancellationPolicy: tour.defaultCancellationPolicy ?? "",
       defaultHouseRules: tour.defaultHouseRules ?? [],
@@ -364,23 +429,6 @@ export default function AddTourPage() {
     event.target.value = "";
   };
 
-  const handleOptionImages = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
-    const uploaded = await uploadMedia(files, `tours/${formData.category}/options/${index + 1}`);
-    if (uploaded.length) {
-      setFormData((prev) => {
-        const options = [...prev.options];
-        options[index] = { ...options[index], images: [...options[index].images, ...uploaded] };
-        return { ...prev, options };
-      });
-    }
-    event.target.value = "";
-  };
-
   const removeMedia = (key: "images" | "gallery", index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -396,17 +444,6 @@ export default function AddTourPage() {
         [key]: prev.videos[key].filter((_, i) => i !== index),
       },
     }));
-  };
-
-  const removeOptionImage = (optionIndex: number, imageIndex: number) => {
-    setFormData((prev) => {
-      const options = [...prev.options];
-      options[optionIndex] = {
-        ...options[optionIndex],
-        images: options[optionIndex].images.filter((_, i) => i !== imageIndex),
-      };
-      return { ...prev, options };
-    });
   };
 
   const addRule = () => {
@@ -434,33 +471,6 @@ export default function AddTourPage() {
     setCustomHighlight("");
   };
 
-  const addOptionFeature = (index: number) => {
-    const draft = optionFeatureDrafts[index]?.trim();
-    if (!draft) return;
-    setFormData((prev) => {
-      const options = [...prev.options];
-      if (!options[index].features.includes(draft)) {
-        options[index] = {
-          ...options[index],
-          features: [...options[index].features, draft],
-        };
-      }
-      return { ...prev, options };
-    });
-    setOptionFeatureDrafts((prev) => ({ ...prev, [index]: "" }));
-  };
-
-  const removeOptionFeature = (optionIndex: number, feature: string) => {
-    setFormData((prev) => {
-      const options = [...prev.options];
-      options[optionIndex] = {
-        ...options[optionIndex],
-        features: options[optionIndex].features.filter((item) => item !== feature),
-      };
-      return { ...prev, options };
-    });
-  };
-
   const handleGetLocation = async () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -482,6 +492,36 @@ export default function AddTourPage() {
     );
   };
 
+  const buildDefaultTourOptions = (data: typeof formData) => {
+    const optionImages = data.images.slice(0, 3);
+    if (optionImages.length < 3) {
+      throw new Error("Please upload at least 3 images to create a tour option.");
+    }
+
+    const flattenedAmenities = Object.values(data.amenities || {}).reduce<string[]>(
+      (acc, section) => (Array.isArray(section) ? acc.concat(section) : acc),
+      []
+    );
+
+    return [
+      {
+        name: data.name.trim(),
+        description: data.about.description,
+        duration: data.duration,
+        capacity: data.capacity,
+        price: data.price,
+        taxes: 0,
+        currency: "INR",
+        features: data.features,
+        amenities: flattenedAmenities,
+        available: data.capacity,
+        images: optionImages,
+        isRefundable: true,
+        refundableUntilHours: 48,
+      },
+    ];
+  };
+
   const validate = () => {
     const errs: Record<string, string> = {};
     if (!formData.name.trim()) errs.name = "Tour name is required";
@@ -492,15 +532,17 @@ export default function AddTourPage() {
     if (formData.images.length < 5) errs.images = "Upload at least 5 tour images";
     if (!formData.about.heading.trim()) errs.aboutHeading = "About heading is required";
     if (!formData.about.description.trim()) errs.aboutDescription = "Tour description is required";
-    if (!formData.options.length) errs.options = "Add at least one tour option";
-
-    formData.options.forEach((opt, idx) => {
-      if (!opt.name.trim()) errs[`option-${idx}-name`] = "Option name is required";
-      if (!opt.duration) errs[`option-${idx}-duration`] = "Duration is required";
-      if (opt.capacity < 1) errs[`option-${idx}-capacity`] = "Capacity must be at least 1";
-      if (opt.price <= 0) errs[`option-${idx}-price`] = "Price must be greater than 0";
-      if (opt.images.length < 3) errs[`option-${idx}-images`] = "Upload at least 3 images per option";
+    if (!formData.duration) errs.duration = "Duration is required";
+    if (formData.capacity < 1) errs.capacity = "Capacity must be at least 1";
+    if (formData.price <= 0) errs.price = "Price must be greater than 0";
+    if (!formData.itinerary.length) errs.itinerary = "Add at least one itinerary day";
+    formData.itinerary.forEach((day, idx) => {
+      if (!day.heading.trim()) errs[`itinerary-${idx}-heading`] = "Heading is required";
+      if (!day.description.trim()) errs[`itinerary-${idx}-description`] = "Description is required";
     });
+    if (!formData.inclusions.trim()) errs.inclusions = "Add inclusions";
+    if (!formData.exclusions.trim()) errs.exclusions = "Add exclusions";
+    if (!formData.policyTerms.trim()) errs.policyTerms = "Add policy & terms";
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -517,13 +559,17 @@ export default function AddTourPage() {
     setUploadError(null);
 
     try {
+      const optionsPayload = buildDefaultTourOptions(formData);
       const endpoint = editId ? `/api/vendor/tours?id=${editId}` : "/api/vendor/tours";
       const method = editId ? "PUT" : "POST";
       const res = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          options: optionsPayload,
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -599,6 +645,110 @@ export default function AddTourPage() {
                     <option value="tour-packages">Tour Packages</option>
                   </select>
                 </div>
+              </div>
+            </section>
+
+            {/* Tour details */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+              <h2 className="text-xl font-semibold text-gray-900">Tour details</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Duration <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.duration}
+                    onChange={(e) => setField("duration", e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                  >
+                    {DURATION_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.duration && <p className="text-red-600 text-sm mt-1">{errors.duration}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Price (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={formData.price}
+                    onChange={(e) => setField("price", Number(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                  />
+                  {errors.price && <p className="text-red-600 text-sm mt-1">{errors.price}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Capacity (guests) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={formData.capacity}
+                    onChange={(e) => setField("capacity", Number(e.target.value))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                  />
+                  {errors.capacity && <p className="text-red-600 text-sm mt-1">{errors.capacity}</p>}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">Features</label>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {FEATURE_PRESETS.map((feature) => {
+                    const selected = formData.features.includes(feature);
+                    return (
+                      <button
+                        key={feature}
+                        type="button"
+                        onClick={() => toggleFeature(feature)}
+                        className={`px-3 py-2 text-sm rounded-full border transition ${
+                          selected
+                            ? "border-green-500 bg-green-50 text-green-700"
+                            : "border-gray-300 text-gray-900 hover:border-green-400"
+                        }`}
+                      >
+                        {feature}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={featureDraft}
+                    onChange={(e) => setFeatureDraft(e.target.value)}
+                    placeholder="Add custom feature"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddFeature}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    Add
+                  </button>
+                </div>
+                {formData.features.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {formData.features.map((feature) => (
+                      <span
+                        key={feature}
+                        className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 rounded-full text-gray-900"
+                      >
+                        {feature}
+                        <button type="button" onClick={() => toggleFeature(feature)} className="text-red-600">
+                          <FaTimes />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
 
@@ -878,212 +1028,121 @@ export default function AddTourPage() {
               </div>
             </section>
 
-            {/* Options */}
-            <section className="bg-white rounded-xl shadow p-6 space-y-6">
+            {/* Itinerary */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-5">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">Tour Options</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Itinerary</h2>
                 <button
                   type="button"
-                  onClick={addOption}
+                  onClick={addItineraryDay}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
-                  <FaPlus /> Add option
+                  <FaPlus /> Add day
                 </button>
               </div>
-              {errors.options && <p className="text-red-600 text-sm">{errors.options}</p>}
-
+              {errors.itinerary && <p className="text-red-600 text-sm">{errors.itinerary}</p>}
               <div className="space-y-6">
-                {formData.options.map((option, index) => (
-                  <div key={index} className="border border-gray-200 rounded-xl p-5 space-y-4">
+                {formData.itinerary.map((day, index) => (
+                  <div key={day.id} className="border border-gray-200 rounded-xl p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">Option {index + 1}</h3>
-                      {formData.options.length > 1 && (
+                      <h3 className="text-lg font-semibold text-gray-900">Day {index + 1}</h3>
+                      {formData.itinerary.length > 1 && (
                         <button
                           type="button"
-                          onClick={() => removeOption(index)}
+                          onClick={() => removeItineraryDay(day.id)}
                           className="text-red-600 hover:text-red-700"
                         >
                           Remove
                         </button>
                       )}
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Option name <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={option.name}
-                          onChange={(e) => updateOption(index, "name", e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                          placeholder="e.g., Half-Day City Tour"
-                        />
-                        {errors[`option-${index}-name`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`option-${index}-name`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Duration <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={option.duration}
-                          onChange={(e) => updateOption(index, "duration", e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        >
-                          {DURATION_OPTIONS.map((d) => (
-                            <option key={d} value={d}>{d}</option>
-                          ))}
-                        </select>
-                        {errors[`option-${index}-duration`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`option-${index}-duration`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Capacity (guests) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={option.capacity}
-                          onChange={(e) => updateOption(index, "capacity", Number(e.target.value))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        />
-                        {errors[`option-${index}-capacity`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`option-${index}-capacity`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Price (₹) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={option.price}
-                          onChange={(e) => updateOption(index, "price", Number(e.target.value))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        />
-                        {errors[`option-${index}-price`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`option-${index}-price`]}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Description</label>
-                      <textarea
-                        rows={3}
-                        value={option.description}
-                        onChange={(e) => updateOption(index, "description", e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        placeholder="What guests will experience"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">Features</label>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {["Private", "Group", "Family-friendly", "Photography", "Food included"].map((f) => {
-                          const selected = option.features.includes(f);
-                          return (
-                            <button
-                              key={f}
-                              type="button"
-                              onClick={() => {
-                                if (selected) removeOptionFeature(index, f);
-                                else updateOption(index, "features", [...option.features, f]);
-                              }}
-                              className={`px-3 py-2 text-sm rounded-full border transition ${
-                                selected
-                                  ? "border-green-500 bg-green-50 text-green-700"
-                                  : "border-gray-300 text-gray-900 hover:border-green-400"
-                              }`}
-                            >
-                              {f}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={optionFeatureDrafts[index] || ""}
-                          onChange={(e) =>
-                            setOptionFeatureDrafts((prev) => ({ ...prev, [index]: e.target.value }))
-                          }
-                          placeholder="Add custom feature"
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => addOptionFeature(index)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                        >
-                          Add
-                        </button>
-                      </div>
-                      {option.features.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {option.features.map((f) => (
-                            <span
-                              key={f}
-                              className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 rounded-full text-gray-900"
-                            >
-                              {f}
-                              <button
-                                type="button"
-                                onClick={() => removeOptionFeature(index, f)}
-                                className="text-red-600"
-                              >
-                                <FaTimes />
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-900 mb-1">
-                        Option images <span className="text-red-500">*</span> (min 3)
+                        Heading <span className="text-red-500">*</span>
                       </label>
-                      <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-500 text-gray-900">
-                        <FaUpload className="text-gray-600" />
-                        <span>Select images</span>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleOptionImages(e, index)}
-                        />
-                      </label>
-                      {errors[`option-${index}-images`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`option-${index}-images`]}</p>
+                      <input
+                        type="text"
+                        value={day.heading}
+                        onChange={(e) => updateItineraryDay(day.id, "heading", e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                        placeholder="e.g., Arrival and welcome"
+                      />
+                      {errors[`itinerary-${index}-heading`] && (
+                        <p className="text-red-600 text-sm mt-1">{errors[`itinerary-${index}-heading`]}</p>
                       )}
-                      {option.images.length > 0 && (
-                        <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {option.images.map((src, i) => (
-                            <div key={src + i} className="relative">
-                              <img src={src} alt="" className="w-full h-28 object-cover rounded-lg" />
-                              <button
-                                type="button"
-                                onClick={() => removeOptionImage(index, i)}
-                                className="absolute top-2 right-2 bg-black/70 text-white rounded-full p-1"
-                              >
-                                <FaTimes />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-900 mb-1">
+                        Description <span className="text-red-500">*</span>
+                      </label>
+                      <div className="bg-white text-gray-900">
+                        <ReactQuill
+                          value={day.description}
+                          onChange={(value: string) => updateItineraryDay(day.id, "description", value)}
+                          modules={quillModules}
+                          formats={quillFormats}
+                        />
+                      </div>
+                      {errors[`itinerary-${index}-description`] && (
+                        <p className="text-red-600 text-sm mt-1">{errors[`itinerary-${index}-description`]}</p>
                       )}
                     </div>
                   </div>
                 ))}
+              </div>
+            </section>
+
+            {/* Inclusions & Exclusions */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+              <h2 className="text-xl font-semibold text-gray-900">Inclusions & Exclusions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Inclusions <span className="text-red-500">*</span>
+                  </label>
+                  <div className="bg-white text-gray-900">
+                    <ReactQuill
+                      value={formData.inclusions}
+                      onChange={(value: string) => setField("inclusions", value)}
+                      modules={quillModules}
+                      formats={quillFormats}
+                    />
+                  </div>
+                  {errors.inclusions && <p className="text-red-600 text-sm mt-1">{errors.inclusions}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Exclusions <span className="text-red-500">*</span>
+                  </label>
+                  <div className="bg-white text-gray-900">
+                    <ReactQuill
+                      value={formData.exclusions}
+                      onChange={(value: string) => setField("exclusions", value)}
+                      modules={quillModules}
+                      formats={quillFormats}
+                    />
+                  </div>
+                  {errors.exclusions && <p className="text-red-600 text-sm mt-1">{errors.exclusions}</p>}
+                </div>
+              </div>
+            </section>
+
+            {/* Policy & Terms */}
+            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+              <h2 className="text-xl font-semibold text-gray-900">Policy & Terms</h2>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-1">
+                  Details <span className="text-red-500">*</span>
+                </label>
+                <div className="bg-white text-gray-900">
+                  <ReactQuill
+                    value={formData.policyTerms}
+                    onChange={(value: string) => setField("policyTerms", value)}
+                    modules={quillModules}
+                    formats={quillFormats}
+                  />
+                </div>
+                {errors.policyTerms && <p className="text-red-600 text-sm mt-1">{errors.policyTerms}</p>}
               </div>
             </section>
 

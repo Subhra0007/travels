@@ -5,6 +5,10 @@ export interface IAdventure extends Document {
   vendorId: mongoose.Types.ObjectId;
   name: string;
   category: "trekking" | "hiking" | "camping" | "water-rafting";
+  duration: string;
+  price: number;
+  capacity: number;
+  difficultyLevel?: string;
   location: {
     address: string;
     city: string;
@@ -35,6 +39,7 @@ export interface IAdventure extends Document {
   };
   popularFacilities: string[]; // Quick badges with icons
   amenities: Record<string, string[]>; // Grouped facilities (e.g. Equipment, Activities…)
+  features: string[];
   options: Array<{
     _id?: mongoose.Types.ObjectId;
     name: string;
@@ -54,6 +59,13 @@ export interface IAdventure extends Document {
   }>;
   defaultCancellationPolicy?: string;
   defaultHouseRules?: string[];
+  itinerary: Array<{
+    heading: string;
+    description: string;
+  }>;
+  inclusions?: string;
+  exclusions?: string;
+  policyTerms?: string;
   about: {
     heading: string;
     description: string;
@@ -101,6 +113,10 @@ const adventureSchema = new Schema<IAdventure>(
     heroHighlights: { type: [String], default: [] },
     curatedHighlights: { type: [highlightSchema], default: [] },
     tags: { type: [String], default: [] },
+    duration: { type: String, required: true },
+    price: { type: Number, required: true, min: 0 },
+    capacity: { type: Number, required: true, min: 1 },
+    difficultyLevel: { type: String },
     rating: {
       average: { type: Number, default: 0, min: 0, max: 5 },
       count: { type: Number, default: 0, min: 0 },
@@ -122,6 +138,7 @@ const adventureSchema = new Schema<IAdventure>(
     },
     popularFacilities: { type: [String], default: [] },
     amenities: { type: Map, of: [String], default: {} },
+    features: { type: [String], default: [] },
     options: [
       {
         name: { type: String, required: true },
@@ -151,6 +168,18 @@ const adventureSchema = new Schema<IAdventure>(
     ],
     defaultCancellationPolicy: String,
     defaultHouseRules: { type: [String], default: [] },
+    itinerary: {
+      type: [
+        {
+          heading: { type: String, required: true },
+          description: { type: String, required: true },
+        },
+      ],
+      default: [],
+    },
+    inclusions: { type: String, default: "" },
+    exclusions: { type: String, default: "" },
+    policyTerms: { type: String, default: "" },
     about: {
       heading: { type: String, required: true },
       description: { type: String, required: true },

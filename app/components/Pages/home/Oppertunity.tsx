@@ -1,8 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { FaUserFriends, FaUmbrellaBeach } from "react-icons/fa";
+
 import { motion } from "framer-motion";
+
+const HERO_IMAGE_PATH = "/heropic2.JPG";
 
 export default function AdventureSection() {
   return (
@@ -24,23 +28,25 @@ export default function AdventureSection() {
               className="relative w-60 h-72 rounded-xl overflow-hidden shadow-lg"
             >
               <Image
-                src="/oppertunity/Adventuredestination.jpg"
-                alt="Adventure Destination"
+                src="/DSC_0082.JPG"
+                alt="Adventure destination"
                 fill
                 className="object-cover hover:scale-110 transition-transform duration-500"
               />
             </motion.div>
 
-            {/* ✅ Box comes from BOTTOM */}
-            <motion.div
-              initial={{ y: 120, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.7 }}
-              viewport={{ once: true }}
-              className="bg-green-600 text-white rounded-xl flex items-center justify-center w-60 h-24 text-lg font-semibold shadow-md"
-            >
-              Stories of Adventures
-            </motion.div>
+           {/* ✅ Box comes from BOTTOM */}
+<Link href="/services/products">
+  <motion.div
+    initial={{ y: 120, opacity: 0 }}
+    whileInView={{ y: 0, opacity: 1 }}
+    transition={{ duration: 0.7 }}
+    viewport={{ once: true }}
+    className="bg-green-600 text-white rounded-xl flex items-center justify-center w-60 h-24 text-lg font-semibold shadow-md cursor-pointer"
+  >
+    Our Shop
+  </motion.div>
+</Link>
           </div>
 
           {/* ✅ Big image comes from TOP */}
@@ -50,12 +56,14 @@ export default function AdventureSection() {
             transition={{ duration: 0.7 }}
             viewport={{ once: true }}
             className="relative w-80 h-100 rounded-xl overflow-hidden shadow-lg"
+            suppressHydrationWarning
           >
             <Image
-              src="/oppertunity/Travelerexploring.jpg"
+              src={HERO_IMAGE_PATH}
               alt="Traveler exploring"
               fill
               className="object-cover hover:scale-110 transition-transform duration-500"
+              priority
             />
           </motion.div>
         </div>
@@ -118,10 +126,10 @@ export default function AdventureSection() {
               <FaUserFriends className="text-green-600 text-2xl mt-1" />
               <div>
                 <h4 className="text-lg font-semibold text-gray-800">
-                  Trusted Travel Guide
+                  Trusted Partners
                 </h4>
                 <p className="text-gray-500 text-sm">
-                  Includes the best hotels with private group packages.
+                 Get Services from our Partners who are Trusted, Verified and the best in the market.
                 </p>
               </div>
             </div>
@@ -133,38 +141,26 @@ export default function AdventureSection() {
                   Memorable Holidays
                 </h4>
                 <p className="text-gray-500 text-sm">
-                  Explore top-rated destinations with luxury amenities.
+                  Explore top-rated destinations with the best amenities.
                 </p>
               </div>
             </div>
           </motion.div>
 
-          {/* ✅ Button + Author comes from BOTTOM */}
-          <motion.div
-            initial={{ y: 120, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.7 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-6"
-          >
-            <button className="bg-green-600 text-white px-6 py-3 rounded-full font-medium shadow-md hover:bg-green-700 transition">
-              Book Now
-            </button>
-
-            <div className="flex items-center gap-3">
-              <Image
-                src="/oppertunity/Male.png"
-                alt="Travel Guide"
-                width={50}
-                height={50}
-                className="rounded-full"
-              />
-              <div>
-                <p className="font-semibold text-gray-800">Arjun Sharma</p>
-                <p className="text-gray-500 text-sm">Tour Guide</p>
-              </div>
-            </div>
-          </motion.div>
+         {/* ✅ Button */}
+<motion.div
+  initial={{ y: 120, opacity: 0 }}
+  whileInView={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.7 }}
+  viewport={{ once: true }}
+  className="flex items-center gap-6"
+>
+  <Link href="/services">
+    <button className="bg-green-600 text-white px-6 py-3 rounded-full font-medium shadow-md hover:bg-green-700 transition cursor-pointer">
+      Book Now
+    </button>
+  </Link>
+</motion.div>
 
         </div>
         </div>

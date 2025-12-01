@@ -38,7 +38,7 @@ const RecentGallerySection: React.FC = () => {
               className="relative rounded-xl overflow-hidden group"
             >
               <Image
-                src="/gallery/image1.jpeg"
+                src="/DSC_0131.JPG"
                 alt="Gallery Image 1"
                 fill
                 className="object-cover group-hover:scale-110 transition duration-500"
@@ -56,7 +56,7 @@ const RecentGallerySection: React.FC = () => {
                 className="relative group rounded-xl"
               >
                 <Image
-                  src="/gallery/image6.jpg"
+                  src="/DSC_0088.JPG"
                   alt="Gallery Image 4"
                   fill
                   className="object-cover group-hover:scale-105 transition duration-500 rounded-xl"
@@ -71,7 +71,7 @@ const RecentGallerySection: React.FC = () => {
                 className="relative group rounded-xl"
               >
                 <Image
-                  src="/gallery/image2.jpeg"
+                  src="/DSC_0100.JPG"
                   alt="Gallery Image 5"
                   fill
                   className="object-cover group-hover:scale-105 transition duration-500 rounded-xl"
@@ -90,7 +90,7 @@ const RecentGallerySection: React.FC = () => {
             className="relative col-span-1 rounded-xl overflow-hidden group"
           >
             <Image
-              src="/gallery/image3.jpeg"
+              src="/DSC_0256.JPG"
               alt="Gallery Image 2"
               fill
               className="object-cover group-hover:scale-110 transition duration-500"
@@ -109,7 +109,7 @@ const RecentGallerySection: React.FC = () => {
               className="relative col-span-1 rounded-xl overflow-hidden group"
             >
               <Image
-                src="/gallery/image5.jpeg"
+                src="/DSC_0064.JPG"
                 alt="Gallery Image 3"
                 fill
                 className="object-cover group-hover:scale-110 transition duration-500"
@@ -125,7 +125,7 @@ const RecentGallerySection: React.FC = () => {
               className="relative col-span-1 rounded-xl overflow-hidden group"
             >
               <Image
-                src="/gallery/image10.jpeg"
+                src="/TCW09617.JPG"
                 alt="Gallery Image 6"
                 fill
                 className="object-cover group-hover:scale-110 transition duration-500"

@@ -6,21 +6,21 @@ import { motion } from "framer-motion";
 export default function OffersSection() {
   const offers = [
     {
-      title: "Exclusive Deal on Thailand Getaway",
-      image: "/offers/exclusive.webp",
-      discount: "15%",
+      title: "Exclusive Deal on Trekking",
+      image: "/DSC_0382.JPG",
+      discount: "5% off",
       tag: "Limited Offer",
     },
     {
-      title: "Save on Bali Adventure Escape",
-      image: "/offers/bali.jpg",
-      discount: "25%",
+      title: " Save on Tour Packages",
+      image: "/DSC_0410.JPG",
+      discount: "6% off",
       tag: "Early Booking",
     },
     {
-      title: "Explore Maldives with Autumn Special",
-      image: "/offers/Maldives.jpeg",
-      discount: "35%",
+      title: "Explore the mountains with rental cars.",
+      image: "/DSC_0353.JPG",
+      discount: "5% off",
       tag: "Special Season",
     },
   ];

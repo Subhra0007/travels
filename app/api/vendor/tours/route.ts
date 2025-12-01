@@ -25,6 +25,10 @@ const normalizeTourPayload = (body: any) => {
     vendorMessage = "",
     defaultCancellationPolicy = "",
     defaultHouseRules = [],
+    itinerary = [],
+    inclusions = "",
+    exclusions = "",
+    policyTerms = "",
   } = body;
 
   if (!name || !category || !location || !Array.isArray(images) || images.length < 5) {
@@ -110,6 +114,20 @@ const normalizeTourPayload = (body: any) => {
         }))
     : [];
 
+  const normalizedItinerary = Array.isArray(itinerary)
+    ? itinerary
+        .map((item: any, index: number) => {
+          const heading =
+            typeof item?.heading === "string" && item.heading.trim().length ? item.heading.trim() : `Day ${index + 1}`;
+          const description =
+            typeof item?.description === "string" ? item.description.trim() : "";
+          return heading && description ? { heading, description } : null;
+        })
+        .filter((item: any) => item !== null)
+    : [];
+
+  const normalizeRichText = (value: any) => (typeof value === "string" ? value.trim() : "");
+
   return {
     payload: {
       name,
@@ -128,6 +146,10 @@ const normalizeTourPayload = (body: any) => {
       vendorMessage,
       defaultCancellationPolicy,
       defaultHouseRules,
+      itinerary: normalizedItinerary,
+      inclusions: normalizeRichText(inclusions),
+      exclusions: normalizeRichText(exclusions),
+      policyTerms: normalizeRichText(policyTerms),
     },
   };
 };
