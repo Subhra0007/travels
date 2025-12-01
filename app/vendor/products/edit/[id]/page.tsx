@@ -763,7 +763,7 @@ export default function SellerEditProductPage() {
 
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Tags</h2>
-              <div className="flex gap-2">
+              <div className="flex flex-col lg:flex-row gap-2">
                 <input
                   type="text"
                   value={tagInput}

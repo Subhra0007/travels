@@ -3,6 +3,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
+import { IconType } from "react-icons";
 import { FaBed, FaCompass, FaMountain, FaCar } from "react-icons/fa";
 import { MdShoppingCart } from "react-icons/md";
 
@@ -33,6 +34,18 @@ const createImageVariants = (delay: number): Variants => ({
   },
 });
 
+const services: Array<{
+  href: string;
+  label: string;
+  Icon: IconType;
+}> = [
+  { href: "/stays", label: "Stays", Icon: FaBed },
+  { href: "/tours", label: "Tours", Icon: FaCompass },
+  { href: "/adventures", label: "Adventures", Icon: FaMountain },
+  { href: "/vehicle-rental", label: "Vehicle Rental", Icon: FaCar },
+  { href: "/services/products", label: "Shop", Icon: MdShoppingCart },
+];
+
 const TravelHeroSection: React.FC = () => {
   const imageVariants = createImageVariants(0.2);
   const smallImageVariants = createImageVariants(0.4);
@@ -41,77 +54,45 @@ const TravelHeroSection: React.FC = () => {
   return (
     <section className="bg-sky-50 py-16">
       <div className="max-w-7xl mx-auto px-6 lg:px-2">
-        <div className="relative bg-green-600 text-white rounded-3xl overflow-hidden p-10 flex flex-col md:flex-row justify-between items-center">
+        <div className="relative bg-linear-to-r from-lime-400 to-green-400 text-white rounded-3xl overflow-hidden p-10 flex flex-col lg:flex-row justify-between items-center gap-8">
           {/* Left Text Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative z-10 max-w-xl text-center lg:text-left"
+            className="relative z-10 w-full lg:w-2/3 text-center lg:text-left"
           >
-            <h1 className="text-3xl md:text-5xl font-bold leading-snug mb-6">
+            <h1 className="text-3xl md:text-5xl font-bold leading-snug mb-6 text-black">
               Start your Journey With <br className="hidden md:block" /> a
               Single Click
             </h1>
             {/* Service Icons */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 md:gap-6">
-
-<Link
-  href="/stays"
-  className="w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center
-  bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl 
-  transition-all duration-300 hover:scale-105 group"
->
-  <FaBed className="text-2xl md:text-3xl mb-2 group-hover:text-green-200 transition-colors" />
-  <span className="text-sm md:text-base font-medium">Stays</span>
-</Link>
-
-<Link
-  href="/tours"
-  className="w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center
-  bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl 
-  transition-all duration-300 hover:scale-105 group"
->
-  <FaCompass className="text-2xl md:text-3xl mb-2 group-hover:text-green-200 transition-colors" />
-  <span className="text-sm md:text-base font-medium">Tours</span>
-</Link>
-
-<Link
-  href="/adventures"
-  className="w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center
-  bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl 
-  transition-all duration-300 hover:scale-105 group"
->
-  <FaMountain className="text-2xl md:text-3xl mb-2 group-hover:text-green-200 transition-colors" />
-  <span className="text-sm md:text-base font-medium">Adventures</span>
-</Link>
-
-<Link
-  href="/vehicle-rental"
-  className="w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center
-  bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl 
-  transition-all duration-300 hover:scale-105 group"
->
-  <FaCar className="text-2xl md:text-3xl mb-2 group-hover:text-green-200 transition-colors" />
-  <span className="text-sm md:text-base font-medium">Vehicle Rental</span>
-</Link>
-
-<Link
-  href="/services/products"
-  className="w-28 h-28 md:w-32 md:h-32 flex flex-col items-center justify-center
-  bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl 
-  transition-all duration-300 hover:scale-105 group"
->
-  <MdShoppingCart className="text-2xl md:text-3xl mb-2 group-hover:text-green-200 transition-colors" />
-  <span className="text-sm md:text-base font-medium">Shop</span>
-</Link>
-
-</div>
+            <div className="w-full">
+              {/* Desktop / Tablet: single row */}
+              <div className="hidden md:flex items-center justify-start gap-4 md:gap-6">
+                {services.map((service) => (
+                  <ServiceCard key={service.label} {...service} />
+                ))}
+              </div>
+              {/* Mobile layout: first row 3 cards */}
+              <div className="grid grid-cols-3 gap-4 justify-items-center md:hidden">
+                {services.slice(0, 3).map((service) => (
+                  <ServiceCard key={service.label} {...service} size="sm" />
+                ))}
+              </div>
+              {/* Mobile layout: second row centered 2 cards */}
+              <div className="flex justify-center gap-4 mt-4 md:hidden">
+                {services.slice(3).map((service) => (
+                  <ServiceCard key={service.label} {...service} size="sm" />
+                ))}
+              </div>
+            </div>
 
           </motion.div>
 
           {/* Floating Circular Images - Large Screens (lg+) */}
+          <div className="relative w-full lg:w-1/3 flex justify-center">
           <div className="relative w-[280px] h-[280px] md:w-[420px] md:h-[420px] hidden lg:block">
             {/* Main Large Circle */}
             <motion.div
@@ -224,6 +205,7 @@ const TravelHeroSection: React.FC = () => {
               />
             </motion.div>
           </div>
+          </div>
         </div>
       </div>
     </section>
@@ -231,3 +213,32 @@ const TravelHeroSection: React.FC = () => {
 };
 
 export default TravelHeroSection;
+
+type ServiceCardProps = {
+  href: string;
+  label: string;
+  Icon: IconType;
+  size?: "sm" | "md";
+};
+
+const ServiceCard: React.FC<ServiceCardProps> = ({
+  href,
+  label,
+  Icon,
+  size = "md",
+}) => {
+  const base = size === "md" ? "w-28 h-28 md:w-32 md:h-32" : "w-24 h-24";
+  return (
+    <Link
+      href={href}
+      className={`${base} flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 rounded-xl transition-all duration-300 hover:scale-105 group`}
+    >
+      <Icon
+        className={`mb-2 text-green-600 ${size === "md" ? "text-2xl md:text-3xl" : "text-xl"} transition-colors`}
+      />
+      <span className="text-sm md:text-base font-medium text-green-600">
+        {label}
+      </span>
+    </Link>
+  );
+};

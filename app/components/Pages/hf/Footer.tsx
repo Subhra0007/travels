@@ -98,7 +98,7 @@ const Footer: React.FC = () => {
             <li><Link href="/privacy-policy" className="hover:text-green-400 transition">Privacy Policy</Link></li>
             <li><Link href="/terms-conditions" className="hover:text-green-400 transition">Terms & Conditions</Link></li>
             <li><Link href="/refund-policy" className="hover:text-green-400 transition">Refund Policy</Link></li>
-            <li><Link href="/blogs" className="hover:text-green-400 transition">Blogs</Link></li>
+            <li><Link href="/safar-partner" className="hover:text-green-400 transition">Join as a Safar Partner</Link></li>
           </ul>
         </div>
 

@@ -147,12 +147,16 @@ export default function ProductsExplorer() {
       const res = await fetch("/api/categories");
       const data = await res.json();
       if (data.success && data.categories) {
+        const uniqueBySlug = new Map<string, { value: string; label: string }>();
+        data.categories.forEach((cat: any) => {
+          if (cat?.slug && !uniqueBySlug.has(cat.slug)) {
+            uniqueBySlug.set(cat.slug, { value: cat.slug, label: cat.name });
+          }
+        });
+
         const categoryOptions = [
           { value: "all", label: "All Products" },
-          ...data.categories.map((cat: any) => ({
-            value: cat.slug,
-            label: cat.name,
-          })),
+          ...Array.from(uniqueBySlug.values()),
         ];
         setCategories(categoryOptions);
       }

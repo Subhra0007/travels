@@ -36,9 +36,14 @@ export default function SignUpPage() {
   ];
 
   const toggleService = (id: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setSelectedServices((prev) => {
+      const exists = prev.includes(id);
+      const next = exists ? prev.filter((s) => s !== id) : [...prev, id];
+      if (isVendor && error === "Select at least one service" && (next.length > 0 || isSeller)) {
+        setError("");
+      }
+      return next;
+    });
   };
 
   const validatePassword = (pwd: string) => {
@@ -106,7 +111,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     setError("Password too weak");
     return;
   }
-  if (isVendor && selectedServices.length === 0) {
+  if (isVendor && selectedServices.length === 0 && !isSeller) {
     setError("Select at least one service");
     return;
   }
@@ -212,10 +217,15 @@ const handleSubmit = async (e: React.FormEvent) => {
             className="w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-lime-500 outline-none text-gray-800 border-gray-400"
           />
           <div className="flex items-center justify-between p-3 bg-linear-to-r from-lime-100 to-green-100 rounded-xl">
-            <span className="text-black">Are You a Vendor?</span>
+            <span className="text-black">Would you like to be a SafarHub Partner?</span>
             <button
               type="button"
-              onClick={() => setIsVendor(!isVendor)}
+              onClick={() => {
+                if (isVendor) {
+                  setError((prev) => (prev === "Select at least one service" ? "" : prev));
+                }
+                setIsVendor(!isVendor);
+              }}
               className={`w-14 h-7 rounded-full p-1 transition-all ${isVendor ? "bg-green-500" : "bg-gray-300"}`}
             >
               <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform ${isVendor ? "translate-x-7" : ""}`} />
@@ -228,26 +238,49 @@ const handleSubmit = async (e: React.FormEvent) => {
                   key={opt.id}
                   type="button"
                   onClick={() => toggleService(opt.id)}
-                  className={`p-3 rounded-xl border-2 transition-all text-gray-800 ${selectedServices.includes(opt.id) ? "bg-green-500 text-white border-green-500" : "bg-white border-gray-200"}`}
+                  className={`p-3 rounded-xl border-2 transition-all text-gray-800 ${
+                    selectedServices.includes(opt.id)
+                      ? "bg-green-500 text-white border-green-500"
+                      : "bg-white border-gray-200"
+                  }`}
                 >
                   {opt.label}
-                  {selectedServices.includes(opt.id) && <FaCheck className="inline ml-1" />}
+                  {selectedServices.includes(opt.id) && (
+                    <FaCheck className="inline ml-1" />
+                  )}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() =>
+                  setIsSeller((prev) => {
+                    const next = !prev;
+                    if (next && error === "Select at least one service") {
+                      setError("");
+                    }
+                    return next;
+                  })
+                }
+                className={`p-3 rounded-xl border-2 transition-all text-gray-800 col-span-2 text-left ${
+                  isSeller
+                    ? "bg-green-500 text-white border-green-500"
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span>Product Seller</span>
+                  {isSeller && <FaCheck className="ml-2" />}
+                </div>
+                <p
+                  className={`text-xs mt-1 ${
+                    isSeller ? "text-white/80" : "text-gray-500"
+                  }`}
+                >
+                  Sell physical products on SafarHub.
+                </p>
+              </button>
             </div>
           )}
-          <label className="flex items-center gap-3 p-3 border rounded-xl text-black">
-            <input
-              type="checkbox"
-              checked={isSeller}
-              onChange={(e) => setIsSeller(e.target.checked)}
-              className="h-5 w-5 rounded border-gray-400"
-            />
-            <div>
-              <p className="font-semibold">Are you a seller?</p>
-              <p className="text-sm text-gray-600">Check to sell physical products on SafarHub.</p>
-            </div>
-          </label>
           {otpVerified && (
             <>
               <div className="relative">

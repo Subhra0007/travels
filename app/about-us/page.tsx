@@ -1,5 +1,6 @@
-"use client";
 
+"use client";
+import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
@@ -327,28 +328,29 @@ export default function HomePage() {
         <TestimonialSection />
         </div>
 
-        {/* CTA SECTION */}
-        <section className="max-w-4xl mx-auto px-6 py-20 text-center">
-          <AnimateOnce>
-            <div className="bg-white rounded-3xl shadow-xl p-10 md:p-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-[#0d1b44] mb-3">
-                Prepare Yourself & Let's Explore The Beauty Of The World
-              </h2>
-              <p className="text-gray-500 text-sm mb-8">
-                We have many special offers especially for you.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-green-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition"
-              >
-                Get Started
-              </motion.button>
-            </div>
-          </AnimateOnce>
-        </section>
-
       
+<section className="max-w-4xl mx-auto px-6 py-20 text-center">
+  <AnimateOnce>
+    <div className="bg-linear-to-r from-lime-400 to-green-400 text-white rounded-3xl shadow-xl p-10 md:p-16">
+      <h2 className="text-3xl md:text-4xl font-bold text-[#0d1b44] mb-3">
+        Prepare Yourself & Let's Explore The Beauty Of The World
+      </h2>
+      <p className="text-gray-700 text-sm mb-8">
+        We have many special offers especially for you.
+      </p>
+
+      <Link href="/services">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="px-8 py-4 bg-green-50 text-black font-semibold rounded-xl shadow-lg hover:shadow-xl transition cursor-pointer hover:bg-green-100"
+        >
+          Get Started
+        </motion.button>
+      </Link>
+    </div>
+  </AnimateOnce>
+</section>
     </div>
   );
 }

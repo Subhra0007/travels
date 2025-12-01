@@ -100,7 +100,7 @@ const ServicesPage = () => {
 
   return (
     <main className="bg-slate-50 min-h-screen py-16">
-      <div className="max-w-6xl mx-auto px-4 lg:px-0">
+      <div className="max-w-7xl mx-auto px-6 lg:px-2">
         <div className="text-center mb-12">
           <p className="text-sm uppercase tracking-[0.3em] text-green-600 font-semibold mt-10">
             Our Services

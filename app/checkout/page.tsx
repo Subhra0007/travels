@@ -241,7 +241,7 @@ export default function CheckoutPage() {
   const total = subtotal + deliveryCharge;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 py-8">
+    <div className="max-w-7xl mx-auto space-y-6 py-8 px-6 lg:px-2 pt-20">
       <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_400px]">

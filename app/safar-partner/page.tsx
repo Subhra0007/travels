@@ -70,7 +70,7 @@ const SafarPartnerPage = () => {
             </div> */}
 
             <Link
-              href="/signup?vendor=1"
+              href="/signup"
               className="block w-full rounded-full bg-green-600 text-center text-white font-semibold py-3 text-sm md:text-base shadow-md hover:bg-green-700 transition cursor-pointer mt-5"
             >
               Be Our Safar Partner
@@ -116,7 +116,7 @@ const SafarPartnerPage = () => {
 
           <div className="mt-10">
             <Link
-              href="/signup?vendor=1"
+              href="/signup"
               className="inline-flex items-center justify-center rounded-full bg-green-600 text-white px-7 py-3 font-semibold shadow-md hover:bg-green-700 transition cursor-pointer"
             >
               Be Our Safar Partner

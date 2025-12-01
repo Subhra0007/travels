@@ -963,14 +963,14 @@ const AdventuresForm: React.FC<{
         <div className="flex items-center gap-2">
           <button
             onClick={() => setGroupSize(Math.max(1, groupSize - 1))}
-            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
+            className="p-2 rounded bg-gray-200 hover:bg-gray-300"
           >
             <FaMinus className="w-3 h-3" />
           </button>
           <span className="text-xl font-bold w-16 text-center">{groupSize}</span>
           <button
             onClick={() => setGroupSize(groupSize + 1)}
-            className="p-1 rounded bg-gray-200 hover:bg-gray-300"
+            className="p-2 rounded bg-gray-200 hover:bg-gray-300"
           >
             <FaPlus className="w-3 h-3" />
           </button>

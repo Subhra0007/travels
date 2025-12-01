@@ -3,24 +3,43 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { IconType } from "react-icons";
+import {
+  FaDoorOpen,
+  FaHome,
+  FaCoffee,
+  FaHotel,
+  FaUsers,
+  FaSuitcaseRolling,
+  FaRoute,
+  FaHiking,
+  FaCampground,
+  FaShip,
+  FaCarSide,
+  FaBiking,
+} from "react-icons/fa";
 
-const tours = [
-  { title: "Rooms", image: "/categories/room.jpg" },
-  { title: "Homestays", image: "/categories/homestay.jpg" },
-  { title: "BnBs", image: "/categories/Bnbs.webp" },
-  { title: "Hotels", image: "/categories/hotel.jpg" },
-  { title: "Group Tours", image: "/categories/group-tours.png" },
-  { title: "Tour Packages", image: "/categories/tour-package.jpg" },
- 
+type CategoryCard = {
+  title: string;
+  icon: IconType;
+};
+
+const tours: CategoryCard[] = [
+  { title: "Rooms", icon: FaDoorOpen },
+  { title: "Homestays", icon: FaHome },
+  { title: "BnBs", icon: FaCoffee },
+  { title: "Hotels", icon: FaHotel },
+  { title: "Group Tours", icon: FaUsers },
+  { title: "Tour Packages", icon: FaSuitcaseRolling },
 ];
-const tour2s = [
-  { title: "Trekking", image: "/categories/trekking.png" },
-  { title: "Hiking", image: "/categories/hiking.jpg" },
-  { title: "Camping", image: "/categories/camping.png" },
-  { title: "Water Rafting", image: "/categories/river-rafting.webp" },
-  { title: "Cars", image: "/categories/Cars.jpg" },
-  { title: "Bikes", image: "/categories/Bike.jpg" },
- 
+
+const tour2s: CategoryCard[] = [
+  { title: "Trekking", icon: FaRoute },
+  { title: "Hiking", icon: FaHiking },
+  { title: "Camping", icon: FaCampground },
+  { title: "Water Rafting", icon: FaShip },
+  { title: "Cars", icon: FaCarSide },
+  { title: "Bikes", icon: FaBiking },
 ];
 
 // ✅ Animation direction for each card (desktop only)
@@ -92,7 +111,7 @@ export default function TourCategories() {
             We Offer You The Best
           </p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
-            Tour Categories
+            Services Categories
           </h2>
         </motion.div>
 
@@ -106,19 +125,9 @@ export default function TourCategories() {
                 whileInView={{ x: 0, y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: index * 0.1 }}
-                className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 ${offsets[index]}`}
+                className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 bg-green-50  ${offsets[index]}`}
               >
-                <div className="relative w-49 h-49 rounded-xl overflow-hidden shadow-md">
-                  <Image
-                    src={tour.image}
-                    alt={tour.title}
-                    fill
-                    className="object-cover hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
-                  {tour.title}
-                </h3>
+                <CategoryIconCard title={tour.title} Icon={tour.icon} />
               </motion.div>
             ))}
           </div>
@@ -136,17 +145,7 @@ export default function TourCategories() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="flex flex-col items-center text-center transition-transform duration-300 hover:scale-105"
               >
-                <div className="relative w-40 h-40 rounded-xl overflow-hidden shadow-md">
-                  <Image
-                    src={tour.image}
-                    alt={tour.title}
-                    fill
-                    className="object-cover hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
-                  {tour.title}
-                </h3>
+                <CategoryIconCard title={tour.title} Icon={tour.icon} compact />
               </motion.div>
             ))}
           </div>
@@ -166,17 +165,7 @@ export default function TourCategories() {
                 transition={{ duration: 0.7, delay: index * 0.1 }}
                 className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 ${offsets[index]}`}
               >
-                <div className="relative w-49 h-49 rounded-xl overflow-hidden shadow-md">
-                  <Image
-                    src={tour.image}
-                    alt={tour.title}
-                    fill
-                    className="object-cover hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
-                  {tour.title}
-                </h3>
+                <CategoryIconCard title={tour.title} Icon={tour.icon} />
               </motion.div>
             ))}
           </div>
@@ -194,17 +183,7 @@ export default function TourCategories() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="flex flex-col items-center text-center transition-transform duration-300 hover:scale-105"
               >
-                <div className="relative w-40 h-40 rounded-xl overflow-hidden shadow-md">
-                  <Image
-                    src={tour.image}
-                    alt={tour.title}
-                    fill
-                    className="object-cover hover:scale-110 transition-transform duration-500"
-                  />
-                </div>
-                <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
-                  {tour.title}
-                </h3>
+                <CategoryIconCard title={tour.title} Icon={tour.icon} compact />
               </motion.div>
             ))}
           </div>
@@ -213,3 +192,21 @@ export default function TourCategories() {
     </div>
   );
 }
+
+const CategoryIconCard: React.FC<{
+  title: string;
+  Icon: IconType;
+  compact?: boolean;
+}> = ({ title, Icon, compact = false }) => {
+  const baseSize = compact ? "w-40 h-40" : "w-49 h-49";
+  return (
+    <div
+      className={`relative ${baseSize} rounded-xl shadow-md bg-green-50 flex flex-col items-center justify-center text-center px-4`}
+    >
+      <Icon className="text-4xl text-green-600" />
+      <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
+        {title}
+      </h3>
+    </div>
+  );
+};

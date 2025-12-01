@@ -195,12 +195,12 @@ const Navbar: React.FC = () => {
       id: "products",
       name: "Products",
       subtext: "Travel essentials",
-      href: "/services/products",
+      href: "/products",
       icon: <MdShoppingCart  />,
       subServices: [
-        { name: "Pahar", href: "/services/products", icon: <MdShoppingCart />, image: "/nav/pahar.webp" },
-        { name: "Jacket", href: "/services/products", icon: <MdShoppingCart />, image: "/nav/jacket.webp" },
-        { name: "T-Shirt", href: "/services/products", icon: <MdShoppingCart />, image: "/nav/t-shirt.webp" },
+        { name: "Pahar", href: "/products", icon: <MdShoppingCart />, image: "/nav/pahar.webp" },
+        { name: "Jacket", href: "/products", icon: <MdShoppingCart />, image: "/nav/jacket.webp" },
+        { name: "T-Shirt", href: "/products", icon: <MdShoppingCart />, image: "/nav/t-shirt.webp" },
       ],
     },
   ];
@@ -209,7 +209,6 @@ const Navbar: React.FC = () => {
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
     { label: "About", href: "/about-us" },
-    { label: "Safar Partner", href: "/safar-partner" },
     { label: "Blogs", href: "/blogs" },
     { label: "Contact", href: "/contact-us" },
   ];
@@ -417,7 +416,7 @@ const Navbar: React.FC = () => {
                                         ))}
                                       </div>
                                       <Link
-                                        href="/services/products"
+                                        href="/products"
                                         onClick={() => setIsServicesOpen(false)}
                                         className="flex items-center justify-center gap-2 w-full py-3 px-6 rounded-xl bg-linear-to-r from-green-500 to-lime-500 text-white font-bold hover:from-green-600 hover:to-lime-600 transition-all duration-300 shadow-lg hover:shadow-xl"
                                       >

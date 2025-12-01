@@ -3,6 +3,24 @@ import dbConnect from "@/lib/config/database";
 import Category from "@/models/Category";
 import { auth } from "@/lib/middlewares/auth";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
+
+const dropLegacyCategoryIndexes = async () => {
+  const collection = mongoose.connection.collections["categories"];
+  if (!collection) return;
+
+  const drop = async (name: string) => {
+    try {
+      await collection.dropIndex(name);
+    } catch (err: any) {
+      if (err?.codeName !== "IndexNotFound") {
+        console.warn(`Failed to drop legacy index ${name}`, err?.message || err);
+      }
+    }
+  };
+
+  await Promise.all([drop("name_1"), drop("slug_1")]);
+};
 
 // GET - Get all categories (public)
 const getOptionalUser = (req: NextRequest) => {
@@ -67,6 +85,7 @@ export const GET = async (req: NextRequest) => {
 export const POST = auth(async (req: NextRequest) => {
   try {
     await dbConnect();
+    await dropLegacyCategoryIndexes();
     const body = await req.json();
     const user = (req as any).user;
 
@@ -96,7 +115,15 @@ export const POST = auth(async (req: NextRequest) => {
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
 
-    const existing = await Category.findOne({ slug });
+    const slugQuery: any = { slug };
+    if (isSeller) {
+      slugQuery.ownerType = "vendor";
+      slugQuery.owner = user.id || user._id;
+    } else if (isAdmin) {
+      slugQuery.$or = [{ ownerType: { $exists: false } }, { ownerType: null }, { ownerType: "admin" }];
+    }
+
+    const existing = await Category.findOne(slugQuery);
     if (existing) {
       return NextResponse.json(
         { success: false, message: "Category already exists" },
@@ -128,6 +155,7 @@ export const POST = auth(async (req: NextRequest) => {
 export const PUT = auth(async (req: NextRequest, context: any) => {
   try {
     await dbConnect();
+    await dropLegacyCategoryIndexes();
     const body = await req.json();
     const user = (req as any).user;
     const { params } = context;
@@ -160,7 +188,15 @@ export const PUT = auth(async (req: NextRequest, context: any) => {
       .replace(/-+/g, "-");
 
     // Check if another category with the same slug exists (excluding current category)
-    const existing = await Category.findOne({ slug, _id: { $ne: id } });
+    const slugFilter: any = { slug, _id: { $ne: id } };
+    if (isSeller) {
+      slugFilter.ownerType = "vendor";
+      slugFilter.owner = user.id || user._id;
+    } else if (isAdmin) {
+      slugFilter.$or = [{ ownerType: { $exists: false } }, { ownerType: null }, { ownerType: "admin" }];
+    }
+
+    const existing = await Category.findOne(slugFilter);
     if (existing) {
       return NextResponse.json(
         { success: false, message: "Category with this name already exists" },

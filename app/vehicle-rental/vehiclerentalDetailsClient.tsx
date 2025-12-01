@@ -71,6 +71,7 @@ export type VehicleRentalDetailPayload = {
     description?: string;
     type: string;
     pricePerDay: number;
+    securityDepositAmount?: number;
     taxes?: number;
     currency?: string;
     features: string[];
@@ -90,6 +91,18 @@ export type VehicleRentalDetailPayload = {
   defaultCancellationPolicy?: string;
   defaultHouseRules?: string[];
   vendorMessage?: string;
+};
+
+const getSecurityDepositValue = (vehicle: VehicleRentalDetailPayload["options"][number]) => {
+  const raw =
+    vehicle.securityDepositAmount ??
+    (vehicle as any).securityDeposit ??
+    (vehicle as any).deposit ??
+    (vehicle as any).securityDepositFee ??
+    0;
+  const cleaned =
+    typeof raw === "string" ? Number(raw.replace(/[^0-9.-]/g, "")) : Number(raw);
+  return Number.isFinite(cleaned) && cleaned > 0 ? cleaned : 0;
 };
 
 // Unified icon map (same as adventure page + vehicle icons)
@@ -213,11 +226,25 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
     );
     const subtotal = selectedVehicles.reduce((sum, { vehicle, qty }) => sum + vehicle.pricePerDay * qty * days, 0);
     const taxes = selectedVehicles.reduce((sum, { vehicle, qty }) => sum + (vehicle.taxes ?? 0) * qty * days, 0);
-    return { subtotal, taxes, total: subtotal + taxes, selectedVehicles };
+    const securityDeposit = selectedVehicles.reduce(
+      (sum, { vehicle, qty }) => sum + getSecurityDepositValue(vehicle) * qty,
+      0
+    );
+    return { subtotal, taxes, total: subtotal + taxes, securityDeposit, selectedVehicles };
   }, [vehicleSelections, rental.options, days]);
 
   const platformFee = pricing.selectedVehicles.length ? 15 : 0;
   const grandTotal = pricing.total + platformFee;
+  const depositBadges = useMemo(() => {
+    return rental.options
+      .map((opt) => ({
+        key: opt._id?.toString() || opt.model,
+        model: opt.model,
+        amount: getSecurityDepositValue(opt),
+      }))
+      .filter((opt) => opt.amount > 0);
+  }, [rental.options]);
+  const hasSecurityDeposits = depositBadges.length > 0;
 
   const locationString = useMemo(
     () => [rental.location.address, rental.location.city, rental.location.state, rental.location.country].filter(Boolean).join(", "),
@@ -366,7 +393,31 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
         </div>
       </header>
 
-   <main className="mx-auto max-w-7xl px-6 pb-16 lg:px-2 mt-10">
+      <main className="mx-auto max-w-7xl px-6 pb-16 lg:px-2 mt-10">
+        {hasSecurityDeposits && (
+          <section className="mb-10 rounded-3xl border border-emerald-100 bg-emerald-50 p-6 text-emerald-900 shadow">
+            <h2 className="text-xl font-semibold">Refundable security deposits</h2>
+            <p className="mt-1 text-sm text-emerald-700/90">
+              Collected at pickup and released after the post-trip inspection.
+            </p>
+            <div className="mt-4 space-y-3 text-sm">
+              {depositBadges.map(({ key, model, amount }) => (
+                <div
+                  key={key}
+                  className="flex flex-wrap items-center justify-between rounded-2xl bg-white p-3 text-emerald-900 shadow-sm"
+                >
+                  <span className="font-semibold">{model}</span>
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
+                    ₹{amount.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-emerald-700">
+              Tip: Inform guests to carry the deposit amount in cash or via approved offline payment modes.
+            </p>
+          </section>
+        )}
         {/* Location Map */}
         <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[1.4fr_1fr]">
           <div>
@@ -486,6 +537,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                   <th className="px-4 py-3">Vehicle</th>
                   <th className="px-4 py-3">Specs & highlights</th>
                   <th className="px-4 py-3">Price / day</th>
+                  <th className="px-4 py-3">Security deposit</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -526,6 +578,21 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                           <span className="text-lg font-semibold">₹{vehicle.pricePerDay.toLocaleString()}</span>
                           <p className="text-xs text-gray-500">{taxesNote}</p>
                         </td>
+                        <td className="px-4 py-4 text-sm">
+                          {(() => {
+                            const deposit = getSecurityDepositValue(vehicle);
+                            return deposit > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                <span className="font-semibold text-emerald-700">
+                                  ₹{deposit.toLocaleString()}
+                                </span>
+                                <span className="text-xs text-gray-500">Refundable at pickup</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-500">No deposit</span>
+                            );
+                          })()}
+                        </td>
                         <td className="px-4 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button onClick={() => setExpandedVehicleKey(isExpanded ? null : key)} className="rounded-full border border-gray-300 px-4 py-2 text-sm font-semibold hover:bg-gray-50">
@@ -548,7 +615,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan={4} className="bg-gray-50 px-6 py-6">
+                          <td colSpan={5} className="bg-gray-50 px-6 py-6">
                             <div className="grid gap-6 lg:grid-cols-2">
                               <div className="grid grid-cols-3 gap-3">
                                 {vehicle.images?.slice(0, 3).map((img, i) => (
@@ -583,6 +650,14 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                                       {vehicle.driver.age && <li>Age: {vehicle.driver.age} years</li>}
                                       {vehicle.driver.experienceYears && <li>Experience: {vehicle.driver.experienceYears} years</li>}
                                     </ul>
+                                  </div>
+                                )}
+                                {getSecurityDepositValue(vehicle) > 0 && (
+                                  <div>
+                                    <p className="font-semibold uppercase text-xs text-gray-500">Security deposit</p>
+                                    <p className="mt-2 text-gray-700 bg-emerald-50 p-2 rounded-md border border-emerald-200">
+                                      <span className="font-semibold">₹{getSecurityDepositValue(vehicle).toLocaleString()}</span> payable at pickup (fully refundable after inspection)
+                                    </p>
                                   </div>
                                 )}
                               </div>
@@ -625,6 +700,12 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                   <span>Total</span>
                   <span>₹{grandTotal.toLocaleString()}</span>
                 </div>
+                {pricing.securityDeposit > 0 && (
+                  <div className="flex justify-between rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-emerald-800">
+                    <span className="text-sm font-medium">Security deposit (pay at pickup)</span>
+                    <span className="font-semibold">₹{pricing.securityDeposit.toLocaleString()}</span>
+                  </div>
+                )}
               </div>
             </div>
             {!pricing.selectedVehicles.length && (

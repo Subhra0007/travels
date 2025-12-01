@@ -340,7 +340,7 @@ export default function SellerAddProductPage() {
  
 
   {/* Title + Cancel button */}
-  <div className="p-4 flex items-center justify-between ">
+  <div className="p-4 flex items-center justify-between overflow-hidden">
     <h1 className="text-2xl font-semibold text-gray-900">Add Product</h1>
 
     <button
