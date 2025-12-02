@@ -107,7 +107,7 @@ export default function TourCategories() {
           transition={{ duration: 0.7 }}
           className="text-center mb-12"
         >
-          <p className="text-green-600 text-sm font-medium tracking-wider">
+          <p className="text-white text-sm font-medium tracking-wider">
             We Offer You The Best
           </p>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">
@@ -125,7 +125,7 @@ export default function TourCategories() {
                 whileInView={{ x: 0, y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: index * 0.1 }}
-                className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 bg-green-50  ${offsets[index]}`}
+                className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 bg-linear-to-br from-green-500 to-lime-500 rounded-xl ${offsets[index]}`}
               >
                 <CategoryIconCard title={tour.title} Icon={tour.icon} />
               </motion.div>
@@ -201,10 +201,10 @@ const CategoryIconCard: React.FC<{
   const baseSize = compact ? "w-40 h-40" : "w-49 h-49";
   return (
     <div
-      className={`relative ${baseSize} rounded-xl shadow-md bg-green-50 flex flex-col items-center justify-center text-center px-4`}
+      className={`relative ${baseSize} rounded-xl shadow-md bg-linear-to-br from-green-500 to-lime-500 flex flex-col items-center justify-center text-center px-4`}
     >
-      <Icon className="text-4xl text-green-600" />
-      <h3 className="text-sm sm:text-base font-semibold text-gray-800 mt-2">
+      <Icon className="text-4xl text-white" />
+      <h3 className="text-sm sm:text-base font-semibold text-white mt-2">
         {title}
       </h3>
     </div>
