@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { IconType } from "react-icons";
 import {
@@ -22,26 +23,23 @@ import {
 type CategoryCard = {
   title: string;
   icon: IconType;
+  href: string;
 };
-
 const tours: CategoryCard[] = [
-  { title: "Rooms", icon: FaDoorOpen },
-  { title: "Homestays", icon: FaHome },
-  { title: "BnBs", icon: FaCoffee },
-  { title: "Hotels", icon: FaHotel },
-  { title: "Group Tours", icon: FaUsers },
-  { title: "Tour Packages", icon: FaSuitcaseRolling },
+  { title: "Rooms", icon: FaDoorOpen, href: "/stays?category=rooms" },
+  { title: "Homestays", icon: FaHome, href: "/stays?category=homestays" },
+  { title: "BnBs", icon: FaCoffee, href: "/stays?category=bnbs" },
+  { title: "Hotels", icon: FaHotel, href: "/stays?category=hotels" },
+  { title: "Group Tours", icon: FaUsers, href: "/tours?category=group-tours" },
+  { title: "Tour Packages", icon: FaSuitcaseRolling, href: "/tours?category=tour-packages" },
+];const tour2s: CategoryCard[] = [
+  { title: "Trekking", icon: FaRoute, href: "/adventures?category=trekking" },
+  { title: "Hiking", icon: FaHiking, href: "/adventures?category=hiking" },
+  { title: "Camping", icon: FaCampground, href: "/adventures?category=camping" },
+  { title: "Water Rafting", icon: FaShip, href: "/adventures?category=water-rafting" },
+  { title: "Cars", icon: FaCarSide, href: "/vehicle-rental?category=cars" },
+  { title: "Bikes", icon: FaBiking, href: "/vehicle-rental?category=bikes" },
 ];
-
-const tour2s: CategoryCard[] = [
-  { title: "Trekking", icon: FaRoute },
-  { title: "Hiking", icon: FaHiking },
-  { title: "Camping", icon: FaCampground },
-  { title: "Water Rafting", icon: FaShip },
-  { title: "Cars", icon: FaCarSide },
-  { title: "Bikes", icon: FaBiking },
-];
-
 // ✅ Animation direction for each card (desktop only)
 const desktopAnim = [
   { x: -80, opacity: 0 }, // card 1 → left
@@ -127,10 +125,11 @@ export default function TourCategories() {
                 transition={{ duration: 0.7, delay: index * 0.1 }}
                 className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 bg-linear-to-br from-green-500 to-lime-500 rounded-xl ${offsets[index]}`}
               >
-                <CategoryIconCard title={tour.title} Icon={tour.icon} />
+                <Link href={tour.href} className="block w-full">
+                  <CategoryIconCard title={tour.title} Icon={tour.icon} />
+                </Link>
               </motion.div>
-            ))}
-          </div>
+            ))}          </div>
         </div>
 
         {/* ✅ MOBILE CARDS (simple fade up – layout unchanged) */}
@@ -145,12 +144,13 @@ export default function TourCategories() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="flex flex-col items-center text-center transition-transform duration-300 hover:scale-105"
               >
-                <CategoryIconCard title={tour.title} Icon={tour.icon} compact />
+                <Link href={tour.href} className="block w-full">
+                  <CategoryIconCard title={tour.title} Icon={tour.icon} compact />
+                </Link>
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
+        </div>      </section>
 
       <section className="relative flex flex-col items-center overflow-hidden max-w-7xl mx-auto pb-15 px-6 lg:px-0 ">
         {/* ✅ DESKTOP CARDS (Animation added — design preserved) */}
@@ -165,10 +165,11 @@ export default function TourCategories() {
                 transition={{ duration: 0.7, delay: index * 0.1 }}
                 className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 ${offsets[index]}`}
               >
-                <CategoryIconCard title={tour.title} Icon={tour.icon} />
+                <Link href={tour.href} className="block w-full">
+                  <CategoryIconCard title={tour.title} Icon={tour.icon} />
+                </Link>
               </motion.div>
-            ))}
-          </div>
+            ))}          </div>
         </div>
 
         {/* ✅ MOBILE CARDS (simple fade up – layout unchanged) */}
