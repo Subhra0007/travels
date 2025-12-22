@@ -17,6 +17,7 @@ import {
   FaCar,
   FaGasPump,
   FaCogs,
+  FaTimes,
   FaSnowflake,
   FaShieldAlt,
   FaKey,
@@ -256,6 +257,16 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
 
   const toggleSelection = (key: string, available: number) => {
     if (available <= 0 || isVehicleUnavailable(key)) return;
+
+    // Check if we are selecting (currently 0)
+    const currentQty = vehicleSelections[key] || 0;
+    if (currentQty === 0) {
+      setTimeout(() => {
+        const el = document.getElementById("vehicle-booking-summary");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+
     setVehicleSelections((prev) => ({ ...prev, [key]: prev[key] ? 0 : 1 }));
   };
 
@@ -282,7 +293,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
   const hasRating = rental.rating?.average != null;
   return (
     <div className="min-h-screen bg-sky-50 text-black">
-   {/* Header */}
+      {/* Header */}
       <header className="relative isolate overflow-hidden  bg-linear-to-br from-green-600 via-green-500 to-lime-400 pb-20 pt-16 text-white">
         <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <button onClick={() => router.back()} className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm backdrop-blur hover:bg-white/25">
@@ -314,9 +325,8 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                     }
                   }}
                   disabled={cartLoading}
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${
-                    cartLoading ? "cursor-not-allowed opacity-60" : ""
-                  }`}
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${cartLoading ? "cursor-not-allowed opacity-60" : ""
+                    }`}
                 >
                   <FaShoppingCart className="text-white" />
                 </button>
@@ -516,7 +526,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
             )}
           </div>
         </section>
-{/* Vehicle Availability Table */}
+        {/* Vehicle Availability Table */}
         <section id="vehicle-availability" className="mt-10 space-y-5 rounded-3xl bg-white p-6 shadow">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
@@ -673,7 +683,7 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
           </div>
         </section>
 
-        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mt-10">
+        <section id="vehicle-booking-summary" className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mt-10">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Booking summary</h2>
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
@@ -725,8 +735,8 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
               {soldOutForDates
                 ? "Unavailable for these dates"
                 : pricing.selectedVehicles.length
-                ? "Book now"
-                : "Select a vehicle to book"}
+                  ? "Book now"
+                  : "Select a vehicle to book"}
             </button>
           </div>
           <div className="flex flex-col justify-between rounded-2xl bg-linear-to-br from-green-50 via-white to-green-100 p-5 text-sm text-gray-700 shadow-inner">
@@ -768,65 +778,114 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
           </section>
         )}
 
-       {(rental.videos?.inside?.length ?? 0) > 0 || (rental.videos?.outside?.length ?? 0) > 0 ? (
-                <section className="rounded-3xl bg-white p-6 shadow mt-10">
-                  <h2 className="text-xl font-semibold text-gray-900">Experience in motion</h2>
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    {["inside", "outside"].map((key) => {
-                      const videos = rental.videos?.[key as keyof typeof rental.videos] ?? [];
-                      return (
-                        <div key={key} className="space-y-3">
-                          <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-600">
-                            <FaVideo /> {key === "inside" ? "Inside" : "Outside"} walk-through
-                          </h3>
-                          {videos.length > 0 ? (
-                            videos.map((videoUrl: string, idx: number) => (
-                              <video
-                                key={videoUrl + idx}
-                                controls
-                                className="h-48 w-full overflow-hidden rounded-2xl bg-black object-cover"
-                              >
-                                <source src={videoUrl} type="video/mp4" />
-                                Your browser does not support the video tag.
-                              </video>
-                            ))
-                          ) : (
-                            <p className="text-sm text-gray-500">No video available.</p>
-                          )}
-                        </div>
-                      );
-                    })}
+        {(rental.videos?.inside?.length ?? 0) > 0 || (rental.videos?.outside?.length ?? 0) > 0 ? (
+          <section className="rounded-3xl bg-white p-6 shadow mt-10">
+            <h2 className="text-xl font-semibold text-gray-900">Experience in motion</h2>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {["inside", "outside"].map((key) => {
+                const videos = rental.videos?.[key as keyof typeof rental.videos] ?? [];
+                return (
+                  <div key={key} className="space-y-3">
+                    <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-gray-600">
+                      <FaVideo /> {key === "inside" ? "Inside" : "Outside"} walk-through
+                    </h3>
+                    {videos.length > 0 ? (
+                      videos.map((videoUrl: string, idx: number) => (
+                        <video
+                          key={videoUrl + idx}
+                          controls
+                          className="h-48 w-full overflow-hidden rounded-2xl bg-black object-cover"
+                        >
+                          <source src={videoUrl} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-500">No video available.</p>
+                    )}
                   </div>
-                </section>
-              ) : null}
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
       </main>
 
+      {/* Gallery Lightbox */}
       {galleryOpen && images.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-sm">
+          {/* Close Button */}
           <button
             type="button"
             onClick={() => setGalleryOpen(false)}
-            className="absolute right-6 top-6 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
+            className="absolute right-6 top-6 z-[1010] flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 hover:scale-105 active:scale-95"
+            aria-label="Close gallery"
           >
-            Close
+            <FaTimes className="text-xl" />
           </button>
-          <button
-            type="button"
-            onClick={() => setGalleryIdx((i) => (i - 1 + images.length) % images.length)}
-            className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/30 p-3 text-white"
-          >
-            <FaChevronLeft />
-          </button>
-          <div className="relative h-[70vh] w-full max-w-4xl overflow-hidden rounded-2xl">
-            <Image src={images[galleryIdx]} alt={`Vehicle photo ${galleryIdx + 1}`} fill className="object-contain" />
+
+          {/* Main Image Container */}
+          <div className="relative flex h-full w-full flex-col items-center justify-center px-4 md:px-20 py-20">
+            {/* Left Arrow */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryIdx((prev) => (prev - 1 + images.length) % images.length);
+              }}
+              className="absolute left-4 top-1/2 z-[1010] -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 hover:scale-110 active:scale-95 md:left-8"
+              aria-label="Previous image"
+            >
+              <FaChevronLeft className="text-2xl" />
+            </button>
+
+            {/* Image */}
+            <div className="relative h-full w-full max-w-7xl animate-in fade-in zoom-in-95 duration-300">
+              {/* Use key to trigger animation on change if desired, or just standard Next.js Image optimization */}
+              <Image
+                key={galleryIdx}
+                src={images[galleryIdx]}
+                alt={`Gallery photo ${galleryIdx + 1}`}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryIdx((prev) => (prev + 1) % images.length);
+              }}
+              className="absolute right-4 top-1/2 z-[1010] -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 hover:scale-110 active:scale-95 md:right-8"
+              aria-label="Next image"
+            >
+              <FaChevronRight className="text-2xl" />
+            </button>
+
+            {/* Thumbnails Strip */}
+            <div className="absolute bottom-6 left-1/2 z-[1010] flex max-w-[90vw] -translate-x-1/2 gap-3 overflow-x-auto rounded-2xl bg-black/60 p-3 backdrop-blur-md scrollbar-hide">
+              {images.map((img, idx) => (
+                <button
+                  key={img + idx}
+                  onClick={() => setGalleryIdx(idx)}
+                  className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg transition-all ${galleryIdx === idx
+                    ? "ring-2 ring-white scale-105 opacity-100"
+                    : "opacity-50 hover:opacity-100 hover:scale-105"
+                    }`}
+                >
+                  <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+
+            {/* Counter */}
+            <div className="absolute top-6 left-6 z-[1010] rounded-full bg-black/50 px-4 py-2 text-sm font-medium text-white backdrop-blur-md">
+              {galleryIdx + 1} / {images.length}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setGalleryIdx((i) => (i + 1) % images.length)}
-            className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/30 p-3 text-white"
-          >
-            <FaChevronRight />
-          </button>
         </div>
       )}
 

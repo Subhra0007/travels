@@ -206,6 +206,19 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [adventures]);
 
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const allSuggestions = useMemo(() => {
+    const set = new Set<string>();
+    adventures.forEach(a => {
+      if (a.name) set.add(a.name);
+      if (a.location?.city) set.add(a.location.city);
+      if (a.location?.state) set.add(a.location.state);
+    });
+    return Array.from(set);
+  }, [adventures]);
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -309,7 +322,7 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero + Search */}
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
-      
+
         <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Discover thrilling Adventures</h1>
@@ -329,18 +342,57 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                 setActiveCategory(formActiveCategory);
               }}
             >
-              <div className="col-span-1">
+              <div className="col-span-1 relative"
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setShowSuggestions(false);
+                  }
+                }}
+              >
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Search</label>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500 relative z-10">
                   <FaSearch className="text-gray-500" />
                   <input
                     type="text"
                     placeholder="City, name, highlight"
                     value={formSearchTerm}
-                    onChange={(e) => setFormSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormSearchTerm(val);
+                      if (val.trim()) {
+                        const lower = val.toLowerCase();
+                        const filtered = allSuggestions.filter(s => s.toLowerCase().includes(lower)).slice(0, 5);
+                        setSuggestions(filtered);
+                        setShowSuggestions(true);
+                      } else {
+                        setShowSuggestions(false);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (formSearchTerm.trim()) setShowSuggestions(true);
+                    }}
                     className="w-full bg-transparent outline-none placeholder:text-gray-500"
+                    autoComplete="off"
                   />
                 </div>
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="absolute left-0 top-full mt-1 w-full rounded-xl border border-gray-100 bg-white py-2 shadow-lg ring-1 ring-black/5 z-20 overflow-hidden">
+                    {suggestions.map((suggestion, idx) => (
+                      <li
+                        key={idx}
+                        className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setFormSearchTerm(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="col-span-1">
@@ -444,11 +496,10 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                       setPriceMin(p.min);
                       setPriceMax(p.max);
                     }}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                      active
-                        ? "border-green-500 bg-green-50 text-green-700"
-                        : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active
+                      ? "border-green-500 bg-green-50 text-green-700"
+                      : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                      }`}
                   >
                     <FaRupeeSign className="text-green-600" /> {p.label}
                   </button>
@@ -491,11 +542,10 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                     key={r.key}
                     type="button"
                     onClick={() => setRatingFilter(r.value)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                      active
-                        ? "border-yellow-500 bg-yellow-50 text-yellow-700"
-                        : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active
+                      ? "border-yellow-500 bg-yellow-50 text-yellow-700"
+                      : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                      }`}
                   >
                     <FaStar className="text-yellow-500" /> {r.label}
                   </button>
@@ -504,11 +554,10 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
               <button
                 type="button"
                 onClick={() => setRatingFilter("")}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                  ratingFilter === ""
-                    ? "border-green-500 bg-green-50 text-green-700"
-                    : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                }`}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${ratingFilter === ""
+                  ? "border-green-500 bg-green-50 text-green-700"
+                  : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                  }`}
               >
                 All
               </button>
@@ -533,11 +582,10 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
                           prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
                         )
                       }
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                        active
-                          ? "border-green-500 bg-green-50 text-green-700"
-                          : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                      }`}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${active
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                        }`}
                     >
                       {tag}
                     </button>

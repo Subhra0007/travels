@@ -106,7 +106,7 @@ export const TourCard = ({
   const ratingValue = tour.rating?.count ? tour.rating.average : null;
   const tags = tour.tags ?? [];
   const hasDates = Boolean(startDate && endDate);
-  const availability = useAvailability("tour", tour._id, startDate, endDate);    
+  const availability = useAvailability("tour", tour._id, startDate, endDate);
   const availableOptionKeys = availability.availableOptionKeys ?? [];
   const soldOutForDates = hasDates && !availability.loading && optionCount > 0 && availableOptionKeys.length === 0;
 
@@ -136,9 +136,8 @@ export const TourCard = ({
         </span>
         {hasDates && (
           <span
-            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
-              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"
-            }`}
+            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"
+              }`}
           >
             {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
           </span>
@@ -282,13 +281,25 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
   const [activeCategory, setActiveCategory] = useState<CategoryValue>(normalizedInitialCategory);
   const [searchTerm, setSearchTerm] = useState("");
   const [guests, setGuests] = useState(2);
-    const [checkIn, setCheckIn] = useState("");
+  const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [priceMin, setPriceMin] = useState<number | "">("");
   const [priceMax, setPriceMax] = useState<number | "">("");
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const allSuggestions = useMemo(() => {
+    const set = new Set<string>();
+    tours.forEach(t => {
+      if (t.name) set.add(t.name);
+      if (t.location?.city) set.add(t.location.city);
+      if (t.location?.state) set.add(t.location.state);
+    });
+    return Array.from(set);
+  }, [tours]);
 
 
   const availableTags = useMemo(() => {
@@ -339,7 +350,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
     const ed = params.get("endDate") || "";
     setSearchTerm(city);
     setGuests(g ? Math.max(1, Number(g)) || 2 : 2);
-   setCheckIn(sd);
+    setCheckIn(sd);
     setCheckOut(ed);
   }, [params]);
 
@@ -452,7 +463,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
-       
+
         <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect Tour</h1>
@@ -468,18 +479,59 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                 e.preventDefault();
               }}
             >
-              <div className="col-span-1">
+              <div className="col-span-1 relative"
+                onBlur={(e) => {
+                  // small delay to allow clicking a suggestion
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setShowSuggestions(false);
+                  }
+                }}
+              >
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Destination</label>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500 relative z-10">
                   <FaSearch className="text-gray-500" />
                   <input
                     type="text"
                     placeholder="City, tour name, highlight"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSearchTerm(val);
+                      if (val.trim()) {
+                        const lower = val.toLowerCase();
+                        const filtered = allSuggestions.filter((s) => s.toLowerCase().includes(lower)).slice(0, 5);
+                        setSuggestions(filtered);
+                        setShowSuggestions(true);
+                      } else {
+                        setShowSuggestions(false);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (searchTerm.trim()) setShowSuggestions(true);
+                    }}
                     className="w-full bg-transparent text-gray-900 outline-none placeholder:text-gray-500"
+                    autoComplete="off"
                   />
                 </div>
+
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="absolute left-0 top-full mt-1 w-full rounded-xl border border-gray-100 bg-white py-2 shadow-lg ring-1 ring-black/5 z-20 overflow-hidden">
+                    {suggestions.map((suggestion, idx) => (
+                      <li
+                        key={idx}
+                        className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // prevents blur before click
+                          setSearchTerm(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="col-span-1">
@@ -524,7 +576,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                   const url = new URL("/tours", window.location.origin);
                   if (searchTerm) url.searchParams.set("city", searchTerm);
                   if (guests) url.searchParams.set("guests", String(guests));
-                     if (checkIn) url.searchParams.set("startDate", checkIn);
+                  if (checkIn) url.searchParams.set("startDate", checkIn);
                   if (checkOut) url.searchParams.set("endDate", checkOut);
                   if (activeCategory && activeCategory !== "all") {
                     url.searchParams.set("category", activeCategory);
@@ -593,9 +645,8 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                       setPriceMin(p.min);
                       setPriceMax(p.max);
                     }}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                      active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                      }`}
                   >
                     <FaRupeeSign className="text-green-600" /> {p.label}
                   </button>
@@ -643,9 +694,8 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                     key={r.key}
                     type="button"
                     onClick={() => setRatingFilter(r.value)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                      active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                      }`}
                   >
                     <FaStar className="text-yellow-500" /> {r.label}
                   </button>
@@ -654,9 +704,8 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
               <button
                 type="button"
                 onClick={() => setRatingFilter("")}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                  ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                }`}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                  }`}
               >
                 All
               </button>
@@ -678,11 +727,10 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                           prev.includes(tag) ? prev.filter((existing) => existing !== tag) : [...prev, tag]
                         )
                       }
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                        active
-                          ? "border-green-500 bg-green-50 text-green-700"
-                          : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                      }`}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${active
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                        }`}
                     >
                       {tag}
                     </button>
@@ -740,7 +788,7 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
                 onSelectTag={(tag) =>
                   setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
                 }
-              startDate={checkIn}
+                startDate={checkIn}
                 endDate={checkOut}
               />
             ))}

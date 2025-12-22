@@ -164,9 +164,9 @@ export default function TourCategories() {
                 whileInView={{ x: 0, y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: index * 0.1 }}
-                className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105 ${offsets[index]}`}
+                className={`flex flex-col items-center text-center transition-transform duration-300 hover:scale-105  ${offsets[index]}`}
               >
-                <Link href={tour.href} className="block w-full">
+                <Link href={tour.href} className="block w-full pt-3">
                   <CategoryIconCard title={tour.title} Icon={tour.icon} />
                 </Link>
               </motion.div>

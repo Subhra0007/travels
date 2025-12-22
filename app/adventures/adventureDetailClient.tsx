@@ -217,14 +217,14 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
     typeof adventure.capacity === "number"
       ? adventure.capacity
       : typeof primaryOption?.capacity === "number"
-      ? primaryOption.capacity
-      : null;
+        ? primaryOption.capacity
+        : null;
   const displayPrice =
     typeof adventure.price === "number"
       ? adventure.price
       : typeof primaryOption?.price === "number"
-      ? primaryOption.price
-      : null;
+        ? primaryOption.price
+        : null;
   const showDifficulty =
     adventure.category === "trekking" || adventure.category === "hiking" || adventure.category === "water-rafting";
   const difficultyValue = adventure.difficultyLevel || primaryOption?.difficulty || "";
@@ -239,21 +239,21 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
     () =>
       Array.isArray(adventure.itinerary)
         ? adventure.itinerary
-            .map((item) => {
-              const heading = item.heading?.trim() || "";
-              const rawDescription = typeof item.description === "string" ? item.description : "";
-              const plainDescription = stripRichTextTags(rawDescription).trim();
-              return {
-                heading,
-                plainDescription,
-                rawDescription,
-              };
-            })
-            .filter((item) => item.heading || item.plainDescription)
+          .map((item) => {
+            const heading = item.heading?.trim() || "";
+            const rawDescription = typeof item.description === "string" ? item.description : "";
+            const plainDescription = stripRichTextTags(rawDescription).trim();
+            return {
+              heading,
+              plainDescription,
+              rawDescription,
+            };
+          })
+          .filter((item) => item.heading || item.plainDescription)
         : [],
     [adventure.itinerary]
   );
-  
+
   const itineraryHtml = useMemo(
     () =>
       Array.isArray(adventure.itinerary)
@@ -261,48 +261,48 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
         : [],
     [adventure.itinerary]
   );
-  
+
   // Handle inclusions, exclusions, and policyTerms as strings or arrays
   const inclusionList = useMemo(() => {
     if (!adventure.inclusions) return [];
     return splitRichTextEntries(adventure.inclusions);
   }, [adventure.inclusions]);
-  
+
   const exclusionList = useMemo(() => {
     if (!adventure.exclusions) return [];
     return splitRichTextEntries(adventure.exclusions);
   }, [adventure.exclusions]);
-  
+
   const policyTermsList = useMemo(() => {
     if (!adventure.policyTerms) return [];
     return splitRichTextEntries(adventure.policyTerms);
   }, [adventure.policyTerms]);
-  
+
   const hasInclusions = useMemo(() => {
     if (!adventure.inclusions) return false;
     return hasRichTextContent(adventure.inclusions);
   }, [adventure.inclusions]);
-  
+
   const hasExclusions = useMemo(() => {
     if (!adventure.exclusions) return false;
     return hasRichTextContent(adventure.exclusions);
   }, [adventure.exclusions]);
-  
+
   const hasPolicyTerms = useMemo(() => {
     if (!adventure.policyTerms) return false;
     return hasRichTextContent(adventure.policyTerms);
   }, [adventure.policyTerms]);
-  
+
   const inclusionHtml = useMemo(() => {
     if (!adventure.inclusions) return "";
     return sanitizeRichText(adventure.inclusions);
   }, [adventure.inclusions]);
-  
+
   const exclusionHtml = useMemo(() => {
     if (!adventure.exclusions) return "";
     return sanitizeRichText(adventure.exclusions);
   }, [adventure.exclusions]);
-  
+
   const policyHtml = useMemo(() => {
     if (!adventure.policyTerms) return "";
     return sanitizeRichText(adventure.policyTerms);
@@ -394,6 +394,16 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
 
   const toggleSelection = (key: string, available: number) => {
     if (available <= 0 || isOptionUnavailable(key)) return;
+
+    // Check if we are selecting (currently 0)
+    const currentQty = optionSelections[key] || 0;
+    if (currentQty === 0) {
+      setTimeout(() => {
+        const el = document.getElementById("adventure-booking-summary");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+
     setOptionSelections((prev) => {
       const current = prev[key] || 0;
       if (available <= 0) {
@@ -433,7 +443,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
   };
 
   const facilities = adventure.popularFacilities || [];
- const hasRating = adventure.rating?.average != null;
+  const hasRating = adventure.rating?.average != null;
 
   return (
     <div className="min-h-screen bg-sky-50 text-black">
@@ -458,116 +468,115 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)]">
             <div className="space-y-6">
-                        <div className="flex items-start justify-between gap-6">
-                          <div className="max-w-2xl">
-                            <p className="uppercase tracking-wide text-white/80">
-                              {adventure.category.replace(/-/g, " ")}
-                            </p>
-                            <h1 className="mt-2 text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">
-                              {adventure.name}
-                            </h1>
-                            <p className="mt-3 flex items-center text-base text-white/90">
-                              <FaMapMarkerAlt className="mr-2" />
-                              {locationString}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            aria-label="Add to Cart"
-                            onClick={async () => {
-                              try {
-                                await addToCart(adventure._id, "Adventure", 1);
-                                alert("Added to cart!");
-                              } catch (err: any) {
-                                alert(err.message || "Failed to add to cart");
-                              }
-                            }}
-                            disabled={cartLoading}
-                            className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${
-                              cartLoading ? "cursor-not-allowed opacity-60" : ""
-                            }`}
-                          >
-                            <FaShoppingCart className="text-white" />
-                          </button>
-                        </div>
-          
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
-                          {hasRating && (
-                            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold">
-                              <FaStar className="text-yellow-300" /> {adventure.rating!.average.toFixed(1)} · {adventure.rating!.count} reviews
-                            </span>
-                          )}
-                          <a
-                            href={mapDirectionsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold transition hover:bg-white/25"
-                          >
-                            <FaMapMarkerAlt /> View on map
-                          </a>
-                          {adventure.tags?.slice(0, 3).map((tag) => (
-                            <span key={tag} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
-                              <FaTag /> {tag}
-                            </span>
-                          ))}
-                        </div>
-          
-                        {adventure.heroHighlights?.length > 0 && (
-                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                            {adventure.heroHighlights.slice(0, 3).map((highlight) => (
-                              <div
-                                key={highlight}
-                                className="rounded-2xl bg-white/15 px-4 py-3 text-sm font-medium text-white shadow-sm backdrop-blur"
-                              >
-                                {highlight}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+              <div className="flex items-start justify-between gap-6">
+                <div className="max-w-2xl">
+                  <p className="uppercase tracking-wide text-white/80">
+                    {adventure.category.replace(/-/g, " ")}
+                  </p>
+                  <h1 className="mt-2 text-3xl font-bold leading-snug sm:text-4xl md:text-5xl">
+                    {adventure.name}
+                  </h1>
+                  <p className="mt-3 flex items-center text-base text-white/90">
+                    <FaMapMarkerAlt className="mr-2" />
+                    {locationString}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  aria-label="Add to Cart"
+                  onClick={async () => {
+                    try {
+                      await addToCart(adventure._id, "Adventure", 1);
+                      alert("Added to cart!");
+                    } catch (err: any) {
+                      alert(err.message || "Failed to add to cart");
+                    }
+                  }}
+                  disabled={cartLoading}
+                  className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${cartLoading ? "cursor-not-allowed opacity-60" : ""
+                    }`}
+                >
+                  <FaShoppingCart className="text-white" />
+                </button>
+              </div>
 
-                        {(displayDuration || displayCapacity || displayPrice || (showDifficulty && difficultyValue)) && (
-                          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                            {displayDuration && (
-                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
-                                <p className="text-xs uppercase tracking-wide text-white/70">Duration</p>
-                                <p className="mt-1 text-base font-semibold">{displayDuration}</p>
-                              </div>
-                            )}
-                            {displayCapacity != null && (
-                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
-                                <p className="text-xs uppercase tracking-wide text-white/70">Capacity</p>
-                                <p className="mt-1 text-base font-semibold">{displayCapacity} guests</p>
-                              </div>
-                            )}
-                            {displayPrice != null && (
-                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
-                                <p className="text-xs uppercase tracking-wide text-white/70">Price</p>
-                                <p className="mt-1 text-base font-semibold">₹{displayPrice.toLocaleString()}</p>
-                                <p className="text-xs text-white/70">per day</p>
-                              </div>
-                            )}
-                            {showDifficulty && difficultyValue && (
-                              <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
-                                <p className="text-xs uppercase tracking-wide text-white/70">Difficulty</p>
-                                <p className="mt-1 text-base font-semibold">{difficultyValue}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
+              <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">
+                {hasRating && (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold">
+                    <FaStar className="text-yellow-300" /> {adventure.rating!.average.toFixed(1)} · {adventure.rating!.count} reviews
+                  </span>
+                )}
+                <a
+                  href={mapDirectionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 font-semibold transition hover:bg-white/25"
+                >
+                  <FaMapMarkerAlt /> View on map
+                </a>
+                {adventure.tags?.slice(0, 3).map((tag) => (
+                  <span key={tag} className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 font-semibold">
+                    <FaTag /> {tag}
+                  </span>
+                ))}
+              </div>
 
-                        {displayFeatures.length > 0 && (
-                          <div className="flex flex-wrap gap-2 text-xs text-white/90">
-                            {displayFeatures.slice(0, 6).map((feature) => (
-                              <span
-                                key={feature}
-                                className="rounded-full bg-white/15 px-3 py-1 font-semibold backdrop-blur"
-                              >
-                                {feature}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+              {adventure.heroHighlights?.length > 0 && (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {adventure.heroHighlights.slice(0, 3).map((highlight) => (
+                    <div
+                      key={highlight}
+                      className="rounded-2xl bg-white/15 px-4 py-3 text-sm font-medium text-white shadow-sm backdrop-blur"
+                    >
+                      {highlight}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {(displayDuration || displayCapacity || displayPrice || (showDifficulty && difficultyValue)) && (
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {displayDuration && (
+                    <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                      <p className="text-xs uppercase tracking-wide text-white/70">Duration</p>
+                      <p className="mt-1 text-base font-semibold">{displayDuration}</p>
+                    </div>
+                  )}
+                  {displayCapacity != null && (
+                    <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                      <p className="text-xs uppercase tracking-wide text-white/70">Capacity</p>
+                      <p className="mt-1 text-base font-semibold">{displayCapacity} guests</p>
+                    </div>
+                  )}
+                  {displayPrice != null && (
+                    <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                      <p className="text-xs uppercase tracking-wide text-white/70">Price</p>
+                      <p className="mt-1 text-base font-semibold">₹{displayPrice.toLocaleString()}</p>
+                      <p className="text-xs text-white/70">per day</p>
+                    </div>
+                  )}
+                  {showDifficulty && difficultyValue && (
+                    <div className="rounded-2xl bg-white/15 px-4 py-3 text-sm text-white/90">
+                      <p className="text-xs uppercase tracking-wide text-white/70">Difficulty</p>
+                      <p className="mt-1 text-base font-semibold">{difficultyValue}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {displayFeatures.length > 0 && (
+                <div className="flex flex-wrap gap-2 text-xs text-white/90">
+                  {displayFeatures.slice(0, 6).map((feature) => (
+                    <span
+                      key={feature}
+                      className="rounded-full bg-white/15 px-3 py-1 font-semibold backdrop-blur"
+                    >
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className="w-full max-w-xl rounded-2xl bg-white/95 p-6 text-gray-900 shadow-lg backdrop-blur">
               <h2 className="text-lg font-semibold text-gray-900">Plan your adventure</h2>
@@ -634,11 +643,10 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
               </div>
               <p className="mt-3 text-sm text-gray-600">Days: {days}</p>
               <div
-                className={`rounded-2xl border px-4 py-3 text-sm ${
-                  soldOutForDates
-                    ? "border-rose-200 bg-rose-50 text-rose-700"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
-                }`}
+                className={`rounded-2xl border px-4 py-3 text-sm ${soldOutForDates
+                  ? "border-rose-200 bg-rose-50 text-rose-700"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  }`}
               >
                 {availability.loading && "Checking availability…"}
                 {!availability.loading && !availability.error && (
@@ -795,7 +803,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                 const heading = day.heading?.trim() || "";
                 const rawDescription = typeof day.description === "string" ? day.description : "";
                 const plainDescription = stripRichTextTags(rawDescription).trim();
-                
+
                 return (
                   <div
                     key={(heading || "day") + idx}
@@ -961,11 +969,10 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </div>
 
           <div
-            className={`rounded-2xl border px-4 py-3 text-sm ${
-              soldOutForDates
-                ? "border-rose-200 bg-rose-50 text-rose-700"
-                : "border-emerald-200 bg-emerald-50 text-emerald-800"
-            }`}
+            className={`rounded-2xl border px-4 py-3 text-sm ${soldOutForDates
+              ? "border-rose-200 bg-rose-50 text-rose-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-800"
+              }`}
           >
             {availability.loading && "Checking availability…"}
             {!availability.loading && !availability.error && (
@@ -1091,18 +1098,16 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
                                 +
                               </button>
                             </div>
-                              <button
+                            <button
                               type="button"
                               onClick={() => toggleSelection(key, available)}
-                                disabled={optionUnavailable}
-                              className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
-                                isSelected
-                                  ? "bg-green-600 text-white shadow hover:bg-green-700"
-                                  : "border border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-400"
-                                } ${
-                                  optionUnavailable
-                                    ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
-                                    : ""
+                              disabled={optionUnavailable}
+                              className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${isSelected
+                                ? "bg-green-600 text-white shadow hover:bg-green-700"
+                                : "border border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-400"
+                                } ${optionUnavailable
+                                  ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400"
+                                  : ""
                                 }`}
                             >
                               {optionUnavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
@@ -1184,7 +1189,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </div>
         </section>
 
-        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mt-10">
+        <section id="adventure-booking-summary" className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mt-10">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Booking summary</h2>
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
@@ -1237,8 +1242,8 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
               {soldOutForDates
                 ? "Unavailable for these dates"
                 : pricing.totalOptions
-                ? "Book now"
-                : "Select an option to book"}
+                  ? "Book now"
+                  : "Select an option to book"}
             </button>
           </div>
 
@@ -1279,7 +1284,7 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
           </section>
         )}
 
-       {/* Videos */}
+        {/* Videos */}
         {(adventure.videos?.inside?.length ?? 0) > 0 || (adventure.videos?.outside?.length ?? 0) > 0 ? (
           <section className="rounded-3xl bg-white p-6 shadow mt-10">
             <h2 className="text-xl font-semibold text-gray-900">Experience in motion</h2>
@@ -1313,32 +1318,81 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
         ) : null}
       </main>
 
+      {/* Gallery Lightbox */}
       {galleryOpen && images.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-sm">
+          {/* Close Button */}
           <button
             type="button"
             onClick={() => setGalleryOpen(false)}
-            className="absolute right-6 top-6 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
+            className="absolute right-6 top-6 z-[1010] flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 hover:scale-105 active:scale-95"
+            aria-label="Close gallery"
           >
-            Close
+            <FaTimes className="text-xl" />
           </button>
-          <button
-            type="button"
-            onClick={() => setGalleryIndex((i) => (i - 1 + images.length) % images.length)}
-            className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/30 p-3 text-white"
-          >
-            <FaChevronLeft />
-          </button>
-          <div className="relative h-[70vh] w-full max-w-4xl overflow-hidden rounded-2xl">
-            <Image src={images[galleryIndex]} alt={`photo ${galleryIndex + 1}`} fill className="object-contain" />
+
+          {/* Main Image Container */}
+          <div className="relative flex h-full w-full flex-col items-center justify-center px-4 md:px-20 py-20">
+            {/* Left Arrow */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
+              }}
+              className="absolute left-4 top-1/2 z-[1010] -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 hover:scale-110 active:scale-95 md:left-8"
+              aria-label="Previous image"
+            >
+              <FaChevronLeft className="text-2xl" />
+            </button>
+
+            {/* Image */}
+            <div className="relative h-full w-full max-w-7xl animate-in fade-in zoom-in-95 duration-300">
+              {/* Use key to trigger animation on change if desired, or just standard Next.js Image optimization */}
+              <Image
+                key={galleryIndex}
+                src={images[galleryIndex]}
+                alt={`Gallery photo ${galleryIndex + 1}`}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryIndex((prev) => (prev + 1) % images.length);
+              }}
+              className="absolute right-4 top-1/2 z-[1010] -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 hover:scale-110 active:scale-95 md:right-8"
+              aria-label="Next image"
+            >
+              <FaChevronRight className="text-2xl" />
+            </button>
+
+            {/* Thumbnails Strip */}
+            <div className="absolute bottom-6 left-1/2 z-[1010] flex max-w-[90vw] -translate-x-1/2 gap-3 overflow-x-auto rounded-2xl bg-black/60 p-3 backdrop-blur-md scrollbar-hide">
+              {images.map((img, idx) => (
+                <button
+                  key={img + idx}
+                  onClick={() => setGalleryIndex(idx)}
+                  className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg transition-all ${galleryIndex === idx
+                    ? "ring-2 ring-white scale-105 opacity-100"
+                    : "opacity-50 hover:opacity-100 hover:scale-105"
+                    }`}
+                >
+                  <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+
+            {/* Counter */}
+            <div className="absolute top-6 left-6 z-[1010] rounded-full bg-black/50 px-4 py-2 text-sm font-medium text-white backdrop-blur-md">
+              {galleryIndex + 1} / {images.length}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setGalleryIndex((i) => (i + 1) % images.length)}
-            className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/30 p-3 text-white"
-          >
-            <FaChevronRight />
-          </button>
         </div>
       )}
 

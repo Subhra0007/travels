@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { FaCamera, FaCloudUploadAlt, FaTrash } from "react-icons/fa";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function EditProfilePage() {
     gender: "",
     about: "",
     dateOfBirth: "",
-    addresses: [{ street: "", city: "", state: ""}],
+    addresses: [{ street: "", city: "", state: "" }],
   });
 
   const fetchUser = async () => {
@@ -44,7 +45,7 @@ export default function EditProfilePage() {
         dateOfBirth: user.additionalDetails?.dateOfBirth || "",
         addresses: user.additionalDetails?.addresses?.length
           ? user.additionalDetails.addresses
-          : [{ street: "", city: "", state: ""}],
+          : [{ street: "", city: "", state: "" }],
       });
 
       if (isOther) {
@@ -161,34 +162,59 @@ export default function EditProfilePage() {
       </div>
 
       {/* Picture */}
-      <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8 flex-wrap">
-        <div className="md:hidden">
+      <div className="flex flex-col md:flex-row items-center gap-6 mb-8 p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div className="shrink-0">
           <Avatar />
         </div>
-        <div className="hidden md:block">
-          <Avatar />
-        </div>
-        <div className="w-full md:w-auto">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setNewPicture(e.target.files?.[0] ?? null)}
-            className="block mb-2 text-gray-900"
-          />
-          <div className="flex gap-2">
+
+        <div className="flex flex-col gap-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Custom File Input */}
+            <label className="cursor-pointer group relative overflow-hidden inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm active:scale-95">
+              <FaCamera className="text-gray-500 group-hover:text-green-600 transition-colors" />
+              <span>{newPicture ? "Change Photo" : "Choose Photo"}</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setNewPicture(e.target.files?.[0] ?? null)}
+                className="hidden"
+              />
+            </label>
+
+            {/* Display Selected Filename */}
+            {newPicture && (
+              <span className="text-sm text-gray-600 italic bg-gray-50 px-3 py-1 rounded-full border border-gray-100 truncate max-w-[200px]">
+                {newPicture.name}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3 mt-1">
+            {/* Upload Action */}
             <button
               onClick={uploadPicture}
-              className="bg-blue-600 text-white px-3 md:px-4 py-1.5 rounded"
+              disabled={!newPicture}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-white shadow-sm transition-all duration-200 ${newPicture
+                ? "bg-blue-600 hover:bg-blue-700 hover:shadow-md active:scale-95"
+                : "bg-gray-300 cursor-not-allowed"
+                }`}
             >
+              <FaCloudUploadAlt className="text-lg" />
               Upload
             </button>
+
+            {/* Remove Action */}
             <button
               onClick={removePicture}
-              className="bg-red-600 text-white px-3 md:px-4 py-1.5 rounded"
+              className="flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 rounded-xl font-medium transition-all duration-200 active:scale-95"
             >
+              <FaTrash className="text-sm" />
               Remove
             </button>
           </div>
+          <p className="text-xs text-gray-400 pl-1">
+            Recommended: Square JPG, PNG. Max 2MB.
+          </p>
         </div>
       </div>
 

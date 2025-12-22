@@ -107,9 +107,8 @@ export const RentalCard = ({
         </span>
         {hasDates && (
           <span
-            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
-              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
-            }`}
+            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
+              }`}
           >
             {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
           </span>
@@ -218,6 +217,19 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const allSuggestions = useMemo(() => {
+    const set = new Set<string>();
+    rentals.forEach(r => {
+      if (r.name) set.add(r.name);
+      if (r.location?.city) set.add(r.location.city);
+      if (r.location?.state) set.add(r.location.state);
+    });
+    return Array.from(set);
+  }, [rentals]);
 
 
   const availableTags = useMemo(() => {
@@ -345,10 +357,10 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   return (
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero */}
-      
+
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
 
-       
+
         <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Rent your Ride</h1>
@@ -362,19 +374,58 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
               className="grid grid-cols-1 gap-4 text-gray-900 sm:grid-cols-2 lg:grid-cols-3"
               onSubmit={(e) => e.preventDefault()}
             >
-              <div>
+              <div className="relative"
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setShowSuggestions(false);
+                  }
+                }}
+              >
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Location</label>
-                
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500">
+
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500 relative z-10">
                   <FaSearch className="text-gray-500" />
                   <input
                     type="text"
                     placeholder="City, rental name, highlight"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSearchTerm(val);
+                      if (val.trim()) {
+                        const lower = val.toLowerCase();
+                        const filtered = allSuggestions.filter(s => s.toLowerCase().includes(lower)).slice(0, 5);
+                        setSuggestions(filtered);
+                        setShowSuggestions(true);
+                      } else {
+                        setShowSuggestions(false);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (searchTerm.trim()) setShowSuggestions(true);
+                    }}
                     className="w-full bg-transparent outline-none"
+                    autoComplete="off"
                   />
                 </div>
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="absolute left-0 top-full mt-1 w-full rounded-xl border border-gray-100 bg-white py-2 shadow-lg ring-1 ring-black/5 z-20 overflow-hidden">
+                    {suggestions.map((suggestion, idx) => (
+                      <li
+                        key={idx}
+                        className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSearchTerm(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Pickup</label>
@@ -382,7 +433,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                   type="date"
                   value={pickupDate}
                   onChange={(e) => setPickupDate(e.target.value)}
-                 
+
                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-green-500 focus:outline-none"
                 />
               </div>
@@ -392,14 +443,14 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                   type="date"
                   value={dropoffDate}
                   onChange={(e) => setDropoffDate(e.target.value)}
-                 
+
                   className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 focus:border-green-500 focus:outline-none"
                 />
               </div>
             </form>
             <div className="mt-4">
               <button
-               
+
                 className="rounded-lg bg-green-600 px-5 py-2 text-sm font-semibold text-white hover:bg-green-700"
                 type="button"
                 onClick={() => {
@@ -422,7 +473,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
       </section>
 
       {/* Filters + Listings */}
-     
+
       <section className="mx-auto max-w-7xl px-6 py-12 lg:px-2">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -476,12 +527,10 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                       setPriceMin(p.min);
                       setPriceMax(p.max);
                     }}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                    
-                      active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                      }`}
                   >
-                    
+
                     <FaRupeeSign className="text-green-600" /> {p.label}
                   </button>
                 );
@@ -494,7 +543,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 value={priceMin}
                 onChange={(e) => setPriceMin(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
                 placeholder={priceBounds.min.toString()}
-              
+
                 className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500"
               />
               <span className="text-gray-500">to</span>
@@ -504,7 +553,7 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                 value={priceMax}
                 onChange={(e) => setPriceMax(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
                 placeholder={priceBounds.max.toString()}
-              
+
                 className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-green-500"
               />
             </div>
@@ -524,9 +573,8 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                     key={r.key}
                     type="button"
                     onClick={() => setRatingFilter(r.value)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                      active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                      }`}
                   >
                     <FaStar className="text-yellow-500" /> {r.label}
                   </button>
@@ -535,10 +583,8 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
               <button
                 type="button"
                 onClick={() => setRatingFilter("")}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                 
-                  ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                }`}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                  }`}
               >
                 All
               </button>
@@ -558,11 +604,10 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
                       onClick={() =>
                         setSelectedTags((p) => (p.includes(tag) ? p.filter((t) => t !== tag) : [...p, tag]))
                       }
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                        active
-                          ? "border-green-500 bg-green-50 text-green-700"
-                          : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                      }`}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${active
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                        }`}
                     >
                       {tag}
                     </button>

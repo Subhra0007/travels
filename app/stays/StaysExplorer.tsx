@@ -116,15 +116,15 @@ export const StayCard = ({
   const startingPriceValue = isBnb
     ? stay.bnb?.price ?? null
     : roomCount
-    ? Math.min(...stay.rooms.map((room) => room.price))
-    : null;
+      ? Math.min(...stay.rooms.map((room) => room.price))
+      : null;
   const startingPrice = startingPriceValue != null ? startingPriceValue.toLocaleString() : null;
   const heroHighlights =
     (stay.heroHighlights && stay.heroHighlights.length
       ? stay.heroHighlights
       : stay.popularFacilities && stay.popularFacilities.length
-      ? stay.popularFacilities
-      : []
+        ? stay.popularFacilities
+        : []
     ).slice(0, 3);
   const primaryFeatures = isBnb
     ? stay.bnb?.features?.slice(0, 4) ?? []
@@ -162,9 +162,8 @@ export const StayCard = ({
         </span>
         {hasDates && (
           <span
-            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${
-              soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
-            }`}
+            className={`absolute left-4 top-16 rounded-full px-3 py-1 text-xs font-semibold shadow ${soldOutForDates ? "bg-rose-100 text-rose-700" : "bg-green-100 text-green-700"
+              }`}
           >
             {soldOutForDates ? "Sold for selected dates" : "Available for selected dates"}
           </span>
@@ -236,14 +235,14 @@ export const StayCard = ({
             {(stay.popularFacilities?.length ? stay.popularFacilities : stay.heroHighlights || [])
               .slice(0, 4)
               .map((facility) => (
-              <span
-                key={facility}
-                className="inline-flex items-center gap-2 rounded-2xl border border-green-100 bg-white/80 px-3 py-2 text-xs text-gray-700 shadow-sm"
-              >
-                {getFacilityIcon(facility)}
-                <span className="font-medium capitalize">{facility}</span>
-              </span>
-            ))}
+                <span
+                  key={facility}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-green-100 bg-white/80 px-3 py-2 text-xs text-gray-700 shadow-sm"
+                >
+                  {getFacilityIcon(facility)}
+                  <span className="font-medium capitalize">{facility}</span>
+                </span>
+              ))}
           </div>
         ) : null}
 
@@ -342,6 +341,18 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
   const [priceMax, setPriceMax] = useState<number | "">("");
   const [ratingFilter, setRatingFilter] = useState<number | "">("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const allSuggestions = useMemo(() => {
+    const set = new Set<string>();
+    stays.forEach(s => {
+      if (s.name) set.add(s.name);
+      if (s.location?.city) set.add(s.location.city);
+      if (s.location?.state) set.add(s.location.state);
+    });
+    return Array.from(set);
+  }, [stays]);
 
   // NEW: Sorting state
   const [sortBy, setSortBy] = useState<
@@ -519,7 +530,7 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
     <div className="min-h-screen bg-sky-50 text-black">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-linear-to-br from-green-600 via-green-500 to-lime-400 py-16 text-white">
-       
+
         <div className="relative mx-auto max-w-7xl px-6 lg:px-2 mt-5">
           <div className="max-w-3xl">
             <h1 className="text-3xl font-bold sm:text-4xl">Find your perfect Stay</h1>
@@ -534,18 +545,57 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
               className="grid grid-cols-1 gap-4 text-gray-900 sm:grid-cols-2 lg:grid-cols-4"
               onSubmit={(e) => e.preventDefault()}
             >
-              <div className="col-span-1">
+              <div className="col-span-1 relative"
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setShowSuggestions(false);
+                  }
+                }}
+              >
                 <label className="mb-1 block text-sm font-semibold text-gray-700">Destination</label>
-                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500">
+                <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 focus-within:border-green-500 relative z-10">
                   <FaSearch className="text-gray-500" />
                   <input
                     type="text"
                     placeholder="City, hotel name, highlight"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSearchTerm(val);
+                      if (val.trim()) {
+                        const lower = val.toLowerCase();
+                        const filtered = allSuggestions.filter((s) => s.toLowerCase().includes(lower)).slice(0, 5);
+                        setSuggestions(filtered);
+                        setShowSuggestions(true);
+                      } else {
+                        setShowSuggestions(false);
+                      }
+                    }}
+                    onFocus={() => {
+                      if (searchTerm.trim()) setShowSuggestions(true);
+                    }}
                     className="w-full bg-transparent text-gray-900 outline-none placeholder:text-gray-500"
+                    autoComplete="off"
                   />
                 </div>
+                {/* Suggestions Dropdown */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <ul className="absolute left-0 top-full mt-1 w-full rounded-xl border border-gray-100 bg-white py-2 shadow-lg ring-1 ring-black/5 z-20 overflow-hidden">
+                    {suggestions.map((suggestion, idx) => (
+                      <li
+                        key={idx}
+                        className="cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setSearchTerm(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               <div className="col-span-1">
@@ -639,17 +689,16 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
               ] as const).map((p) => {
                 const active = (priceMin === p.min || (p.min === "" && priceMin === "")) && (priceMax === p.max || (p.max === "" && priceMax === ""));
                 return (
-              <button
-                key={p.key}
-                type="button"
-                onClick={() => {
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => {
                       setPriceMin(p.min);
                       setPriceMax(p.max);
-                }}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                  active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                }`}
-              >
+                    }}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                      }`}
+                  >
                     <FaRupeeSign className="text-green-600" /> {p.label}
                   </button>
                 );
@@ -691,9 +740,8 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
                     key={r.key}
                     type="button"
                     onClick={() => setRatingFilter(r.value)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                      active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${active ? "border-yellow-500 bg-yellow-50 text-yellow-700" : "border-gray-200 text-gray-600 hover:border-yellow-400 hover:bg-yellow-50"
+                      }`}
                   >
                     <FaStar className="text-yellow-500" /> {r.label}
                   </button>
@@ -702,9 +750,8 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
               <button
                 type="button"
                 onClick={() => setRatingFilter("")}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                  ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                }`}
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${ratingFilter === "" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                  }`}
               >
                 All
               </button>
@@ -727,11 +774,10 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
                           prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
                         )
                       }
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                        active
-                          ? "border-green-500 bg-green-50 text-green-700"
-                          : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
-                      }`}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${active
+                        ? "border-green-500 bg-green-50 text-green-700"
+                        : "border-gray-200 text-gray-600 hover:border-green-400 hover:bg-green-50"
+                        }`}
                     >
                       {tag}
                     </button>

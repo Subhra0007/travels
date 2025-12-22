@@ -317,6 +317,16 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
 
   const toggleOptionSelection = (key: string, available: number) => {
     if (available <= 0 || isOptionUnavailable(key)) return;
+
+    // Check if we are selecting (currently 0)
+    const currentQty = optionSelections[key] || 0;
+    if (currentQty === 0) {
+      setTimeout(() => {
+        const el = document.getElementById("tour-booking-summary");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+
     setOptionSelections((prev) => ({
       ...prev,
       [key]: prev[key] ? 0 : 1,
@@ -410,9 +420,8 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                     }
                   }}
                   disabled={cartLoading}
-                  className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${
-                    cartLoading ? "cursor-not-allowed opacity-60" : ""
-                  }`}
+                  className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${cartLoading ? "cursor-not-allowed opacity-60" : ""
+                    }`}
                 >
                   <FaShoppingCart className="text-white" />
                 </button>
@@ -520,11 +529,10 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                 </div>
                 <p className="text-sm text-gray-600">Tour lasts for {days} day{days === 1 ? "" : "s"}.</p>
                 <div
-                  className={`rounded-2xl border px-4 py-3 text-sm ${
-                    soldOutForDates
-                      ? "border-rose-200 bg-rose-50 text-rose-700"
-                      : "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  }`}
+                  className={`rounded-2xl border px-4 py-3 text-sm ${soldOutForDates
+                    ? "border-rose-200 bg-rose-50 text-rose-700"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    }`}
                 >
                   {availability.loading && "Checking availability…"}
                   {!availability.loading && !availability.error && (
@@ -856,11 +864,10 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
           </div>
 
           <div
-            className={`rounded-2xl border px-4 py-3 text-sm ${
-              soldOutForDates
-                ? "border-rose-200 bg-rose-50 text-rose-700"
-                : "border-emerald-200 bg-emerald-50 text-emerald-700"
-            }`}
+            className={`rounded-2xl border px-4 py-3 text-sm ${soldOutForDates
+              ? "border-rose-200 bg-rose-50 text-rose-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+              }`}
           >
             {availability.loading && "Checking availability…"}
             {!availability.loading && !availability.error && (
@@ -991,11 +998,10 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
                               type="button"
                               onClick={() => toggleOptionSelection(optionKey, available)}
                               disabled={optionUnavailable}
-                              className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${
-                                isSelected
-                                  ? "bg-green-600 text-white shadow hover:bg-green-700"
-                                  : "border border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-400"
-                              } ${optionUnavailable ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400" : ""}`}
+                              className={`inline-flex items-center justify-center rounded-full px-4 py-2 font-semibold transition ${isSelected
+                                ? "bg-green-600 text-white shadow hover:bg-green-700"
+                                : "border border-green-600 text-green-700 hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-400"
+                                } ${optionUnavailable ? "cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400" : ""}`}
                             >
                               {optionUnavailable ? "Unavailable" : isSelected ? "Selected" : "Select"}
                             </button>
@@ -1083,7 +1089,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
         </section>
 
         {/* Booking Summary */}
-        <section className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <section id="tour-booking-summary" className="grid gap-6 rounded-3xl bg-white p-6 shadow md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-900">Booking summary</h2>
             <div className="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
@@ -1148,8 +1154,8 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
               {soldOutForDates
                 ? "Unavailable for these dates"
                 : pricing.totalOptions
-                ? "Book now"
-                : "Select an option to book"}
+                  ? "Book now"
+                  : "Select an option to book"}
             </button>
           </div>
 
@@ -1227,31 +1233,79 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
 
       {/* Gallery Lightbox */}
       {galleryOpen && images.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-sm">
+          {/* Close Button */}
           <button
             type="button"
             onClick={() => setGalleryOpen(false)}
-            className="absolute right-6 top-6 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
+            className="absolute right-6 top-6 z-[1010] flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 hover:scale-105 active:scale-95"
+            aria-label="Close gallery"
           >
-            Close
+            <FaTimes className="text-xl" />
           </button>
-          <button
-            type="button"
-            onClick={() => setGalleryIndex((prev) => (prev - 1 + images.length) % images.length)}
-            className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/30 p-3 text-white"
-          >
-            <FaChevronLeft />
-          </button>
-          <div className="relative h-[70vh] w-full max-w-4xl overflow-hidden rounded-2xl">
-            <Image src={images[galleryIndex]} alt={`Photo ${galleryIndex + 1}`} fill className="object-contain" />
+
+          {/* Main Image Container */}
+          <div className="relative flex h-full w-full flex-col items-center justify-center px-4 md:px-20 py-20">
+            {/* Left Arrow */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
+              }}
+              className="absolute left-4 top-1/2 z-[1010] -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 hover:scale-110 active:scale-95 md:left-8"
+              aria-label="Previous image"
+            >
+              <FaChevronLeft className="text-2xl" />
+            </button>
+
+            {/* Image */}
+            <div className="relative h-full w-full max-w-7xl animate-in fade-in zoom-in-95 duration-300">
+              {/* Use key to trigger animation on change if desired, or just standard Next.js Image optimization */}
+              <Image
+                key={galleryIndex}
+                src={images[galleryIndex]}
+                alt={`Gallery photo ${galleryIndex + 1}`}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryIndex((prev) => (prev + 1) % images.length);
+              }}
+              className="absolute right-4 top-1/2 z-[1010] -translate-y-1/2 flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 hover:scale-110 active:scale-95 md:right-8"
+              aria-label="Next image"
+            >
+              <FaChevronRight className="text-2xl" />
+            </button>
+
+            {/* Thumbnails Strip */}
+            <div className="absolute bottom-6 left-1/2 z-[1010] flex max-w-[90vw] -translate-x-1/2 gap-3 overflow-x-auto rounded-2xl bg-black/60 p-3 backdrop-blur-md scrollbar-hide">
+              {images.map((img, idx) => (
+                <button
+                  key={img + idx}
+                  onClick={() => setGalleryIndex(idx)}
+                  className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-lg transition-all ${galleryIndex === idx
+                    ? "ring-2 ring-white scale-105 opacity-100"
+                    : "opacity-50 hover:opacity-100 hover:scale-105"
+                    }`}
+                >
+                  <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+
+            {/* Counter */}
+            <div className="absolute top-6 left-6 z-[1010] rounded-full bg-black/50 px-4 py-2 text-sm font-medium text-white backdrop-blur-md">
+              {galleryIndex + 1} / {images.length}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setGalleryIndex((prev) => (prev + 1) % images.length)}
-            className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/30 p-3 text-white"
-          >
-            <FaChevronRight />
-          </button>
         </div>
       )}
 
@@ -1261,7 +1315,7 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
           <button
             type="button"
             onClick={() => setActiveOptionIndex(null)}
-            className="absolute right-6 top-6 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
+            className="absolute right-10 top-19 rounded-full bg-white/20 px-3 py-1 text-sm text-white shadow"
           >
             Close
           </button>
