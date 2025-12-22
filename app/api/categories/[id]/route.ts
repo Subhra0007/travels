@@ -7,7 +7,7 @@ import { auth } from "@/lib/middlewares/auth";
 // PUT - Update a category (admin only)
 export const PUT = auth(async (
   req: NextRequest,
-  context?: { params: Promise<{ id: string }> | { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
@@ -32,7 +32,7 @@ export const PUT = auth(async (
     }
 
     // Handle both Promise and direct params
-    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const resolvedParams = await context.params;
     const categoryId = resolvedParams.id;
 
     if (!categoryId) {
@@ -105,7 +105,7 @@ export const PUT = auth(async (
 // DELETE - Delete a category (admin only)
 export const DELETE = auth(async (
   req: NextRequest,
-  context?: { params: Promise<{ id: string }> | { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
@@ -128,7 +128,7 @@ export const DELETE = auth(async (
     }
 
     // Handle both Promise and direct params
-    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const resolvedParams = await context.params;
     const categoryId = resolvedParams.id;
 
     if (!categoryId) {

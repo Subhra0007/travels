@@ -5,12 +5,12 @@ import Blog from "@/models/Blog";
 // GET - Get a single blog by slug (public)
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> | { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     await dbConnect();
-    
-    const resolvedParams = params instanceof Promise ? await params : params;
+
+    const resolvedParams = await params;
     const slug = resolvedParams.slug;
 
     if (!slug) {
@@ -38,4 +38,3 @@ export async function GET(
     );
   }
 }
-

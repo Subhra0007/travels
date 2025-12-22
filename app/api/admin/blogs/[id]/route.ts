@@ -9,12 +9,12 @@ import path from "path";
 // GET - Get a single blog by ID
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> | { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
-    
-    const resolvedParams = params instanceof Promise ? await params : params;
+
+    const resolvedParams = await params;
     const blogId = resolvedParams.id;
 
     if (!blogId) {
@@ -45,7 +45,7 @@ export async function GET(
 // PUT - Update a blog (admin only)
 export const PUT = auth(async (
   req: NextRequest,
-  context?: { params: Promise<{ id: string }> | { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
@@ -66,7 +66,7 @@ export const PUT = auth(async (
       );
     }
 
-    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const resolvedParams = await context.params;
     const blogId = resolvedParams.id;
 
     if (!blogId) {
@@ -116,7 +116,7 @@ export const PUT = auth(async (
         await writeFile(tempPath, buffer);
         const result = await uploadImageToCloudinary({ tempFilePath: tempPath }, "blogs");
         blog.image = result.secure_url;
-        await unlink(tempPath).catch(() => {});
+        await unlink(tempPath).catch(() => { });
       } catch (uploadError: any) {
         console.error("Image upload error:", uploadError);
         return NextResponse.json(
@@ -141,7 +141,7 @@ export const PUT = auth(async (
 // DELETE - Delete a blog (admin only)
 export const DELETE = auth(async (
   req: NextRequest,
-  context?: { params: Promise<{ id: string }> | { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) => {
   try {
     await dbConnect();
@@ -162,7 +162,7 @@ export const DELETE = auth(async (
       );
     }
 
-    const resolvedParams = context.params instanceof Promise ? await context.params : context.params;
+    const resolvedParams = await context.params;
     const blogId = resolvedParams.id;
 
     if (!blogId) {
@@ -189,4 +189,3 @@ export const DELETE = auth(async (
     );
   }
 });
-

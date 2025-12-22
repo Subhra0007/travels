@@ -10,8 +10,8 @@ export function generateStaticParams() {
   return VEHICLE_RENTAL_CATEGORIES.map((item) => ({ category: item.slug }));
 }
 
-export default function ServicesVehicleRentalCategoryPage({ params }: { params: { category: string } }) {
-  const slug = params.category;
+export default async function ServicesVehicleRentalCategoryPage({ params }: { params: Promise<{ category: string }> }) {
+  const { category: slug } = await params;
   const category = VEHICLE_RENTAL_SLUG_TO_VALUE[slug] ?? DEFAULT_CATEGORY;
   return <VehiclerentalExplorer key={category} initialCategory={category} />;
 }
