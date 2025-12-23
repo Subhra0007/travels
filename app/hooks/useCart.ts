@@ -66,11 +66,11 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
         if (!itemId || !itemType) {
           throw new Error("itemId and itemType are required");
         }
-        
+
         if (quantity < 1) {
           throw new Error("Quantity must be at least 1");
         }
-        
+
         const payload: Record<string, any> = { itemId, itemType, quantity };
         if (variantId) {
           payload.variantId = variantId;
@@ -100,8 +100,23 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
   );
 
   const removeFromCart = useCallback(
-    async (cartItemId: string) => {
+    async (cartItemIdOrInfo: string, itemType?: string, variantId?: string) => {
       setError(null);
+      let cartItemId = cartItemIdOrInfo;
+
+      if (itemType) {
+        const found = items.find(
+          (i) =>
+            i.itemId === cartItemIdOrInfo &&
+            i.itemType === itemType &&
+            (variantId ? i.variantId === variantId : true)
+        );
+        if (!found) {
+          throw new Error("Item not found in cart");
+        }
+        cartItemId = found._id;
+      }
+
       try {
         const res = await fetch(`/api/cart/${cartItemId}`, {
           method: "DELETE",
@@ -120,7 +135,7 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
         throw err;
       }
     },
-    [refresh]
+    [refresh, items]
   );
 
   const updateQuantity = useCallback(
@@ -164,6 +179,18 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
     }, 0);
   }, [items]);
 
+  const isInCart = useCallback(
+    (itemId: string, itemType: "Product" | "Stay" | "Tour" | "Adventure" | "VehicleRental", variantId?: string | null) => {
+      return items.some(
+        (item) =>
+          item.itemId === itemId &&
+          item.itemType === itemType &&
+          (variantId ? item.variantId === variantId : true)
+      );
+    },
+    [items]
+  );
+
   const productTotal = useMemo(() => {
     return items.reduce((sum, item) => {
       if (item.itemType !== "Product") return sum;
@@ -185,6 +212,7 @@ export function useCart({ autoLoad = false }: UseCartOptions = {}) {
     addToCart,
     removeFromCart,
     updateQuantity,
+    isInCart,
     totalItems,
     totalPrice,
     productTotal,

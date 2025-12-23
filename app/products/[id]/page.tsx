@@ -7,6 +7,8 @@ import Link from "next/link";
 import { FaShoppingCart, FaArrowLeft, FaBolt } from "react-icons/fa";
 import PageLoader from "../../components/common/PageLoader";
 import { useCart } from "../../hooks/useCart";
+import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
 
 type ProductVariant = {
   _id?: string;
@@ -39,8 +41,10 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
-  const { addToCart } = useCart();
+  const { addToCart, removeFromCart, isInCart, loading: cartLoading } = useCart({ autoLoad: true });
   const [adding, setAdding] = useState(false);
+
+  const inCart = isInCart(productId, "Product", selectedVariant?._id);
 
   useEffect(() => {
     loadProduct();
@@ -371,32 +375,39 @@ export default function ProductDetailPage() {
 
               {/* Add to Cart and Buy Now Buttons */}
               <div className="space-y-3">
-                <button
-                  disabled={!isPurchasable || adding}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  disabled={!isPurchasable || adding || cartLoading}
                   onClick={async () => {
                     if (!isPurchasable) {
-                      alert("This product is currently out of stock.");
+                      toast.error("This product is currently out of stock.");
                       return;
                     }
                     if (product?.variants?.length && !selectedVariant) {
-                      alert("Please select a variant before adding to cart.");
+                      toast.error("Please select a variant before adding to cart.");
                       return;
                     }
                     setAdding(true);
                     try {
-                      await addToCart(productId, "Product", 1, selectedVariant?._id);
-                      alert("Added to cart!");
+                      if (inCart) {
+                        await removeFromCart(productId, "Product", selectedVariant?._id);
+                        toast.success("Removed from cart");
+                      } else {
+                        await addToCart(productId, "Product", 1, selectedVariant?._id);
+                        toast.success("Added to cart!");
+                      }
                     } catch (err: any) {
-                      console.error("Add to cart error:", err);
-                      alert(err?.message || "Failed to add to cart. Please log in.");
+                      toast.error(err?.message || "Failed to update cart");
                     } finally {
                       setAdding(false);
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`w-full flex items-center justify-center gap-2 rounded-lg px-6 py-3 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${inCart ? "bg-green-600 text-green-50 hover:bg-green-700" : "bg-green-50 text-green-600 hover:bg-green-100"
+                    }`}
                 >
-                  <FaShoppingCart /> {adding ? "Adding..." : product.listingType === "rent" ? "Add to Cart" : "Add to Cart"}
-                </button>
+                  <FaShoppingCart /> {adding ? "Processing..." : inCart ? "In Cart (Remove)" : "Add to Cart"}
+                </motion.button>
                 <button
                   disabled={!isPurchasable}
                   onClick={() => {

@@ -25,6 +25,8 @@ import { useAvailability } from "../hooks/useAvailability";
 import { FaRupeeSign } from "react-icons/fa";
 import { TOUR_CATEGORIES, type TourCategoryValue } from "./categories";
 import CategoryTabs from "@/app/components/common/CategoryTabs";
+import { useCart } from "../hooks/useCart";
+import { toast } from "react-hot-toast";
 
 export type TourOption = {
   _id?: string;
@@ -71,6 +73,8 @@ type TourCardProps = {
   onSelectTag?: (tag: string) => void;
   startDate?: string;
   endDate?: string;
+  isInCart?: boolean;
+  onAddToCart?: (event: React.MouseEvent) => void;
 };
 
 const tourFacilityIcons = [
@@ -96,6 +100,8 @@ export const TourCard = ({
   onSelectTag,
   startDate,
   endDate,
+  isInCart,
+  onAddToCart,
 }: TourCardProps) => {
   const optionCount = tour.options?.length ?? 0;
   const startingPrice = optionCount
@@ -154,9 +160,16 @@ export const TourCard = ({
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <span className="inline-flex items-center justify-center rounded-full bg-emerald-50 p-2 text-emerald-600 shadow cursor-pointer">
+            <button
+              onClick={onAddToCart}
+              className={`inline-flex items-center justify-center rounded-full p-2 shadow transition-colors ${isInCart
+                  ? "bg-green-600 text-green-50 hover:bg-green-700"
+                  : "bg-green-50 text-green-600 hover:bg-green-100"
+                }`}
+              title={isInCart ? "In Cart" : "Add to Cart"}
+            >
               <FaShoppingCart className="text-sm" />
-            </span>
+            </button>
             {ratingValue !== null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                 <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
@@ -275,6 +288,8 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
   )
     ? (categoryFromUrl as CategoryValue)
     : "all";
+
+  const { items: cartItems, addToCart, removeFromCart } = useCart({ autoLoad: true });
 
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
@@ -781,17 +796,46 @@ export default function ToursExplorer({ initialCategory = "all" }: ToursExplorer
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {filteredTours.map((tour) => (
-              <TourCard
-                key={tour._id}
-                tour={tour}
-                onSelectTag={(tag) =>
-                  setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
+            {filteredTours.map((tour) => {
+              const isInCart = cartItems.some(
+                (item) => item.itemId === tour._id && item.itemType === "Tour"
+              );
+
+              const handleAddToCart = async (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  if (isInCart) {
+                    const cartItem = cartItems.find(
+                      (item) => item.itemId === tour._id && item.itemType === "Tour"
+                    );
+                    if (cartItem) {
+                      await removeFromCart(cartItem._id);
+                      toast.success(`${tour.name} removed from cart!`);
+                    }
+                  } else {
+                    await addToCart(tour._id, "Tour", 1);
+                    toast.success(`${tour.name} added to cart!`);
+                  }
+                } catch (err: any) {
+                  toast.error(err.message || "Failed to manage cart");
                 }
-                startDate={checkIn}
-                endDate={checkOut}
-              />
-            ))}
+              };
+
+              return (
+                <TourCard
+                  key={tour._id}
+                  tour={tour}
+                  onSelectTag={(tag) =>
+                    setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
+                  }
+                  startDate={checkIn}
+                  endDate={checkOut}
+                  isInCart={isInCart}
+                  onAddToCart={handleAddToCart}
+                />
+              );
+            })}
           </div>
         )}
       </section>

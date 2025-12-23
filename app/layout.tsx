@@ -4,6 +4,8 @@ import Navbar from "./components/Pages/hf/Navbar";
 import Footer from "./components/Pages/hf/Footer";
 import "./globals.css";
 
+import { Toaster } from "react-hot-toast";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,10 +32,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Toaster position="bottom-right" reverseOrder={false} />
         <main className="bg-sky-50">
-          <Navbar/>
-        {children}
-        <Footer/>
+          <Navbar />
+          {children}
+          <Footer />
         </main>
       </body>
     </html>

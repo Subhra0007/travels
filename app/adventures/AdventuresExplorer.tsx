@@ -8,6 +8,8 @@ import Link from "next/link";
 import { FaHeart, FaMapMarkerAlt, FaSearch, FaStar, FaUsers, FaRupeeSign, FaShoppingCart } from "react-icons/fa";
 import { ADVENTURE_CATEGORIES, type AdventureCategoryValue } from "./categories";
 import CategoryTabs from "@/app/components/common/CategoryTabs";
+import { useCart } from "../hooks/useCart";
+import { toast } from "react-hot-toast";
 
 export type AdventureOption = {
   _id?: string;
@@ -50,11 +52,15 @@ type AdventuresExplorerProps = {
 type AdventureCardProps = {
   adventure: Adventure;
   onSelectTag?: (tag: string) => void;
+  isInCart?: boolean;
+  onAddToCart?: (event: React.MouseEvent) => void;
 };
 
 export const AdventureCard = ({
   adventure,
   onSelectTag,
+  isInCart,
+  onAddToCart,
 }: AdventureCardProps) => {
   const optionCount = adventure.options?.length ?? 0;
   const startingPrice = optionCount
@@ -101,9 +107,16 @@ export const AdventureCard = ({
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <span className="inline-flex items-center justify-center rounded-full bg-green-50 p-2 text-green-600 shadow cursor-pointer">
+            <button
+              onClick={onAddToCart}
+              className={`inline-flex items-center justify-center rounded-full p-2 shadow transition-colors ${isInCart
+                  ? "bg-green-600 text-green-50 hover:bg-green-700"
+                  : "bg-green-50 text-green-600 hover:bg-green-100"
+                }`}
+              title={isInCart ? "In Cart" : "Add to Cart"}
+            >
               <FaShoppingCart className="text-sm" />
-            </span>
+            </button>
             {ratingValue !== null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                 <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
@@ -242,6 +255,8 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
     setActiveCategory(normalizedInitialCategory);
     setFormActiveCategory(normalizedInitialCategory);
   }, [normalizedInitialCategory]);
+
+  const { items: cartItems, addToCart, removeFromCart } = useCart({ autoLoad: true });
 
   const handleCategoryChange = useCallback(
     (value: CategoryValue) => {
@@ -636,15 +651,44 @@ export default function AdventuresExplorer({ initialCategory = "all" }: Adventur
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {filteredAdventures.map((adv) => (
-              <AdventureCard
-                key={adv._id}
-                adventure={adv}
-                onSelectTag={(tag) =>
-                  setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
+            {filteredAdventures.map((adv) => {
+              const isInCart = cartItems.some(
+                (item) => item.itemId === adv._id && item.itemType === "Adventure"
+              );
+
+              const handleAddToCart = async (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  if (isInCart) {
+                    const cartItem = cartItems.find(
+                      (item) => item.itemId === adv._id && item.itemType === "Adventure"
+                    );
+                    if (cartItem) {
+                      await removeFromCart(cartItem._id);
+                      toast.success(`${adv.name} removed from cart!`);
+                    }
+                  } else {
+                    await addToCart(adv._id, "Adventure", 1);
+                    toast.success(`${adv.name} added to cart!`);
+                  }
+                } catch (err: any) {
+                  toast.error(err.message || "Failed to manage cart");
                 }
-              />
-            ))}
+              };
+
+              return (
+                <AdventureCard
+                  key={adv._id}
+                  adventure={adv}
+                  onSelectTag={(tag) =>
+                    setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
+                  }
+                  isInCart={isInCart}
+                  onAddToCart={handleAddToCart}
+                />
+              );
+            })}
           </div>
         )}
       </section>

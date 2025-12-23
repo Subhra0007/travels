@@ -7,6 +7,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { FaSearch, FaShoppingCart } from "react-icons/fa";
 import PageLoader from "../components/common/PageLoader";
+import { useCart } from "../hooks/useCart";
+import { toast } from "react-hot-toast";
 
 export type ProductVariant = {
   _id?: string;
@@ -35,9 +37,11 @@ export type Product = {
 
 type ProductCardProps = {
   product: Product;
+  isInCart?: boolean;
+  onAddToCart?: (event: React.MouseEvent) => void;
 };
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, isInCart, onAddToCart }: ProductCardProps) => {
   const isRent = product.listingType === "rent";
   const hasVariants = product.variants && product.variants.length > 0;
 
@@ -125,8 +129,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <span className={`text-xl font-bold ${isRent ? "text-blue-600" : "text-green-600"}`}>{priceDisplay}</span>
           <button
             aria-disabled={!isInStock}
-            className={`rounded-full p-2 text-white transition cursor-pointer ${isInStock ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed opacity-60"
+            onClick={onAddToCart}
+            className={`rounded-full p-2 transition cursor-pointer ${!isInStock
+                ? "bg-gray-400 text-white cursor-not-allowed opacity-60"
+                : isInCart
+                  ? "bg-green-600 text-green-50 hover:bg-green-700"
+                  : "bg-green-50 text-green-600 hover:bg-green-100"
               }`}
+            title={!isInStock ? "Out of Stock" : isInCart ? "In Cart" : "Add to Cart"}
           >
             <FaShoppingCart className="text-sm" />
           </button>
@@ -146,6 +156,8 @@ export default function ProductsExplorer() {
   const [categories, setCategories] = useState<Array<{ value: string; label: string }>>([
     { value: "all", label: "All Products" },
   ]);
+
+  const { items: cartItems, addToCart, removeFromCart } = useCart({ autoLoad: true });
 
   useEffect(() => {
     fetchCategories();
@@ -231,8 +243,8 @@ export default function ProductsExplorer() {
                 key={cat.value}
                 onClick={() => setSelectedCategory(cat.value)}
                 className={`rounded-full px-6 py-2 text-sm font-semibold transition ${selectedCategory === cat.value
-                    ? "bg-green-600 text-white shadow-md"
-                    : "bg-white text-gray-700 hover:bg-gray-100"
+                  ? "bg-green-600 text-white shadow-md"
+                  : "bg-white text-gray-700 hover:bg-gray-100"
                   }`}
               >
                 {cat.label}
@@ -251,9 +263,50 @@ export default function ProductsExplorer() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
+            {products.map((product) => {
+              const isInCart = cartItems.some(
+                (item) => item.itemId === product._id && item.itemType === "Product"
+              );
+
+              const handleAddToCart = async (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // For products, adding to cart might require a variant if it has variants.
+                // The API throws if variantId is missing for variant products.
+                if (product.variants && product.variants.length > 0) {
+                  // Redirect to detail page if it has variants (as we don't know which one to add)
+                  window.location.href = `/products/${product._id}`;
+                  return;
+                }
+
+                try {
+                  if (isInCart) {
+                    const cartItem = cartItems.find(
+                      (item) => item.itemId === product._id && item.itemType === "Product"
+                    );
+                    if (cartItem) {
+                      await removeFromCart(cartItem._id);
+                      toast.success(`${product.name} removed from cart!`);
+                    }
+                  } else {
+                    await addToCart(product._id, "Product", 1);
+                    toast.success(`${product.name} added to cart!`);
+                  }
+                } catch (err: any) {
+                  toast.error(err.message || "Failed to manage cart");
+                }
+              };
+
+              return (
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  isInCart={isInCart}
+                  onAddToCart={handleAddToCart}
+                />
+              );
+            })}
           </div>
         )}
       </div>

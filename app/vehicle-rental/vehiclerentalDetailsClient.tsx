@@ -46,6 +46,8 @@ import {
 import { useRouter } from "next/navigation";
 import { useCart } from "../hooks/useCart";
 import { useAvailability } from "../hooks/useAvailability";
+import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 export type VehicleRentalDetailPayload = {
   _id: string;
@@ -179,7 +181,9 @@ interface Props {
 
 const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
   const router = useRouter();
-  const { addToCart, loading: cartLoading } = useCart();
+  const { addToCart, removeFromCart, isInCart, loading: cartLoading } = useCart({ autoLoad: true });
+
+  const inCart = isInCart(rental._id, "VehicleRental");
 
   const images = useMemo(() => [...rental.images, ...(rental.gallery || [])].filter(Boolean), [rental.images, rental.gallery]);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -313,23 +317,31 @@ const VehicleRentalDetailClient: React.FC<Props> = ({ rental }) => {
                     {locationString}
                   </p>
                 </div>
-                <button
+                <motion.button
                   type="button"
-                  aria-label="Add to Cart"
+                  aria-label={inCart ? "Remove from Cart" : "Add to Cart"}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={async () => {
                     try {
-                      await addToCart(rental._id, "VehicleRental", 1);
-                      alert("Added to cart!");
+                      if (inCart) {
+                        await removeFromCart(rental._id, "VehicleRental");
+                        toast.success("Removed from cart");
+                      } else {
+                        await addToCart(rental._id, "VehicleRental", 1);
+                        toast.success("Added to cart!");
+                      }
                     } catch (err: any) {
-                      alert(err.message || "Failed to add to cart");
+                      toast.error(err.message || "Failed to update cart");
                     }
                   }}
                   disabled={cartLoading}
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25 cursor-pointer ${cartLoading ? "cursor-not-allowed opacity-60" : ""
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-full transition-colors cursor-pointer ${cartLoading ? "cursor-not-allowed opacity-60" : ""
+                    } ${inCart ? "bg-green-600 text-green-50 hover:bg-green-700" : "bg-green-50 text-green-600 hover:bg-green-100"
                     }`}
                 >
-                  <FaShoppingCart className="text-white" />
-                </button>
+                  <FaShoppingCart className="text-xl" />
+                </motion.button>
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-sm text-white/90">

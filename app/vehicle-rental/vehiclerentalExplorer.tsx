@@ -22,6 +22,8 @@ import {
   VEHICLE_RENTAL_VALUE_TO_SLUG,
 } from "./categories";
 import CategoryTabs from "@/app/components/common/CategoryTabs";
+import { useCart } from "../hooks/useCart";
+import { toast } from "react-hot-toast";
 
 export type VehicleOption = {
   _id?: string;
@@ -61,6 +63,8 @@ type RentalCardProps = {
   onSelectTag?: (tag: string) => void;
   pickupDate?: string;
   dropoffDate?: string;
+  isInCart?: boolean;
+  onAddToCart?: (event: React.MouseEvent) => void;
 };
 
 export const RentalCard = ({
@@ -68,6 +72,8 @@ export const RentalCard = ({
   onSelectTag,
   pickupDate,
   dropoffDate,
+  isInCart,
+  onAddToCart,
 }: RentalCardProps) => {
   const optionCount = rental.options?.length ?? 0;
   const startingPrice = optionCount
@@ -125,9 +131,16 @@ export const RentalCard = ({
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <span className="inline-flex items-center justify-center rounded-full bg-green-50 p-2 text-green-600 shadow cursor-pointer">
+            <button
+              onClick={onAddToCart}
+              className={`inline-flex items-center justify-center rounded-full p-2 shadow transition-colors ${isInCart
+                  ? "bg-green-600 text-green-50 hover:bg-green-700"
+                  : "bg-green-50 text-green-600 hover:bg-green-100"
+                }`}
+              title={isInCart ? "In Cart" : "Add to Cart"}
+            >
               <FaShoppingCart className="text-sm" />
-            </span>
+            </button>
             {ratingValue !== null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                 <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
@@ -265,6 +278,8 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
   useEffect(() => {
     setActiveCategory(normalizedInitialCategory);
   }, [normalizedInitialCategory]);
+
+  const { items: cartItems, addToCart, removeFromCart } = useCart({ autoLoad: true });
 
   useEffect(() => {
     const city = params.get("city") || "";
@@ -633,15 +648,44 @@ export default function VehicleRentalExplorer({ initialCategory = "all" }: Vehic
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {filteredRentals.map((rental) => (
-              <RentalCard
-                key={rental._id}
-                rental={rental}
-                onSelectTag={(tag) => setSelectedTags((p) => (p.includes(tag) ? p : [...p, tag]))}
-                pickupDate={pickupDate}
-                dropoffDate={dropoffDate}
-              />
-            ))}
+            {filteredRentals.map((rental) => {
+              const isInCart = cartItems.some(
+                (item) => item.itemId === rental._id && item.itemType === "VehicleRental"
+              );
+
+              const handleAddToCart = async (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  if (isInCart) {
+                    const cartItem = cartItems.find(
+                      (item) => item.itemId === rental._id && item.itemType === "VehicleRental"
+                    );
+                    if (cartItem) {
+                      await removeFromCart(cartItem._id);
+                      toast.success(`${rental.name} removed from cart!`);
+                    }
+                  } else {
+                    await addToCart(rental._id, "VehicleRental", 1);
+                    toast.success(`${rental.name} added to cart!`);
+                  }
+                } catch (err: any) {
+                  toast.error(err.message || "Failed to manage cart");
+                }
+              };
+
+              return (
+                <RentalCard
+                  key={rental._id}
+                  rental={rental}
+                  onSelectTag={(tag) => setSelectedTags((p) => (p.includes(tag) ? p : [...p, tag]))}
+                  pickupDate={pickupDate}
+                  dropoffDate={dropoffDate}
+                  isInCart={isInCart}
+                  onAddToCart={handleAddToCart}
+                />
+              );
+            })}
           </div>
         )}
       </section>

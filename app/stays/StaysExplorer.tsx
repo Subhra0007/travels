@@ -27,6 +27,8 @@ import {
 import { STAY_CATEGORIES, type StayCategoryValue } from "./categories";
 import { useAvailability } from "../hooks/useAvailability";
 import CategoryTabs from "@/app/components/common/CategoryTabs";
+import { useCart } from "../hooks/useCart";
+import { toast } from "react-hot-toast";
 
 export type Room = {
   _id?: string;
@@ -83,6 +85,8 @@ type StayCardProps = {
   onSelectTag?: (tag: string) => void;
   checkIn?: string;
   checkOut?: string;
+  isInCart?: boolean;
+  onAddToCart?: (event: React.MouseEvent) => void;
 };
 
 const facilityIconLookup = [
@@ -110,6 +114,8 @@ export const StayCard = ({
   onSelectTag,
   checkIn,
   checkOut,
+  isInCart,
+  onAddToCart,
 }: StayCardProps) => {
   const isBnb = stay.category === "bnbs" && Boolean(stay.bnb);
   const roomCount = stay.rooms?.length ?? 0;
@@ -180,9 +186,16 @@ export const StayCard = ({
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <span className="inline-flex items-center justify-center rounded-full bg-green-50 p-2 text-green-600 shadow cursor-pointer">
+            <button
+              onClick={onAddToCart}
+              className={`inline-flex items-center justify-center rounded-full p-2 shadow transition-colors ${isInCart
+                  ? "bg-green-600 text-green-50 hover:bg-green-700"
+                  : "bg-green-50 text-green-600 hover:bg-green-100"
+                }`}
+              title={isInCart ? "In Cart" : "Add to Cart"}
+            >
               <FaShoppingCart className="text-sm" />
-            </span>
+            </button>
             {ratingValue !== null && (
               <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
                 <FaStar className="text-yellow-500" /> {ratingValue.toFixed(1)}
@@ -328,6 +341,8 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
   )
     ? (categoryFromUrl as CategoryValue)
     : "all";
+
+  const { items: cartItems, addToCart, removeFromCart } = useCart({ autoLoad: true });
 
   const [stays, setStays] = useState<Stay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -824,17 +839,46 @@ export default function StaysExplorer({ initialCategory = "all" }: StaysExplorer
           </div>
         ) : (
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {sortedAndFilteredStays.map((stay) => (
-              <StayCard
-                key={stay._id}
-                stay={stay}
-                onSelectTag={(tag) =>
-                  setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
+            {sortedAndFilteredStays.map((stay) => {
+              const isInCart = cartItems.some(
+                (item) => item.itemId === stay._id && item.itemType === "Stay"
+              );
+
+              const handleAddToCart = async (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  if (isInCart) {
+                    const cartItem = cartItems.find(
+                      (item) => item.itemId === stay._id && item.itemType === "Stay"
+                    );
+                    if (cartItem) {
+                      await removeFromCart(cartItem._id);
+                      toast.success(`${stay.name} removed from cart!`);
+                    }
+                  } else {
+                    await addToCart(stay._id, "Stay", 1);
+                    toast.success(`${stay.name} added to cart!`);
+                  }
+                } catch (err: any) {
+                  toast.error(err.message || "Failed to manage cart");
                 }
-                checkIn={checkIn}
-                checkOut={checkOut}
-              />
-            ))}
+              };
+
+              return (
+                <StayCard
+                  key={stay._id}
+                  stay={stay}
+                  onSelectTag={(tag) =>
+                    setSelectedTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]))
+                  }
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  isInCart={isInCart}
+                  onAddToCart={handleAddToCart}
+                />
+              );
+            })}
           </div>
         )}
       </section>
