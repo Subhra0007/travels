@@ -41,6 +41,8 @@ export default function SellerAddProductPage() {
     images: [] as string[],
     variants: [] as Variant[],
     tags: [] as string[],
+    listingType: "buy" as "buy" | "rent",
+    rentPriceDay: 0,
   });
 
   const [bulkColor, setBulkColor] = useState("");
@@ -80,7 +82,7 @@ export default function SellerAddProductPage() {
       const res = await fetch("/api/categories?mine=true", { credentials: "include" });
       const data = await res.json();
       const vendorCategories: CategoryOption[] = [];
-      
+
       if (data?.success) {
         vendorCategories.push(
           ...(data.categories || []).map((cat: any) => ({
@@ -91,7 +93,7 @@ export default function SellerAddProductPage() {
           }))
         );
       }
-      
+
       setCategories(vendorCategories);
       if (vendorCategories.length > 0 && !formData.category) {
         setFormData((prev) => ({ ...prev, category: vendorCategories[0].slug }));
@@ -251,9 +253,9 @@ export default function SellerAddProductPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!formData.name.trim()) errs.name = "Product name is required";
     if (!formData.description.trim()) errs.description = "Description is required";
-    if (formData.basePrice <= 0) errs.basePrice = "Price must be greater than 0";
+    if (formData.listingType === "buy" && formData.basePrice <= 0) errs.basePrice = "Price must be greater than 0";
+    if (formData.listingType === "rent" && formData.rentPriceDay <= 0) errs.rentPriceDay = "Rent price per day must be greater than 0";
     if (formData.images.length === 0) errs.images = "At least one image is required";
 
     const selectedCategory = categories.find((cat) => cat.slug === formData.category);
@@ -324,10 +326,10 @@ export default function SellerAddProductPage() {
       </div> */}
 
       <div className="flex-1 flex flex-col lg:pt-15 pt-0">
-      <div className="sticky top-0 z-40 bg-sky-50 border-b">
-  
-  {/* Top line with menu button */}
-  {/* <div className="p-3 flex items-center">
+        <div className="sticky top-0 z-40 bg-sky-50 border-b">
+
+          {/* Top line with menu button */}
+          {/* <div className="p-3 flex items-center">
     <button
       className="lg:hidden px-3 py-2 rounded border text-gray-700"
       onClick={() => setMobileSidebarOpen(true)}
@@ -337,20 +339,20 @@ export default function SellerAddProductPage() {
     </button>
   </div> */}
 
- 
 
-  {/* Title + Cancel button */}
-  <div className="p-4 flex items-center justify-between overflow-hidden">
-    <h1 className="text-2xl font-semibold text-gray-900">Add Product</h1>
 
-    <button
-      onClick={() => router.back()}
-      className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
-    >
-      Cancel
-    </button>
-  </div>
-</div>
+          {/* Title + Cancel button */}
+          <div className="p-4 flex items-center justify-between overflow-hidden">
+            <h1 className="text-2xl font-semibold text-gray-900">Add Product</h1>
+
+            <button
+              onClick={() => router.back()}
+              className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex-1 p-6 overflow-y-auto">
           <div className="mx-auto max-w-6xl space-y-6">
@@ -427,27 +429,84 @@ export default function SellerAddProductPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-1">
-                  Base Price (₹) <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Listing Type <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.basePrice}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      basePrice: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="0.00"
-                />
-                {errors.basePrice && (
-                  <p className="text-red-600 text-sm mt-1">{errors.basePrice}</p>
-                )}
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="listingType"
+                      value="buy"
+                      checked={formData.listingType === "buy"}
+                      onChange={() => setFormData((prev) => ({ ...prev, listingType: "buy" }))}
+                      className="h-4 w-4 text-green-600"
+                    />
+                    <span className="text-gray-900">For Sale (Buy)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="listingType"
+                      value="rent"
+                      checked={formData.listingType === "rent"}
+                      onChange={() => setFormData((prev) => ({ ...prev, listingType: "rent" }))}
+                      className="h-4 w-4 text-green-600"
+                    />
+                    <span className="text-gray-900">For Rent</span>
+                  </label>
+                </div>
               </div>
+
+              {formData.listingType === "buy" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Sale Price (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.basePrice}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        basePrice: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 text-black"
+                    placeholder="0.00"
+                  />
+                  {errors.basePrice && (
+                    <p className="text-red-600 text-sm mt-1">{errors.basePrice}</p>
+                  )}
+                </div>
+              )}
+
+              {formData.listingType === "rent" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-1">
+                    Rent Price per Day (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.rentPriceDay}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        rentPriceDay: parseFloat(e.target.value) || 0,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 text-black"
+                    placeholder="0.00"
+                  />
+                  {errors.rentPriceDay && (
+                    <p className="text-red-600 text-sm mt-1">{errors.rentPriceDay}</p>
+                  )}
+                </div>
+              )}
               {!needsVariants && selectedCategory && (
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -467,9 +526,8 @@ export default function SellerAddProductPage() {
                     placeholder="Enter available stock"
                   />
                   <p
-                    className={`text-sm mt-1 ${
-                      formData.stock === 0 ? "text-red-600" : "text-green-600"
-                    }`}
+                    className={`text-sm mt-1 ${formData.stock === 0 ? "text-red-600" : "text-green-600"
+                      }`}
                   >
                     {formData.stock === 0 ? "Out of stock" : `${formData.stock} in stock`}
                   </p>
@@ -550,11 +608,10 @@ export default function SellerAddProductPage() {
                             key={size}
                             type="button"
                             onClick={() => toggleBulkSize(size)}
-                            className={`px-3 py-1 rounded-full border text-sm font-semibold ${
-                              bulkSizes.includes(size)
-                                ? "border-green-600 bg-green-50 text-green-700"
-                                : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                            }`}
+                            className={`px-3 py-1 rounded-full border text-sm font-semibold ${bulkSizes.includes(size)
+                              ? "border-green-600 bg-green-50 text-green-700"
+                              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                              }`}
                           >
                             {size}
                           </button>
@@ -714,7 +771,7 @@ export default function SellerAddProductPage() {
 
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Tags</h2>
-            <div className="flex flex-col lg:flex-row gap-2">
+              <div className="flex flex-col lg:flex-row gap-2">
                 <input
                   type="text"
                   value={tagInput}

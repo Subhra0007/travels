@@ -20,6 +20,8 @@ export interface IProduct extends Document {
   sellerId?: mongoose.Types.ObjectId;
   stock?: number; // Add stock field for non-variant products
   outOfStock?: boolean;
+  listingType: "buy" | "rent";
+  rentPriceDay?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -52,6 +54,13 @@ const productSchema = new Schema<IProduct>(
     sellerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     stock: { type: Number, default: 0, min: 0 }, // Add stock field for non-variant products
     outOfStock: { type: Boolean, default: false },
+    listingType: {
+      type: String,
+      enum: ["buy", "rent"],
+      default: "buy",
+      required: true,
+    },
+    rentPriceDay: { type: Number, min: 0 },
   },
   { timestamps: true }
 );

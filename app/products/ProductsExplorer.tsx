@@ -29,6 +29,8 @@ export type Product = {
   isActive: boolean;
   stock?: number; // Add stock field for non-variant products
   outOfStock?: boolean;
+  listingType: "buy" | "rent";
+  rentPriceDay?: number;
 };
 
 type ProductCardProps = {
@@ -36,18 +38,25 @@ type ProductCardProps = {
 };
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  const isRent = product.listingType === "rent";
   const hasVariants = product.variants && product.variants.length > 0;
-  const minPrice = hasVariants && product.variants
-    ? Math.min(...product.variants.map((v) => v.price || product.basePrice))
-    : product.basePrice;
-  const maxPrice = hasVariants && product.variants
-    ? Math.max(...product.variants.map((v) => v.price || product.basePrice))
-    : product.basePrice;
-  const priceDisplay =
-    minPrice === maxPrice
-      ? `₹${minPrice.toLocaleString()}`
-      : `₹${minPrice.toLocaleString()} - ₹${maxPrice.toLocaleString()}`;
-      
+
+  let priceDisplay = "";
+  if (isRent) {
+    priceDisplay = `₹${(product.rentPriceDay || 0).toLocaleString()} / day`;
+  } else {
+    const minPrice = hasVariants && product.variants
+      ? Math.min(...product.variants.map((v) => v.price || product.basePrice))
+      : product.basePrice;
+    const maxPrice = hasVariants && product.variants
+      ? Math.max(...product.variants.map((v) => v.price || product.basePrice))
+      : product.basePrice;
+    priceDisplay =
+      minPrice === maxPrice
+        ? `₹${minPrice.toLocaleString()}`
+        : `₹${minPrice.toLocaleString()} - ₹${maxPrice.toLocaleString()}`;
+  }
+
   // Check if the product is in stock
   const explicitStock = typeof product.stock === "number" ? product.stock : null;
   const isInStock = !product.outOfStock && (
@@ -75,9 +84,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
             No image
           </div>
         )}
-        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
-          {product.category}
-        </span>
+        <div className="absolute left-4 top-4 flex flex-col gap-2">
+          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase text-green-700 shadow">
+            {product.category}
+          </span>
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase shadow ${isRent ? "bg-blue-600 text-white" : "bg-orange-500 text-white"}`}>
+            {isRent ? "For Rent" : "For Sale"}
+          </span>
+        </div>
         {hasVariants && product.variants && (
           <span className="absolute right-4 top-4 rounded-full bg-green-500/90 px-3 py-1 text-xs font-semibold text-white shadow">
             {product.variants.length} Variants
@@ -108,12 +122,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
         )}
 
         <div className="mt-auto flex items-center justify-between pt-2">
-          <span className="text-xl font-bold text-green-600">{priceDisplay}</span>
+          <span className={`text-xl font-bold ${isRent ? "text-blue-600" : "text-green-600"}`}>{priceDisplay}</span>
           <button
             aria-disabled={!isInStock}
-            className={`rounded-full p-2 text-white transition cursor-pointer ${
-              isInStock ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed opacity-60"
-            }`}
+            className={`rounded-full p-2 text-white transition cursor-pointer ${isInStock ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed opacity-60"
+              }`}
           >
             <FaShoppingCart className="text-sm" />
           </button>
@@ -217,11 +230,10 @@ export default function ProductsExplorer() {
               <button
                 key={cat.value}
                 onClick={() => setSelectedCategory(cat.value)}
-                className={`rounded-full px-6 py-2 text-sm font-semibold transition ${
-                  selectedCategory === cat.value
+                className={`rounded-full px-6 py-2 text-sm font-semibold transition ${selectedCategory === cat.value
                     ? "bg-green-600 text-white shadow-md"
                     : "bg-white text-gray-700 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 {cat.label}
               </button>

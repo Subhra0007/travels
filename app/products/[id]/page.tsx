@@ -28,6 +28,8 @@ type Product = {
   tags?: string[];
   stock?: number; // Add stock field for non-variant products
   outOfStock?: boolean;
+  listingType: "buy" | "rent";
+  rentPriceDay?: number;
 };
 
 export default function ProductDetailPage() {
@@ -54,7 +56,7 @@ export default function ProductDetailPage() {
       const res = await fetch(`/api/products/${productId}`, {
         cache: "no-store",
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData?.message || `Failed to load product: ${res.status} ${res.statusText}`);
@@ -74,7 +76,7 @@ export default function ProductDetailPage() {
         const firstAvailable = data.product.variants.find((variant: ProductVariant) => variant.stock > 0) || data.product.variants[0];
         setSelectedVariant(firstAvailable);
       }
-      } catch (error: unknown) {
+    } catch (error: unknown) {
       console.error("Failed to load product:", error);
       setProduct(null);
     } finally {
@@ -181,9 +183,8 @@ export default function ProductDetailPage() {
                     <button
                       key={idx}
                       onClick={() => setSelectedImage(idx)}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 ${
-                        selectedImage === idx ? "border-green-600" : "border-gray-200"
-                      }`}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 ${selectedImage === idx ? "border-green-600" : "border-gray-200"
+                        }`}
                     >
                       <Image
                         src={img}
@@ -206,7 +207,11 @@ export default function ProductDetailPage() {
                 </span>
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
                 <div className="mb-4 flex flex-wrap items-center gap-3">
-                  <p className="text-2xl font-bold text-green-600">₹{displayPrice.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {product.listingType === "rent"
+                      ? `₹${(product.rentPriceDay || 0).toLocaleString()} / day`
+                      : `₹${displayPrice.toLocaleString()}`}
+                  </p>
                   {!isPurchasable && (
                     <span className="inline-flex items-center rounded-full bg-red-100 px-4 py-1 text-sm font-semibold uppercase tracking-wide text-red-700">
                       Out of Stock
@@ -222,7 +227,7 @@ export default function ProductDetailPage() {
               {hasVariants && (
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">Select Variant</h3>
-                  
+
                   {/* Color Selection */}
                   <div>
                     <label className="block text-sm font-medium text-gray-900 mb-2">Color</label>
@@ -239,11 +244,10 @@ export default function ProductDetailPage() {
                                 setSelectedImage(0);
                               }
                             }}
-                            className={`px-4 py-2 rounded-lg border-2 text-black border-gray-400 ${
-                              isSelected
-                                ? "border-green-600 bg-green-50"
-                                : "border-gray-200 hover:border-gray-500"
-                            }`}
+                            className={`px-4 py-2 rounded-lg border-2 text-black border-gray-400 ${isSelected
+                              ? "border-green-600 bg-green-50"
+                              : "border-gray-200 hover:border-gray-500"
+                              }`}
                           >
                             <span className="inline-flex items-center gap-2">
                               <span
@@ -275,13 +279,12 @@ export default function ProductDetailPage() {
                                   setSelectedImage(0);
                                 }}
                                 disabled={variant.stock === 0}
-                                className={`px-4 py-2 rounded-lg border-2 text-black border-gray-400 ${
-                                  variant.stock === 0
-                                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                                    : isSelected
+                                className={`px-4 py-2 rounded-lg border-2 text-black border-gray-400 ${variant.stock === 0
+                                  ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                  : isSelected
                                     ? "border-green-600 bg-green-50"
                                     : "border-gray-200 hover:border-gray-500"
-                                }`}
+                                  }`}
                               >
                                 {variant.size} {variant.stock === 0 && "(Out of Stock)"}
                               </button>
@@ -319,8 +322,12 @@ export default function ProductDetailPage() {
                     <span className="font-medium text-gray-900">{getCategoryName(product.category)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Base Price:</span>
-                    <span className="font-medium text-gray-900">₹{product.basePrice.toLocaleString()}</span>
+                    <span className="text-gray-600">{product.listingType === "rent" ? "Rent Price:" : "Base Price:"}</span>
+                    <span className="font-medium text-gray-900">
+                      {product.listingType === "rent"
+                        ? `₹${(product.rentPriceDay || 0).toLocaleString()} / day`
+                        : `₹${product.basePrice.toLocaleString()}`}
+                    </span>
                   </div>
                   {hasVariants && (
                     <div className="flex justify-between">
@@ -337,8 +344,8 @@ export default function ProductDetailPage() {
                             ? `${product.stock} in stock`
                             : "Out of stock"
                           : product.outOfStock
-                          ? "Out of stock"
-                          : "Available"}
+                            ? "Out of stock"
+                            : "Available"}
                       </span>
                     </div>
                   )}
@@ -388,7 +395,7 @@ export default function ProductDetailPage() {
                   }}
                   className="w-full flex items-center justify-center gap-2 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <FaShoppingCart /> {adding ? "Adding..." : "Add to Cart"}
+                  <FaShoppingCart /> {adding ? "Adding..." : product.listingType === "rent" ? "Add to Cart" : "Add to Cart"}
                 </button>
                 <button
                   disabled={!isPurchasable}
@@ -406,7 +413,7 @@ export default function ProductDetailPage() {
                   }}
                   className="w-full flex items-center justify-center gap-2 rounded-lg bg-orange-600 px-6 py-3 text-white font-semibold hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <FaBolt /> Buy Now
+                  <FaBolt /> {product.listingType === "rent" ? "Rent Now" : "Buy Now"}
                 </button>
               </div>
             </div>

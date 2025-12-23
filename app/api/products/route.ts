@@ -85,11 +85,18 @@ export const POST = auth(async (req: NextRequest, context: any) => {
       );
     }
 
-    const { name, category, description, basePrice, images, variants, tags, stock } = body;
+    const { name, category, description, basePrice, images, variants, tags, stock, listingType, rentPriceDay } = body;
 
-    if (!name || !category || !description || basePrice === undefined) {
+    if (!name || !category || !description || basePrice === undefined || !listingType) {
       return NextResponse.json(
         { success: false, message: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    if (listingType === "rent" && !rentPriceDay) {
+      return NextResponse.json(
+        { success: false, message: "Rent price per day is required for rental listings" },
         { status: 400 }
       );
     }
@@ -142,6 +149,8 @@ export const POST = auth(async (req: NextRequest, context: any) => {
       category,
       description,
       basePrice,
+      listingType,
+      rentPriceDay: listingType === "rent" ? rentPriceDay : undefined,
       images,
       variants: variants || [],
       tags: tags || [],
