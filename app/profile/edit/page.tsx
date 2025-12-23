@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useProfileLayout } from "../ProfileLayoutContext";
 import { FaCamera, FaCloudUploadAlt, FaTrash } from "react-icons/fa";
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const { user, refreshUser } = useProfileLayout();
   const [newPicture, setNewPicture] = useState<File | null>(null);
 
   // Show custom input only when "Other" is chosen
@@ -24,16 +24,9 @@ export default function EditProfilePage() {
     addresses: [{ street: "", city: "", state: "" }],
   });
 
-  const fetchUser = async () => {
-    try {
-      const res = await fetch("/api/profile", { credentials: "include" });
-      if (res.status === 401) return router.push("/login");
-      const { success, user } = await res.json();
-      if (!success) return router.push("/login");
-
-      setUser(user);
+  useEffect(() => {
+    if (user) {
       const savedGender = user.additionalDetails?.gender || "";
-
       const isOther = !["Male", "Female", "Other"].includes(savedGender);
       const displayGender = isOther ? "Other" : savedGender;
 
@@ -52,16 +45,8 @@ export default function EditProfilePage() {
         setCustomGender(savedGender);
         setShowCustomGender(true);
       }
-    } catch {
-      router.push("/login");
-    } finally {
-      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  }, [user]);
 
   const uploadPicture = async () => {
     if (!newPicture) return alert("Please select an image");
@@ -75,7 +60,7 @@ export default function EditProfilePage() {
     const data = await res.json();
     if (data.success) {
       alert("Picture updated!");
-      fetchUser();
+      await refreshUser();
     } else alert(data.message || "Upload failed");
   };
 
@@ -88,7 +73,7 @@ export default function EditProfilePage() {
     const data = await res.json();
     if (data.success) {
       alert("Picture removed");
-      fetchUser();
+      await refreshUser();
     }
   };
 
@@ -118,16 +103,12 @@ export default function EditProfilePage() {
     const data = await res.json();
     if (data.success) {
       alert("Profile saved!");
+      await refreshUser();
       router.push("/profile");
     } else alert("Save failed");
   };
 
-  if (loading)
-    return (
-      <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
-      </div>
-    );
+  if (!user) return null;
 
   const Avatar = () => {
     if (user.avatar) {

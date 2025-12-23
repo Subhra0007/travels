@@ -39,170 +39,170 @@ const AMENITY_SECTIONS: Array<{
   label: string;
   options: string[];
 }> = [
-  {
-    key: "Bathroom",
-    label: "Bathroom",
-    options: [
-      "Bath or shower",
-      "Private bathroom",
-      "Toilet",
-      "Free toiletries",
-      "Hairdryer",
-      "Shower",
-    ],
-  },
-  {
-    key: "Bedroom",
-    label: "Bedroom",
-    options: ["Wardrobe or closet", "Alarm clock"],
-  },
-  {
-    key: "Outdoors",
-    label: "Outdoors",
-    options: ["Outdoor furniture", "Sun terrace"],
-  },
-  {
-    key: "Kitchen",
-    label: "Kitchen",
-    options: ["Refrigerator", "Tea/Coffee maker"],
-  },
-  {
-    key: "Activities",
-    label: "Activities",
-    options: [
-      "Live sport events (broadcast)",
-      "Tour or class about local culture",
-      "Walking tours",
-      "Pub crawls",
-      "Nightclub/DJ",
-    ],
-  },
-  {
-    key: "Living Area",
-    label: "Living Area",
-    options: ["Desk"],
-  },
-  {
-    key: "Media & Technology",
-    label: "Media & Technology",
-    options: ["Cable channels", "Video", "DVD player", "Radio", "Telephone", "TV"],
-  },
-  {
-    key: "Food & Drink",
-    label: "Food & Drink",
-    options: [
-      "Coffee house on site",
-      "Fruits",
-      "Wine/champagne",
-      "Kid meals",
-      "Special diet menus (on request)",
-      "Snack bar",
-      "Breakfast in the room",
-      "Restaurant",
-      "Bar",
-      "Minibar",
-      "Tea/Coffee maker",
-    ],
-  },
-  {
-    key: "Internet",
-    label: "Internet",
-    options: ["Free WiFi in all areas"],
-  },
-  {
-    key: "Parking",
-    label: "Parking",
-    options: ["Free private parking on site", "Accessible parking"],
-  },
-  {
-    key: "Reception services",
-    label: "Reception services",
-    options: [
-      "Invoice provided",
-      "Lockers",
-      "Private check-in/check-out",
-      "Concierge service",
-      "Luggage storage",
-      "Express check-in/check-out",
-      "24-hour front desk",
-    ],
-  },
-  {
-    key: "Cleaning services",
-    label: "Cleaning services",
-    options: ["Daily housekeeping", "Trouser press", "Ironing service", "Dry cleaning", "Laundry"],
-  },
-  {
-    key: "Business facilities",
-    label: "Business facilities",
-    options: ["Fax/photocopying", "Business centre", "Meeting/banquet facilities"],
-  },
-  {
-    key: "Safety & security",
-    label: "Safety & security",
-    options: [
-      "Fire extinguishers",
-      "CCTV outside property",
-      "CCTV in common areas",
-      "Smoke alarms",
-      "Security alarm",
-      "Key card access",
-      "Key access",
-      "24-hour security",
-      "Safety deposit box",
-    ],
-  },
-  {
-    key: "General",
-    label: "General",
-    options: [
-      "Hypoallergenic",
-      "Designated smoking area",
-      "Air conditioning",
-      "Wake-up service",
-      "Car hire",
-      "Laptop safe",
-      "Packed lunches",
-      "Lift",
-      "Family rooms",
-      "Facilities for disabled guests",
-      "Non-smoking rooms",
-      "Room service",
-    ],
-  },
-  {
-    key: "Accessibility",
-    label: "Accessibility",
-    options: [
-      "Auditory guidance",
-      "Emergency cord in bathroom",
-      "Lower bathroom sink",
-      "Higher level toilet",
-      "Toilet with grab rails",
-      "Wheelchair accessible",
-    ],
-  },
-  {
-    key: "Wellness",
-    label: "Wellness",
-    options: [
-      "Fitness/spa locker rooms",
-      "Fitness",
-      "Spa/wellness packages",
-      "Spa lounge/relaxation area",
-      "Steam room",
-      "Spa facilities",
-      "Sun umbrellas",
-      "Sun loungers or beach chairs",
-      "Massage",
-      "Spa and wellness centre",
-      "Outdoor swimming pool",
-      "Pool/beach towels",
-      "Pool is on rooftop",
-      "Open all year",
-    ],
-  },
-];
+    {
+      key: "Bathroom",
+      label: "Bathroom",
+      options: [
+        "Bath or shower",
+        "Private bathroom",
+        "Toilet",
+        "Free toiletries",
+        "Hairdryer",
+        "Shower",
+      ],
+    },
+    {
+      key: "Bedroom",
+      label: "Bedroom",
+      options: ["Wardrobe or closet", "Alarm clock"],
+    },
+    {
+      key: "Outdoors",
+      label: "Outdoors",
+      options: ["Outdoor furniture", "Sun terrace"],
+    },
+    {
+      key: "Kitchen",
+      label: "Kitchen",
+      options: ["Refrigerator", "Tea/Coffee maker"],
+    },
+    {
+      key: "Activities",
+      label: "Activities",
+      options: [
+        "Live sport events (broadcast)",
+        "Tour or class about local culture",
+        "Walking tours",
+        "Pub crawls",
+        "Nightclub/DJ",
+      ],
+    },
+    {
+      key: "Living Area",
+      label: "Living Area",
+      options: ["Desk"],
+    },
+    {
+      key: "Media & Technology",
+      label: "Media & Technology",
+      options: ["Cable channels", "Video", "DVD player", "Radio", "Telephone", "TV"],
+    },
+    {
+      key: "Food & Drink",
+      label: "Food & Drink",
+      options: [
+        "Coffee house on site",
+        "Fruits",
+        "Wine/champagne",
+        "Kid meals",
+        "Special diet menus (on request)",
+        "Snack bar",
+        "Breakfast in the room",
+        "Restaurant",
+        "Bar",
+        "Minibar",
+        "Tea/Coffee maker",
+      ],
+    },
+    {
+      key: "Internet",
+      label: "Internet",
+      options: ["Free WiFi in all areas"],
+    },
+    {
+      key: "Parking",
+      label: "Parking",
+      options: ["Free private parking on site", "Accessible parking"],
+    },
+    {
+      key: "Reception services",
+      label: "Reception services",
+      options: [
+        "Invoice provided",
+        "Lockers",
+        "Private check-in/check-out",
+        "Concierge service",
+        "Luggage storage",
+        "Express check-in/check-out",
+        "24-hour front desk",
+      ],
+    },
+    {
+      key: "Cleaning services",
+      label: "Cleaning services",
+      options: ["Daily housekeeping", "Trouser press", "Ironing service", "Dry cleaning", "Laundry"],
+    },
+    {
+      key: "Business facilities",
+      label: "Business facilities",
+      options: ["Fax/photocopying", "Business centre", "Meeting/banquet facilities"],
+    },
+    {
+      key: "Safety & security",
+      label: "Safety & security",
+      options: [
+        "Fire extinguishers",
+        "CCTV outside property",
+        "CCTV in common areas",
+        "Smoke alarms",
+        "Security alarm",
+        "Key card access",
+        "Key access",
+        "24-hour security",
+        "Safety deposit box",
+      ],
+    },
+    {
+      key: "General",
+      label: "General",
+      options: [
+        "Hypoallergenic",
+        "Designated smoking area",
+        "Air conditioning",
+        "Wake-up service",
+        "Car hire",
+        "Laptop safe",
+        "Packed lunches",
+        "Lift",
+        "Family rooms",
+        "Facilities for disabled guests",
+        "Non-smoking rooms",
+        "Room service",
+      ],
+    },
+    {
+      key: "Accessibility",
+      label: "Accessibility",
+      options: [
+        "Auditory guidance",
+        "Emergency cord in bathroom",
+        "Lower bathroom sink",
+        "Higher level toilet",
+        "Toilet with grab rails",
+        "Wheelchair accessible",
+      ],
+    },
+    {
+      key: "Wellness",
+      label: "Wellness",
+      options: [
+        "Fitness/spa locker rooms",
+        "Fitness",
+        "Spa/wellness packages",
+        "Spa lounge/relaxation area",
+        "Steam room",
+        "Spa facilities",
+        "Sun umbrellas",
+        "Sun loungers or beach chairs",
+        "Massage",
+        "Spa and wellness centre",
+        "Outdoor swimming pool",
+        "Pool/beach towels",
+        "Pool is on rooftop",
+        "Open all year",
+      ],
+    },
+  ];
 
 const ROOM_FEATURE_OPTIONS = [
   "Mountain view",
@@ -403,16 +403,16 @@ export default function AddStayPage() {
       rooms:
         Array.isArray(stay.rooms) && stay.rooms.length
           ? stay.rooms.map((room: any) => ({
-              name: room.name ?? "",
-              description: room.description ?? "",
-              bedType: room.bedType ?? "Queen Bed",
-              beds: room.beds ?? 1,
-              capacity: room.capacity ?? 1,
-              price: room.price ?? 0,
-              size: room.size ?? "",
-              features: room.features ?? [],
-              images: room.images ?? [],
-            }))
+            name: room.name ?? "",
+            description: room.description ?? "",
+            bedType: room.bedType ?? "Queen Bed",
+            beds: room.beds ?? 1,
+            capacity: room.capacity ?? 1,
+            price: room.price ?? 0,
+            size: room.size ?? "",
+            features: room.features ?? [],
+            images: room.images ?? [],
+          }))
           : [createDefaultRoom()],
       meals: stay.meals ?? [],
       bnb: {
@@ -756,7 +756,7 @@ export default function AddStayPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-black relative">
-     {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
+      {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
         <Sidebar />
       </div> */}
 
@@ -902,11 +902,10 @@ export default function AddStayPage() {
                       key={item}
                       type="button"
                       onClick={() => toggleArrayValue("heroHighlights", item)}
-                      className={`text-left px-3 py-2 rounded-lg border transition ${
-                        formData.heroHighlights.includes(item)
+                      className={`text-left px-3 py-2 rounded-lg border transition ${formData.heroHighlights.includes(item)
                           ? "border-green-500 bg-green-50 text-green-700"
                           : "border-gray-300 text-gray-900 hover:border-green-400"
-                      }`}
+                        }`}
                     >
                       {item}
                     </button>
@@ -938,11 +937,10 @@ export default function AddStayPage() {
                       key={facility}
                       type="button"
                       onClick={() => toggleArrayValue("popularFacilities", facility)}
-                      className={`px-3 py-2 rounded-full text-sm border transition ${
-                        formData.popularFacilities.includes(facility)
+                      className={`px-3 py-2 rounded-full text-sm border transition ${formData.popularFacilities.includes(facility)
                           ? "border-green-500 bg-green-50 text-green-700"
                           : "border-gray-300 text-gray-900 hover:border-green-400"
-                      }`}
+                        }`}
                     >
                       {facility}
                     </button>
@@ -1026,7 +1024,7 @@ export default function AddStayPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {["inside", "outside"].map((key) => (
                     <div key={key}>
                       <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -1064,7 +1062,7 @@ export default function AddStayPage() {
                       )}
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
             </section>
 
@@ -1083,11 +1081,10 @@ export default function AddStayPage() {
                             key={option}
                             type="button"
                             onClick={() => toggleAmenity(section.key, option)}
-                            className={`px-3 py-2 text-sm rounded-full border transition ${
-                              selected
+                            className={`px-3 py-2 text-sm rounded-full border transition ${selected
                                 ? "border-green-500 bg-green-50 text-green-700"
                                 : "border-gray-300 text-gray-900 hover:border-green-400"
-                            }`}
+                              }`}
                           >
                             {option}
                           </button>
@@ -1113,11 +1110,10 @@ export default function AddStayPage() {
                         key={meal}
                         type="button"
                         onClick={() => toggleMeal(meal)}
-                        className={`px-4 py-3 rounded-lg border transition ${
-                          selected
+                        className={`px-4 py-3 rounded-lg border transition ${selected
                             ? "border-green-500 bg-green-50 text-green-700"
                             : "border-gray-300 text-gray-900 hover:border-green-400"
-                        }`}
+                          }`}
                       >
                         {meal}
                       </button>
@@ -1130,248 +1126,247 @@ export default function AddStayPage() {
             {/* Rooms - Only for Hotels and Homestays */}
             {formData.category === "hotels" || formData.category === "homestays" ? (
               <section className="bg-white rounded-xl shadow p-6 space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">Rooms</h2>
-                <button
-                  type="button"
-                  onClick={addRoom}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  <FaPlus /> Add room
-                </button>
-              </div>
-              {errors.rooms && <p className="text-red-600 text-sm">{errors.rooms}</p>}
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900">Rooms</h2>
+                  <button
+                    type="button"
+                    onClick={addRoom}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                  >
+                    <FaPlus /> Add room
+                  </button>
+                </div>
+                {errors.rooms && <p className="text-red-600 text-sm">{errors.rooms}</p>}
 
-              <div className="space-y-6">
-                {formData.rooms.map((room, index) => (
-                  <div key={index} className="border border-gray-200 rounded-xl p-5 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">Room {index + 1}</h3>
-                      {formData.rooms.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeRoom(index)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          Remove room
-                        </button>
-                      )}
-                    </div>
+                <div className="space-y-6">
+                  {formData.rooms.map((room, index) => (
+                    <div key={index} className="border border-gray-200 rounded-xl p-5 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Room {index + 1}</h3>
+                        {formData.rooms.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeRoom(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            Remove room
+                          </button>
+                        )}
+                      </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Room name <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={room.name}
-                          onChange={(e) => updateRoom(index, "name", e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                          placeholder="e.g., Deluxe King Room"
-                        />
-                        {errors[`room-${index}-name`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-name`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Bed type <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          value={room.bedType}
-                          onChange={(e) => updateRoom(index, "bedType", e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        >
-                          {BED_TYPES.map((type) => (
-                            <option key={type} value={type}>
-                              {type}
-                            </option>
-                          ))}
-                        </select>
-                        {errors[`room-${index}-bedType`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-bedType`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Beds <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={room.beds}
-                          onChange={(e) => updateRoom(index, "beds", Number(e.target.value))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        />
-                        {errors[`room-${index}-beds`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-beds`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Capacity (guests) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={room.capacity}
-                          onChange={(e) => updateRoom(index, "capacity", Number(e.target.value))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        />
-                        {errors[`room-${index}-capacity`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-capacity`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">
-                          Price per night (₹) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={room.price}
-                          onChange={(e) => updateRoom(index, "price", Number(e.target.value))}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        />
-                        {errors[`room-${index}-price`] && (
-                          <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-price`]}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-900 mb-1">Room size</label>
-                        <input
-                          type="text"
-                          value={room.size}
-                          onChange={(e) => updateRoom(index, "size", e.target.value)}
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                          placeholder="e.g., 35 m²"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">Room description</label>
-                      <textarea
-                        rows={3}
-                        value={room.description}
-                        onChange={(e) => updateRoom(index, "description", e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        placeholder="Describe what makes this room special"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        Room features
-                      </label>
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {ROOM_FEATURE_OPTIONS.map((feature) => {
-                          const selected = room.features.includes(feature);
-                          return (
-                            <button
-                              key={feature}
-                              type="button"
-                              onClick={() => {
-                                if (selected) removeRoomFeature(index, feature);
-                                else updateRoom(index, "features", [...room.features, feature]);
-                              }}
-                              className={`px-3 py-2 text-sm rounded-full border transition ${
-                                selected
-                                  ? "border-green-500 bg-green-50 text-green-700"
-                                  : "border-gray-300 text-gray-900 hover:border-green-400"
-                              }`}
-                            >
-                              {feature}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          value={roomFeatureDrafts[index] || ""}
-                          onChange={(e) =>
-                            setRoomFeatureDrafts((prev) => ({ ...prev, [index]: e.target.value }))
-                          }
-                          placeholder="Add custom feature"
-                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => addRoomFeature(index)}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                        >
-                          Add
-                        </button>
-                      </div>
-                      {room.features.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {room.features.map((feature) => (
-                            <span
-                              key={feature}
-                              className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 rounded-full text-gray-900"
-                            >
-                              {feature}
-                              <button
-                                type="button"
-                                onClick={() => removeRoomFeature(index, feature)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <FaTimes />
-                              </button>
-                            </span>
-                          ))}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-900 mb-1">
+                            Room name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={room.name}
+                            onChange={(e) => updateRoom(index, "name", e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                            placeholder="e.g., Deluxe King Room"
+                          />
+                          {errors[`room-${index}-name`] && (
+                            <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-name`]}</p>
+                          )}
                         </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-1">
-                        Room images <span className="text-red-500">*</span> (minimum 3)
-                      </label>
-                      <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-500 text-gray-900">
-                        <FaUpload className="text-gray-600" />
-                        <span>Select room images</span>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(event) => handleRoomImages(event, index)}
-                        />
-                      </label>
-                      {uploadingState[`stays/${formData.category}/rooms/${index + 1}`] && (
-                        <p className="text-sm text-gray-600 mt-1">Uploading room images…</p>
-                      )}
-                      {errors[`room-${index}-images`] && (
-                        <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-images`]}</p>
-                      )}
-                      {room.images.length > 0 && (
-                        <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {room.images.map((src, imgIndex) => (
-                            <div key={src + imgIndex} className="relative">
-                              <img
-                                src={src}
-                                alt={`Room ${index + 1} image ${imgIndex + 1}`}
-                                className="w-full h-28 object-cover rounded-lg"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeRoomImage(index, imgIndex)}
-                                className="absolute top-2 right-2 bg-black/70 text-white rounded-full p-1"
-                              >
-                                <FaTimes />
-                              </button>
-                            </div>
-                          ))}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-900 mb-1">
+                            Bed type <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={room.bedType}
+                            onChange={(e) => updateRoom(index, "bedType", e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                          >
+                            {BED_TYPES.map((type) => (
+                              <option key={type} value={type}>
+                                {type}
+                              </option>
+                            ))}
+                          </select>
+                          {errors[`room-${index}-bedType`] && (
+                            <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-bedType`]}</p>
+                          )}
                         </div>
-                      )}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-900 mb-1">
+                            Beds <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={room.beds}
+                            onChange={(e) => updateRoom(index, "beds", Number(e.target.value))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                          />
+                          {errors[`room-${index}-beds`] && (
+                            <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-beds`]}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-900 mb-1">
+                            Capacity (guests) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={room.capacity}
+                            onChange={(e) => updateRoom(index, "capacity", Number(e.target.value))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                          />
+                          {errors[`room-${index}-capacity`] && (
+                            <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-capacity`]}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-900 mb-1">
+                            Price per night (₹) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={room.price}
+                            onChange={(e) => updateRoom(index, "price", Number(e.target.value))}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                          />
+                          {errors[`room-${index}-price`] && (
+                            <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-price`]}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-900 mb-1">Room size</label>
+                          <input
+                            type="text"
+                            value={room.size}
+                            onChange={(e) => updateRoom(index, "size", e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                            placeholder="e.g., 35 m²"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-1">Room description</label>
+                        <textarea
+                          rows={3}
+                          value={room.description}
+                          onChange={(e) => updateRoom(index, "description", e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                          placeholder="Describe what makes this room special"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-2">
+                          Room features
+                        </label>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {ROOM_FEATURE_OPTIONS.map((feature) => {
+                            const selected = room.features.includes(feature);
+                            return (
+                              <button
+                                key={feature}
+                                type="button"
+                                onClick={() => {
+                                  if (selected) removeRoomFeature(index, feature);
+                                  else updateRoom(index, "features", [...room.features, feature]);
+                                }}
+                                className={`px-3 py-2 text-sm rounded-full border transition ${selected
+                                    ? "border-green-500 bg-green-50 text-green-700"
+                                    : "border-gray-300 text-gray-900 hover:border-green-400"
+                                  }`}
+                              >
+                                {feature}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={roomFeatureDrafts[index] || ""}
+                            onChange={(e) =>
+                              setRoomFeatureDrafts((prev) => ({ ...prev, [index]: e.target.value }))
+                            }
+                            placeholder="Add custom feature"
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => addRoomFeature(index)}
+                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        {room.features.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {room.features.map((feature) => (
+                              <span
+                                key={feature}
+                                className="inline-flex items-center gap-2 px-3 py-1 text-sm bg-gray-100 rounded-full text-gray-900"
+                              >
+                                {feature}
+                                <button
+                                  type="button"
+                                  onClick={() => removeRoomFeature(index, feature)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <FaTimes />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-900 mb-1">
+                          Room images <span className="text-red-500">*</span> (minimum 3)
+                        </label>
+                        <label className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-500 text-gray-900">
+                          <FaUpload className="text-gray-600" />
+                          <span>Select room images</span>
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(event) => handleRoomImages(event, index)}
+                          />
+                        </label>
+                        {uploadingState[`stays/${formData.category}/rooms/${index + 1}`] && (
+                          <p className="text-sm text-gray-600 mt-1">Uploading room images…</p>
+                        )}
+                        {errors[`room-${index}-images`] && (
+                          <p className="text-red-600 text-sm mt-1">{errors[`room-${index}-images`]}</p>
+                        )}
+                        {room.images.length > 0 && (
+                          <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {room.images.map((src, imgIndex) => (
+                              <div key={src + imgIndex} className="relative">
+                                <img
+                                  src={src}
+                                  alt={`Room ${index + 1} image ${imgIndex + 1}`}
+                                  className="w-full h-28 object-cover rounded-lg"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeRoomImage(index, imgIndex)}
+                                  className="absolute top-2 right-2 bg-black/70 text-white rounded-full p-1"
+                                >
+                                  <FaTimes />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
             ) : null}
 
             {/* Single Room Section - Only for Room category */}
@@ -1443,11 +1438,10 @@ export default function AddStayPage() {
                                 if (selected) removeRoomFeature(0, feature);
                                 else updateRoom(0, "features", [...formData.rooms[0].features, feature]);
                               }}
-                              className={`px-3 py-2 text-sm rounded-full border transition ${
-                                selected
+                              className={`px-3 py-2 text-sm rounded-full border transition ${selected
                                   ? "border-green-500 bg-green-50 text-green-700"
                                   : "border-gray-300 text-gray-900 hover:border-green-400"
-                              }`}
+                                }`}
                             >
                               {feature}
                             </button>
@@ -1512,8 +1506,8 @@ export default function AddStayPage() {
                           ["1 BHK", "2 BHK", "3 BHK"].includes(formData.bnb.unitType)
                             ? formData.bnb.unitType
                             : bnbUnitTypeOther || (formData.bnb.unitType && !["1 BHK", "2 BHK", "3 BHK"].includes(formData.bnb.unitType))
-                            ? "Others"
-                            : ""
+                              ? "Others"
+                              : ""
                         }
                         onChange={(e) => {
                           if (e.target.value === "Others") {
@@ -1643,11 +1637,10 @@ export default function AddStayPage() {
                                 updateBnb("features", [...formData.bnb.features, feature]);
                               }
                             }}
-                            className={`px-3 py-2 text-sm rounded-full border transition ${
-                              selected
+                            className={`px-3 py-2 text-sm rounded-full border transition ${selected
                                 ? "border-green-500 bg-green-50 text-green-700"
                                 : "border-gray-300 text-gray-900 hover:border-green-400"
-                            }`}
+                              }`}
                           >
                             {feature}
                           </button>
@@ -1855,8 +1848,8 @@ export default function AddStayPage() {
                     ? "Updating…"
                     : "Saving…"
                   : isEditing
-                  ? "Update stay"
-                  : "Create stay"}
+                    ? "Update stay"
+                    : "Create stay"}
               </button>
               <button
                 type="button"

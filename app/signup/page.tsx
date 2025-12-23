@@ -100,59 +100,59 @@ export default function SignUpPage() {
   };
 
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (formData.password !== formData.confirmPassword) {
-    setError("Passwords don't match");
-    return;
-  }
-  if (!passwordValid) {
-    setError("Password too weak");
-    return;
-  }
-  if (isVendor && selectedServices.length === 0 && !isSeller) {
-    setError("Select at least one service");
-    return;
-  }
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+    if (!passwordValid) {
+      setError("Password too weak");
+      return;
+    }
+    if (isVendor && selectedServices.length === 0 && !isSeller) {
+      setError("Select at least one service");
+      return;
+    }
 
-  try {
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fullName: formData.name,
-        email: formData.email,
-        age: formData.age,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
-        contactNumber: formData.mobile,
-        accountType: isVendor || isSeller ? "vendor" : "user",
-        otp: formData.otp,
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.name,
+          email: formData.email,
+          age: formData.age,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          contactNumber: formData.mobile,
+          accountType: isVendor || isSeller ? "vendor" : "user",
+          otp: formData.otp,
 
-        // ✅ FIX — SEND SERVICES TO BACKEND
-        vendorServices: isVendor ? selectedServices : [],
-        isSeller,
-      }),
-    });
+          // ✅ FIX — SEND SERVICES TO BACKEND
+          vendorServices: isVendor ? selectedServices : [],
+          isSeller,
+        }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
-    alert("Account created!");
-    router.push("/login");
-  } catch (err: any) {
-    setError(err.message);
-  }
-};
+      alert("Account created!");
+      router.push("/login");
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
 
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 ">
       <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-md p-8 border-t-4 border-lime-400 mt-20">
         <h2 className="text-3xl font-bold text-center mb-6 text-black">Create Account</h2>
-            {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
-            {statusMessage && <p className="text-green-600 text-sm text-center mb-4">{statusMessage}</p>}
+        {error && <p className="text-red-500 text-sm text-center mb-2">{error}</p>}
+        {statusMessage && <p className="text-green-600 text-sm text-center mb-4">{statusMessage}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             name="name"
@@ -238,11 +238,10 @@ const handleSubmit = async (e: React.FormEvent) => {
                   key={opt.id}
                   type="button"
                   onClick={() => toggleService(opt.id)}
-                  className={`p-3 rounded-xl border-2 transition-all text-gray-800 ${
-                    selectedServices.includes(opt.id)
+                  className={`p-3 rounded-xl border-2 transition-all text-gray-800 ${selectedServices.includes(opt.id)
                       ? "bg-green-500 text-white border-green-500"
                       : "bg-white border-gray-200"
-                  }`}
+                    }`}
                 >
                   {opt.label}
                   {selectedServices.includes(opt.id) && (
@@ -261,20 +260,18 @@ const handleSubmit = async (e: React.FormEvent) => {
                     return next;
                   })
                 }
-                className={`p-3 rounded-xl border-2 transition-all text-gray-800 col-span-2 text-left ${
-                  isSeller
+                className={`p-3 rounded-xl border-2 transition-all text-gray-800 col-span-2 text-left ${isSeller
                     ? "bg-green-500 text-white border-green-500"
                     : "bg-white border-gray-200"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <span>Product Seller</span>
                   {isSeller && <FaCheck className="ml-2" />}
                 </div>
                 <p
-                  className={`text-xs mt-1 ${
-                    isSeller ? "text-white/80" : "text-gray-500"
-                  }`}
+                  className={`text-xs mt-1 ${isSeller ? "text-white/80" : "text-gray-500"
+                    }`}
                 >
                   Sell physical products on SafarHub.
                 </p>

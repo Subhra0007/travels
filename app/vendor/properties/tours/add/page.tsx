@@ -43,69 +43,69 @@ const AMENITY_SECTIONS: Array<{
   label: string;
   options: string[];
 }> = [
-  {
-    key: "Inclusions",
-    label: "Inclusions",
-    options: [
-      "Hotel pickup and drop-off",
-      "Air-conditioned vehicle",
-      "All entrance fees",
-      "Lunch",
-      "Bottled water",
-      "Snacks",
-      "Professional guide",
-      "Insurance",
-      "Gratuities",
-    ],
-  },
-  {
-    key: "Activities",
-    label: "Activities",
-    options: [
-      "Sightseeing",
-      "Cultural tour",
-      "Historical sites",
-      "Nature walk",
-      "Boat ride",
-      "Wildlife safari",
-      "Photography stops",
-      "Shopping time",
-    ],
-  },
-  {
-    key: "Accessibility",
-    label: "Accessibility",
-    options: [
-      "Wheelchair accessible",
-      "Stroller accessible",
-      "Infant seats available",
-      "Near public transportation",
-    ],
-  },
-  {
-    key: "Language",
-    label: "Language",
-    options: [
-      "English",
-      "Spanish",
-      "French",
-      "German",
-      "Mandarin",
-      "Hindi",
-      "Arabic",
-    ],
-  },
-  {
-    key: "Safety",
-    label: "Safety",
-    options: [
-      "First aid kit",
-      "Emergency contact",
-      "Licensed operator",
-      "COVID-19 safety measures",
-    ],
-  },
-];
+    {
+      key: "Inclusions",
+      label: "Inclusions",
+      options: [
+        "Hotel pickup and drop-off",
+        "Air-conditioned vehicle",
+        "All entrance fees",
+        "Lunch",
+        "Bottled water",
+        "Snacks",
+        "Professional guide",
+        "Insurance",
+        "Gratuities",
+      ],
+    },
+    {
+      key: "Activities",
+      label: "Activities",
+      options: [
+        "Sightseeing",
+        "Cultural tour",
+        "Historical sites",
+        "Nature walk",
+        "Boat ride",
+        "Wildlife safari",
+        "Photography stops",
+        "Shopping time",
+      ],
+    },
+    {
+      key: "Accessibility",
+      label: "Accessibility",
+      options: [
+        "Wheelchair accessible",
+        "Stroller accessible",
+        "Infant seats available",
+        "Near public transportation",
+      ],
+    },
+    {
+      key: "Language",
+      label: "Language",
+      options: [
+        "English",
+        "Spanish",
+        "French",
+        "German",
+        "Mandarin",
+        "Hindi",
+        "Arabic",
+      ],
+    },
+    {
+      key: "Safety",
+      label: "Safety",
+      options: [
+        "First aid kit",
+        "Emergency contact",
+        "Licensed operator",
+        "COVID-19 safety measures",
+      ],
+    },
+  ];
 
 const DURATION_OPTIONS = [
   "1 hour",
@@ -292,8 +292,8 @@ export default function AddTourPage() {
       features: Array.isArray(tour.features) && tour.features.length
         ? tour.features
         : Array.isArray(primaryOption?.features)
-        ? primaryOption.features
-        : [],
+          ? primaryOption.features
+          : [],
       location: {
         address: tour.location?.address ?? "",
         city: tour.location?.city ?? "",
@@ -323,10 +323,10 @@ export default function AddTourPage() {
       itinerary:
         Array.isArray(tour.itinerary) && tour.itinerary.length
           ? tour.itinerary.map((day: any, index: number) => ({
-              id: `${Date.now()}-${index}`,
-              heading: day.heading ?? `Day ${index + 1}`,
-              description: day.description ?? "",
-            }))
+            id: `${Date.now()}-${index}`,
+            heading: day.heading ?? `Day ${index + 1}`,
+            description: day.description ?? "",
+          }))
           : [createItineraryDay(1)],
       inclusions: tour.inclusions ?? "",
       exclusions: tour.exclusions ?? "",
@@ -707,11 +707,10 @@ export default function AddTourPage() {
                         key={feature}
                         type="button"
                         onClick={() => toggleFeature(feature)}
-                        className={`px-3 py-2 text-sm rounded-full border transition ${
-                          selected
+                        className={`px-3 py-2 text-sm rounded-full border transition ${selected
                             ? "border-green-500 bg-green-50 text-green-700"
                             : "border-gray-300 text-gray-900 hover:border-green-400"
-                        }`}
+                          }`}
                       >
                         {feature}
                       </button>
@@ -837,11 +836,10 @@ export default function AddTourPage() {
                       key={item}
                       type="button"
                       onClick={() => toggleArrayValue("heroHighlights", item)}
-                      className={`text-left px-3 py-2 rounded-lg border transition ${
-                        formData.heroHighlights.includes(item)
+                      className={`text-left px-3 py-2 rounded-lg border transition ${formData.heroHighlights.includes(item)
                           ? "border-green-500 bg-green-50 text-green-700"
                           : "border-gray-300 text-gray-900 hover:border-green-400"
-                      }`}
+                        }`}
                     >
                       {item}
                     </button>
@@ -873,11 +871,10 @@ export default function AddTourPage() {
                       key={facility}
                       type="button"
                       onClick={() => toggleArrayValue("popularFacilities", facility)}
-                      className={`px-3 py-2 rounded-full text-sm border transition ${
-                        formData.popularFacilities.includes(facility)
+                      className={`px-3 py-2 rounded-full text-sm border transition ${formData.popularFacilities.includes(facility)
                           ? "border-green-500 bg-green-50 text-green-700"
                           : "border-gray-300 text-gray-900 hover:border-green-400"
-                      }`}
+                        }`}
                     >
                       {facility}
                     </button>
@@ -958,7 +955,7 @@ export default function AddTourPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {["inside", "outside"].map((key) => (
                     <div key={key}>
                       <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -993,7 +990,7 @@ export default function AddTourPage() {
                       )}
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
             </section>
 
@@ -1012,11 +1009,10 @@ export default function AddTourPage() {
                             key={option}
                             type="button"
                             onClick={() => toggleAmenity(section.key, option)}
-                            className={`px-3 py-2 text-sm rounded-full border transition ${
-                              selected
+                            className={`px-3 py-2 text-sm rounded-full border transition ${selected
                                 ? "border-green-500 bg-green-50 text-green-700"
                                 : "border-gray-300 text-gray-900 hover:border-green-400"
-                            }`}
+                              }`}
                           >
                             {option}
                           </button>
@@ -1252,8 +1248,8 @@ export default function AddTourPage() {
                     ? "Updating…"
                     : "Creating…"
                   : isEditing
-                  ? "Update Tour"
-                  : "Create Tour"}
+                    ? "Update Tour"
+                    : "Create Tour"}
               </button>
               <button
                 type="button"

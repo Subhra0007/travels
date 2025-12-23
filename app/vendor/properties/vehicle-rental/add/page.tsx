@@ -37,49 +37,49 @@ const AMENITY_SECTIONS: Array<{
   label: string;
   options: string[];
 }> = [
-  {
-    key: "Interior",
-    label: "Interior Features",
-    options: [
-      "Air conditioning",
-      "Heated seats",
-      "Leather seats",
-      "Sunroof",
-      "Premium audio",
-      "Touchscreen",
-      "Bluetooth",
-      "USB ports",
-    ],
-  },
-  {
-    key: "Safety",
-    label: "Safety",
-    options: [
-      "ABS",
-      "Airbags",
-      "Backup camera",
-      "Lane assist",
-      "Parking sensors",
-      "Traction control",
-      "Child seat anchor",
-      "First aid kit",
-    ],
-  },
-  {
-    key: "Convenience",
-    label: "Convenience",
-    options: [
-      "Keyless entry",
-      "Remote start",
-      "Cruise control",
-      "GPS navigation",
-      "Apple CarPlay",
-      "Android Auto",
-      "Wireless charging",
-      "360 camera",
-    ],
-  },
-];
+    {
+      key: "Interior",
+      label: "Interior Features",
+      options: [
+        "Air conditioning",
+        "Heated seats",
+        "Leather seats",
+        "Sunroof",
+        "Premium audio",
+        "Touchscreen",
+        "Bluetooth",
+        "USB ports",
+      ],
+    },
+    {
+      key: "Safety",
+      label: "Safety",
+      options: [
+        "ABS",
+        "Airbags",
+        "Backup camera",
+        "Lane assist",
+        "Parking sensors",
+        "Traction control",
+        "Child seat anchor",
+        "First aid kit",
+      ],
+    },
+    {
+      key: "Convenience",
+      label: "Convenience",
+      options: [
+        "Keyless entry",
+        "Remote start",
+        "Cruise control",
+        "GPS navigation",
+        "Apple CarPlay",
+        "Android Auto",
+        "Wireless charging",
+        "360 camera",
+      ],
+    },
+  ];
 
 const VEHICLE_TYPES = [
   "Sedan",
@@ -247,20 +247,20 @@ export default function AddVehicleRentalPage() {
       options:
         Array.isArray(rental.options) && rental.options.length
           ? rental.options.map((option: any) => ({
-              model: option.model ?? "",
-              description: option.description ?? "",
-              type: option.type ?? "Sedan",
-              pricePerDay: option.pricePerDay ?? 0,
-              features: option.features ?? [],
-              images: option.images ?? [],
-              available: option.available ?? 1,
-              driver: {
-                name: option.driver?.name ?? "",
-                age: option.driver?.age != null ? String(option.driver.age) : "",
-                experienceYears:
-                  option.driver?.experienceYears != null ? String(option.driver.experienceYears) : "",
-              },
-            }))
+            model: option.model ?? "",
+            description: option.description ?? "",
+            type: option.type ?? "Sedan",
+            pricePerDay: option.pricePerDay ?? 0,
+            features: option.features ?? [],
+            images: option.images ?? [],
+            available: option.available ?? 1,
+            driver: {
+              name: option.driver?.name ?? "",
+              age: option.driver?.age != null ? String(option.driver.age) : "",
+              experienceYears:
+                option.driver?.experienceYears != null ? String(option.driver.experienceYears) : "",
+            },
+          }))
           : [createDefaultOption()],
       about: {
         heading: rental.about?.heading ?? "",
@@ -479,8 +479,8 @@ export default function AddVehicleRentalPage() {
 
   return (
     <div className="flex h-screen bg-gray-50 text-black ">
-       {/* Desktop Sidebar */}
-            {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
+      {/* Desktop Sidebar */}
+      {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
                    <Sidebar />
                  </div> */}
 
@@ -632,11 +632,10 @@ export default function AddVehicleRentalPage() {
                     key={h}
                     type="button"
                     onClick={() => toggleArrayValue("heroHighlights", h)}
-                    className={`px-3 py-2 rounded-lg border text-sm ${
-                      formData.heroHighlights.includes(h)
+                    className={`px-3 py-2 rounded-lg border text-sm ${formData.heroHighlights.includes(h)
                         ? "bg-green-50 border-green-500 text-green-700"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   >
                     {h}
                   </button>
@@ -960,8 +959,7 @@ export default function AddVehicleRentalPage() {
               )}
             </section>
 
-            {/* Videos */}
-            <section className="bg-white rounded-xl shadow p-6 space-y-4">
+            {/* <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold">Videos (optional)</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -1025,7 +1023,7 @@ export default function AddVehicleRentalPage() {
                   )}
                 </div>
               </div>
-            </section>
+            </section> */}
 
             {/* Popular Facilities */}
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
@@ -1036,11 +1034,10 @@ export default function AddVehicleRentalPage() {
                     key={f}
                     type="button"
                     onClick={() => toggleArrayValue("popularFacilities", f)}
-                    className={`px-3 py-1 rounded-full text-sm border ${
-                      formData.popularFacilities.includes(f)
+                    className={`px-3 py-1 rounded-full text-sm border ${formData.popularFacilities.includes(f)
                         ? "bg-green-50 border-green-500 text-green-700"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   >
                     {f}
                   </button>
@@ -1061,11 +1058,10 @@ export default function AddVehicleRentalPage() {
                           key={opt}
                           type="button"
                           onClick={() => toggleAmenity(sec.key, opt)}
-                          className={`px-3 py-1 rounded-full text-sm border ${
-                            formData.amenities[sec.key]?.includes(opt)
+                          className={`px-3 py-1 rounded-full text-sm border ${formData.amenities[sec.key]?.includes(opt)
                               ? "bg-green-50 border-green-500 text-green-700"
                               : "border-gray-300"
-                          }`}
+                            }`}
                         >
                           {opt}
                         </button>
@@ -1221,36 +1217,36 @@ export default function AddVehicleRentalPage() {
             <section className="bg-white rounded-xl shadow p-6 space-y-4">
               <h2 className="text-xl font-semibold">House Rules (optional)</h2>
               <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newHouseRule}
-                    onChange={(e) => setNewHouseRule(e.target.value)}
-                    placeholder="Add a house rule"
-                    className="flex-1 px-4 py-2 border rounded-lg"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        const rule = newHouseRule.trim();
-                        if (rule) {
-                          setFormData((p) => ({ ...p, defaultHouseRules: [...p.defaultHouseRules, rule] }));
-                          setNewHouseRule("");
-                        }
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
+                <input
+                  type="text"
+                  value={newHouseRule}
+                  onChange={(e) => setNewHouseRule(e.target.value)}
+                  placeholder="Add a house rule"
+                  className="flex-1 px-4 py-2 border rounded-lg"
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
                       const rule = newHouseRule.trim();
                       if (rule) {
                         setFormData((p) => ({ ...p, defaultHouseRules: [...p.defaultHouseRules, rule] }));
                         setNewHouseRule("");
                       }
-                    }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    Add
-                  </button>
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const rule = newHouseRule.trim();
+                    if (rule) {
+                      setFormData((p) => ({ ...p, defaultHouseRules: [...p.defaultHouseRules, rule] }));
+                      setNewHouseRule("");
+                    }
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Add
+                </button>
               </div>
               {formData.defaultHouseRules.length > 0 && (
                 <div className="mt-2 space-y-1">
@@ -1282,8 +1278,8 @@ export default function AddVehicleRentalPage() {
                     ? "Updating…"
                     : "Saving…"
                   : isEditing
-                  ? "Update Rental"
-                  : "Create Rental"}
+                    ? "Update Rental"
+                    : "Create Rental"}
               </button>
               <button
                 type="button"

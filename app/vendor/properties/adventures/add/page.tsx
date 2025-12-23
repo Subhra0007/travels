@@ -51,62 +51,62 @@ const AMENITY_SECTIONS: Array<{
   label: string;
   options: string[];
 }> = [
-  {
-    key: "Equipment",
-    label: "Equipment Provided",
-    options: [
-      "Trekking poles",
-      "Backpack",
-      "Camping tent",
-      "Sleeping bag",
-      "Headlamp",
-      "Cooking gear",
-      "Life jacket",
-      "Helmet",
-      "Harness",
-      "Rope",
-      "Climbing shoes",
-      "Crampons",
-    ],
-  },
-  {
-    key: "Safety",
-    label: "Safety",
-    options: [
-      "First aid kit",
-      "Emergency contact",
-      "Certified guide",
-      "Insurance",
-      "Safety briefing",
-      "Weather monitoring",
-      "GPS tracking",
-    ],
-  },
-  {
-    key: "Food & Drink",
-    label: "Food & Drink",
-    options: [
-      "Breakfast",
-      "Lunch",
-      "Dinner",
-      "Snacks",
-      "Bottled water",
-      "Energy bars",
-      "Tea/Coffee",
-    ],
-  },
-  {
-    key: "Transport",
-    label: "Transport",
-    options: [
-      "Hotel pickup",
-      "4x4 vehicle",
-      "Boat transfer",
-      "Air‑conditioned bus",
-      "Private car",
-    ],
-  },
-];
+    {
+      key: "Equipment",
+      label: "Equipment Provided",
+      options: [
+        "Trekking poles",
+        "Backpack",
+        "Camping tent",
+        "Sleeping bag",
+        "Headlamp",
+        "Cooking gear",
+        "Life jacket",
+        "Helmet",
+        "Harness",
+        "Rope",
+        "Climbing shoes",
+        "Crampons",
+      ],
+    },
+    {
+      key: "Safety",
+      label: "Safety",
+      options: [
+        "First aid kit",
+        "Emergency contact",
+        "Certified guide",
+        "Insurance",
+        "Safety briefing",
+        "Weather monitoring",
+        "GPS tracking",
+      ],
+    },
+    {
+      key: "Food & Drink",
+      label: "Food & Drink",
+      options: [
+        "Breakfast",
+        "Lunch",
+        "Dinner",
+        "Snacks",
+        "Bottled water",
+        "Energy bars",
+        "Tea/Coffee",
+      ],
+    },
+    {
+      key: "Transport",
+      label: "Transport",
+      options: [
+        "Hotel pickup",
+        "4x4 vehicle",
+        "Boat transfer",
+        "Air‑conditioned bus",
+        "Private car",
+      ],
+    },
+  ];
 
 const DIFFICULTY_LEVELS = ["Easy", "Moderate", "Challenging", "Expert"];
 const FEATURE_PRESETS = [
@@ -314,14 +314,14 @@ export default function AddAdventurePage() {
         typeof adventure.price === "number"
           ? adventure.price
           : typeof primaryOption?.price === "number"
-          ? primaryOption.price
-          : 0,
+            ? primaryOption.price
+            : 0,
       capacity:
         typeof adventure.capacity === "number"
           ? adventure.capacity
           : typeof primaryOption?.capacity === "number"
-          ? primaryOption.capacity
-          : 10,
+            ? primaryOption.capacity
+            : 10,
       difficultyLevel: adventure.difficultyLevel ?? primaryOption?.difficulty ?? "",
       features:
         Array.isArray(adventure.features) && adventure.features.length
@@ -354,10 +354,10 @@ export default function AddAdventurePage() {
       itinerary:
         Array.isArray(adventure.itinerary) && adventure.itinerary.length
           ? adventure.itinerary.map((day: any, index: number) => ({
-              id: `${Date.now()}-${index}`,
-              heading: day.heading ?? `Day ${index + 1}`,
-              description: day.description ?? "",
-            }))
+            id: `${Date.now()}-${index}`,
+            heading: day.heading ?? `Day ${index + 1}`,
+            description: day.description ?? "",
+          }))
           : [createItineraryDay(1)],
       inclusions: adventure.inclusions ?? "",
       exclusions: adventure.exclusions ?? "",
@@ -596,7 +596,7 @@ export default function AddAdventurePage() {
         }),
       });
       const data = await res.json();
-        if (!res.ok || !data.success) {
+      if (!res.ok || !data.success) {
         throw new Error(data?.message || "Failed to create tour");
       }
       router.push("/vendor/properties/adventures");
@@ -617,7 +617,7 @@ export default function AddAdventurePage() {
   return (
     <div className="flex h-screen bg-gray-50 text-black ">
       {/* Desktop Sidebar */}
-       {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
+      {/* <div className="hidden lg:block lg:sticky lg:top-0 lg:h-screen pt-15 overflow-y-auto">
               <Sidebar />
             </div> */}
       <div className="flex-1 flex flex-col">
@@ -760,11 +760,10 @@ export default function AddAdventurePage() {
                         key={feature}
                         type="button"
                         onClick={() => toggleFeature(feature)}
-                        className={`px-3 py-2 text-sm rounded-full border transition ${
-                          selected
+                        className={`px-3 py-2 text-sm rounded-full border transition ${selected
                             ? "border-green-500 bg-green-50 text-green-700"
                             : "border-gray-300 text-gray-900 hover:border-green-400"
-                        }`}
+                          }`}
                       >
                         {feature}
                       </button>
@@ -904,11 +903,10 @@ export default function AddAdventurePage() {
                     key={h}
                     type="button"
                     onClick={() => toggleArrayValue("heroHighlights", h)}
-                    className={`px-3 py-2 rounded-lg border text-sm ${
-                      formData.heroHighlights.includes(h)
+                    className={`px-3 py-2 rounded-lg border text-sm ${formData.heroHighlights.includes(h)
                         ? "bg-green-50 border-green-500 text-green-700"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   >
                     {h}
                   </button>
@@ -1020,7 +1018,7 @@ export default function AddAdventurePage() {
               </div>
 
               {/* Videos – Inside */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium mb-1">
                   Inside Videos (optional)
                 </label>
@@ -1058,10 +1056,10 @@ export default function AddAdventurePage() {
                     ))}
                   </div>
                 )}
-              </div>
+              </div> */}
 
               {/* Videos – Outside */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium mb-1">
                   Outside Videos (optional)
                 </label>
@@ -1099,7 +1097,7 @@ export default function AddAdventurePage() {
                     ))}
                   </div>
                 )}
-              </div>
+              </div> */}
             </section>
 
             {/* ── Popular Facilities ── */}
@@ -1111,11 +1109,10 @@ export default function AddAdventurePage() {
                     key={f}
                     type="button"
                     onClick={() => toggleArrayValue("popularFacilities", f)}
-                    className={`px-3 py-1 rounded-full text-sm border ${
-                      formData.popularFacilities.includes(f)
+                    className={`px-3 py-1 rounded-full text-sm border ${formData.popularFacilities.includes(f)
                         ? "bg-green-50 border-green-500 text-green-700"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   >
                     {f}
                   </button>
@@ -1136,11 +1133,10 @@ export default function AddAdventurePage() {
                           key={opt}
                           type="button"
                           onClick={() => toggleAmenity(sec.key, opt)}
-                          className={`px-3 py-1 rounded-full text-sm border ${
-                            formData.amenities[sec.key]?.includes(opt)
+                          className={`px-3 py-1 rounded-full text-sm border ${formData.amenities[sec.key]?.includes(opt)
                               ? "bg-green-50 border-green-500 text-green-700"
                               : "border-gray-300"
-                          }`}
+                            }`}
                         >
                           {opt}
                         </button>
@@ -1371,8 +1367,8 @@ export default function AddAdventurePage() {
                     ? "Updating…"
                     : "Saving…"
                   : isEditing
-                  ? "Update Adventure"
-                  : "Create Adventure"}
+                    ? "Update Adventure"
+                    : "Create Adventure"}
               </button>
               <button
                 type="button"
