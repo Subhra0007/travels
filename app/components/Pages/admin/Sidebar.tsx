@@ -278,7 +278,7 @@ const Sidebar: React.FC = () => {
               {[
                 { label: "Transactions", path: "/admin/accounting/transactions", icon: <FaMoneyCheckAlt size={12} /> },
                 { label: "Invoices", path: "/admin/accounting/invoices", icon: <FaFileAlt size={12} /> },
-                { label: "Refunds", path: "/admin/accounting/refunds", icon: <FaTimesCircle size={12} /> },
+                // { label: "Refunds", path: "/admin/accounting/refunds", icon: <FaTimesCircle size={12} /> },
               ].map((item) => (
                 <div
                   key={item.path}
@@ -324,7 +324,7 @@ const Sidebar: React.FC = () => {
         </div>
 
         {/* Reports */}
-        <div>
+        {/* <div>
           {menuItem("reports", "Reports", <FaFileAlt size={14} />)}
           {openMenu === "reports" && (
             <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
@@ -348,7 +348,7 @@ const Sidebar: React.FC = () => {
               ))}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Customer Support */}
         <button
