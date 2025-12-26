@@ -21,6 +21,7 @@ export interface IStay extends Document {
     description?: string;
     icon?: string;
   }>;
+  
   tags: string[];
   rating: {
     average: number;
