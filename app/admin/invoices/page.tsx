@@ -241,7 +241,7 @@ export default function InvoicesListPage() {
 
                   {/* Invoice Detail Modal */}
                   {showModal && selectedInvoice && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm no-print">
+                        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm no-print">
                               <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative modal-content shadow-2xl">
                                     <div className="sticky top-0 bg-white px-8 py-4 border-b flex items-center justify-between no-print z-10">
                                           <h2 className="text-xl font-bold text-gray-900">Invoice Details</h2>
