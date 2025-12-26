@@ -10,6 +10,7 @@ type AdminTransactionContext = {
 
 // POST - Create transaction
 export const POST = auth(async (req: NextRequest, _context?: AdminTransactionContext) => {
+  console.log("POST /api/admin/transactions called");
   try {
     await dbConnect();
     const user = (req as any).user;
@@ -61,6 +62,7 @@ export const POST = auth(async (req: NextRequest, _context?: AdminTransactionCon
 
 // GET - Admin/vendor fetch transactions
 export const GET = auth(async (req: NextRequest, _context?: AdminTransactionContext) => {
+  console.log("GET /api/admin/transactions called");
   try {
     await dbConnect();
     const user = (req as any).user;

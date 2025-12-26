@@ -17,6 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Verify admin token from backend
   const verifyAdmin = useCallback(async () => {
+    if (user) return; // Skip if already verified
     try {
       const res = await fetch("/api/auth/verify", {
         credentials: "include",
@@ -46,7 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, user]);
 
   useEffect(() => {
     verifyAdmin();
@@ -61,14 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push("/login");
   };
 
-  const handleNavigation = (href: string) => {
-    setMobileSidebarOpen(false);
-    startNavigation(() => {
-      router.push(href);
-    });
-  };
-
-  if (loading) {
+  if (loading && !user) {
     return (
       <div className="fixed inset-0 z-100 flex items-center justify-center bg-white">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
@@ -76,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  if (!user) return <p className="text-center mt-20">No user found.</p>;
+  if (!user) return <div className="fixed inset-0 flex items-center justify-center bg-sky-50"><p className="text-gray-500 animate-pulse font-medium">Authenticating Admin...</p></div>;
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-sky-50 text-black">
@@ -97,14 +91,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <FaBars />
           </button>
         </div>
-        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 md:p-6">
-          {isNavigating ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent" />
+        <main className="flex-1 overflow-y-auto overflow-x-auto lg:overflow-x-hidden p-4 md:p-6 relative">
+          {isNavigating && (
+            <div className="absolute inset-x-0 top-0 h-1 bg-green-500/30 z-50">
+              <div className="h-full bg-green-500 animate-[loading_1s_infinite]" />
             </div>
-          ) : (
-            children
           )}
+          <div className={isNavigating ? "opacity-50 pointer-events-none transition-opacity duration-300" : "opacity-100 transition-opacity duration-300"}>
+            {children}
+          </div>
         </main>
       </div>
 
