@@ -29,9 +29,17 @@ export const GET = auth(async (req: NextRequest) => {
 export const POST = auth(async (req: NextRequest) => {
   try {
     await dbConnect();
-    const userId = (req as any).user.id;
-    const body = await req.json();
+    const user = (req as any).user;
+    const userId = user.id || user._id;
 
+    if (!userId || userId === "admin-fixed") {
+      return NextResponse.json(
+        { success: false, message: "Authentication error: Valid User ID required" },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json();
     const { name, phone, pincode, address, city, state, landmark } = body;
 
     if (!name || !phone || !pincode || !address || !city || !state) {

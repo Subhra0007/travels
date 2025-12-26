@@ -70,10 +70,9 @@ const Sidebar: React.FC = () => {
     <button
       onClick={() => toggleMenu(key)}
       className={`flex w-full items-center justify-between p-2 rounded font-medium transition-colors
-        ${
-          openMenu === key
-            ? "text-green-600 bg-green-50"
-            : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+        ${openMenu === key
+          ? "text-green-600 bg-green-50"
+          : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
         }`}
     >
       <span className="flex items-center gap-3 whitespace-nowrap">
@@ -91,84 +90,78 @@ const Sidebar: React.FC = () => {
   return (
     <aside className="w-65 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0 overflow-y-auto ">
       <div className="p-4 flex-1 overflow-y-auto">
-      <nav className="flex-1 space-y-2 text-sm mt-15 ">
-        {/* Dashboard */}
-        <button
-          onClick={() => router.push("/admin")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer
-            ${
-              isActive("/admin")
+        <nav className="flex-1 space-y-2 text-sm mt-15 ">
+          {/* Dashboard */}
+          <button
+            onClick={() => router.push("/admin")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer
+            ${isActive("/admin")
                 ? "text-green-600 bg-green-50"
                 : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-            }`}
-        >
-          <FaChartPie size={14} /> Dashboard
-        </button>
+              }`}
+          >
+            <FaChartPie size={14} /> Dashboard
+          </button>
 
-   
 
-        {/* Products */}
-        <button
-          onClick={() => router.push("/admin/products")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/products")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <MdShoppingCart size={14} /> Products
-        </button>
 
-        {/* Orders */}
-        <button
-          onClick={() => router.push("/admin/orders")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/orders")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <FaShoppingBag size={14} /> Orders
-        </button>
+          {/* Products */}
+          <button
+            onClick={() => router.push("/admin/products")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/products")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <MdShoppingCart size={14} /> Products
+          </button>
 
-        {/* Product Purchase Manage */}
-        <button
-          onClick={() => router.push("/admin/product-purchase-manage")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/product-purchase-manage")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <FaShoppingBag size={14} /> Product Purchase Manage
-        </button>
+          {/* Orders */}
+          <button
+            onClick={() => router.push("/admin/orders")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/orders")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <FaShoppingBag size={14} /> Orders
+          </button>
 
-        {/* Categories */}
-        <button
-          onClick={() => router.push("/admin/categories")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/categories")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <BiCategory size={14} /> Categories
-        </button>
+          {/* Product Purchase Manage */}
+          <button
+            onClick={() => router.push("/admin/product-purchase-manage")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/product-purchase-manage")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <FaShoppingBag size={14} /> Product Purchase Manage
+          </button>
 
-        {/* Sellers */}
-        <button
-          onClick={() => router.push("/admin/sellers")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/sellers")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <MdShoppingCart size={14} /> Sellers
-        </button>
+          {/* Categories */}
+          <button
+            onClick={() => router.push("/admin/categories")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/categories")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <BiCategory size={14} /> Categories
+          </button>
 
-        {/* Blogs */}
-        {/* <button
+          {/* Sellers */}
+          <button
+            onClick={() => router.push("/admin/sellers")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/sellers")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <MdShoppingCart size={14} /> Sellers
+          </button>
+
+          {/* Blogs */}
+          {/* <button
           onClick={() => router.push("/admin/blogs")}
           className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer ${
             isActive("/admin/blogs")
@@ -179,87 +172,83 @@ const Sidebar: React.FC = () => {
           <FaUsers size={14} /> Blogs
         </button> */}
 
-        {/* Coupons */}
-        <button
-          onClick={() => router.push("/admin/coupons")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/coupons")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <RiCouponLine  size={14} /> Coupons
-        </button>
+          {/* Coupons */}
+          <button
+            onClick={() => router.push("/admin/coupons")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/coupons")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <RiCouponLine size={14} /> Coupons
+          </button>
 
-        {/* Travel Partners */}
-        <div>
-          {menuItem("partners", "Travel Partners", <FaUmbrellaBeach size={14} />)}
-          {openMenu === "partners" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
-              {[
-                { label: "All Partners", path: "/admin/partners", icon: <FaUmbrellaBeach size={12} /> },
-                { label: "Stays", path: "/admin/partners/stays", icon: <FaBed size={12} /> },
-                { label: "Tours", path: "/admin/partners/tours", icon: <FaPlaneDeparture size={12} /> },
-                { label: "Adventures", path: "/admin/partners/adventures", icon: <FaMountain size={12} /> },
-                { label: "Vehicle Rental", path: "/admin/partners/vehicle-rental", icon: <FaCar size={12} /> },
-              ].map((item) => (
-                <div
-                  key={item.path}
-                  onClick={() => router.push(item.path)}
-                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
-                    isActive(item.path)
-                      ? "text-green-600 bg-green-50"
-                      : "text-gray-700 hover:text-green-600"
-                  }`}
-                >
-                  {item.icon}
-                  <span className="truncate">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Travel Partners */}
+          <div>
+            {menuItem("partners", "Travel Partners", <FaUmbrellaBeach size={14} />)}
+            {openMenu === "partners" && (
+              <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
+                {[
+                  { label: "All Partners", path: "/admin/partners", icon: <FaUmbrellaBeach size={12} /> },
+                  { label: "Stays", path: "/admin/partners/stays", icon: <FaBed size={12} /> },
+                  { label: "Tours", path: "/admin/partners/tours", icon: <FaPlaneDeparture size={12} /> },
+                  { label: "Adventures", path: "/admin/partners/adventures", icon: <FaMountain size={12} /> },
+                  { label: "Vehicle Rental", path: "/admin/partners/vehicle-rental", icon: <FaCar size={12} /> },
+                ].map((item) => (
+                  <div
+                    key={item.path}
+                    onClick={() => router.push(item.path)}
+                    className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${isActive(item.path)
+                        ? "text-green-600 bg-green-50"
+                        : "text-gray-700 hover:text-green-600"
+                      }`}
+                  >
+                    {item.icon}
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Manage Bookings */}
-        <div>
-          {menuItem("bookings", "Manage Bookings", <FaPlaneDeparture size={14} />)}
-          {openMenu === "bookings" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
-              {[
-                { label: "Stays", path: "/admin/bookings/stays", icon: <FaBed size={12} /> },
-                { label: "Tours", path: "/admin/bookings/tours", icon: <FaPlaneDeparture size={12} /> },
-                { label: "Adventures", path: "/admin/bookings/adventures", icon: <FaMountain size={12} /> },
-                { label: "Vehicle Rental", path: "/admin/bookings/vehicle-rental", icon: <FaCar size={12} /> },
-              ].map((item) => (
-                <div
-                  key={item.path}
-                  onClick={() => router.push(item.path)}
-                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
-                    isActive(item.path)
-                      ? "text-green-600 bg-green-50"
-                      : "text-gray-700 hover:text-green-600"
-                  }`}
-                >
-                  {item.icon}
-                  <span className="truncate">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Manage Bookings */}
+          <div>
+            {menuItem("bookings", "Manage Bookings", <FaPlaneDeparture size={14} />)}
+            {openMenu === "bookings" && (
+              <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
+                {[
+                  { label: "Stays", path: "/admin/bookings/stays", icon: <FaBed size={12} /> },
+                  { label: "Tours", path: "/admin/bookings/tours", icon: <FaPlaneDeparture size={12} /> },
+                  { label: "Adventures", path: "/admin/bookings/adventures", icon: <FaMountain size={12} /> },
+                  { label: "Vehicle Rental", path: "/admin/bookings/vehicle-rental", icon: <FaCar size={12} /> },
+                ].map((item) => (
+                  <div
+                    key={item.path}
+                    onClick={() => router.push(item.path)}
+                    className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${isActive(item.path)
+                        ? "text-green-600 bg-green-50"
+                        : "text-gray-700 hover:text-green-600"
+                      }`}
+                  >
+                    {item.icon}
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        <button
-          onClick={() => router.push("/admin/cancellation")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/cancellation")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <FaTimesCircle size={14} /> Order Cancellation
-        </button>
+          <button
+            onClick={() => router.push("/admin/cancellation")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/cancellation")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <FaTimesCircle size={14} /> Order Cancellation
+          </button>
 
-        {/* <button
+          {/* <button
           onClick={() => router.push("/admin/admin-product-cancellations")}
           className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
             isActive("/admin/admin-product-cancellations")
@@ -270,61 +259,59 @@ const Sidebar: React.FC = () => {
           <MdCancelPresentation size={14} /> Admin Product Cancellations
         </button> */}
 
-        {/* Accounting */}
-        <div>
-          {menuItem("accounting", "Accounting", <FaMoneyCheckAlt size={14} />)}
-          {openMenu === "accounting" && (
-            <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
-              {[
-                { label: "Transactions", path: "/admin/accounting/transactions", icon: <FaMoneyCheckAlt size={12} /> },
-                { label: "Invoices", path: "/admin/accounting/invoices", icon: <FaFileAlt size={12} /> },
-                // { label: "Refunds", path: "/admin/accounting/refunds", icon: <FaTimesCircle size={12} /> },
-              ].map((item) => (
-                <div
-                  key={item.path}
-                  onClick={() => router.push(item.path)}
-                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
-                    isActive(item.path)
-                      ? "text-green-600 bg-green-50"
-                      : "text-gray-700 hover:text-green-600"
-                  }`}
-                >
-                  {item.icon}
-                  <span className="truncate">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Accounting */}
+          <div>
+            {menuItem("accounting", "Accounting", <FaMoneyCheckAlt size={14} />)}
+            {openMenu === "accounting" && (
+              <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
+                {[
+                  { label: "Transactions", path: "/admin/accounting/transactions", icon: <FaMoneyCheckAlt size={12} /> },
+                  { label: "Invoices", path: "/admin/accounting/invoices", icon: <FaFileAlt size={12} /> },
+                  // { label: "Refunds", path: "/admin/accounting/refunds", icon: <FaTimesCircle size={12} /> },
+                ].map((item) => (
+                  <div
+                    key={item.path}
+                    onClick={() => router.push(item.path)}
+                    className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${isActive(item.path)
+                        ? "text-green-600 bg-green-50"
+                        : "text-gray-700 hover:text-green-600"
+                      }`}
+                  >
+                    {item.icon}
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Customers */}
-        <div>
-          {menuItem("customers", "Customers", <FaUsers size={14} />)}
-          {openMenu === "customers" && (
-            <div className="ml-8 mt-2 text-sm space-y-1">
-              {[
-                { label: "All Customers", path: "/admin/customers", icon: <FaUsers size={12} /> },
-                { label: "Reviews", path: "/admin/customers/reviews", icon: <TbLogs size={12} /> },
-              ].map((item) => (
-                <div
-                  key={item.path}
-                  onClick={() => router.push(item.path)}
-                  className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${
-                    isActive(item.path)
-                      ? "text-green-600 bg-green-50"
-                      : "text-gray-700 hover:text-green-600"
-                  }`}
-                >
-                  {item.icon}
-                  <span className="truncate">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          {/* Customers */}
+          <div>
+            {menuItem("customers", "Customers", <FaUsers size={14} />)}
+            {openMenu === "customers" && (
+              <div className="ml-8 mt-2 text-sm space-y-1">
+                {[
+                  { label: "All Customers", path: "/admin/customers", icon: <FaUsers size={12} /> },
+                  { label: "Reviews", path: "/admin/reviews", icon: <TbLogs size={12} /> },
+                ].map((item) => (
+                  <div
+                    key={item.path}
+                    onClick={() => router.push(item.path)}
+                    className={`flex items-center gap-2 rounded px-2 py-1 transition-colors whitespace-nowrap ${isActive(item.path)
+                        ? "text-green-600 bg-green-50"
+                        : "text-gray-700 hover:text-green-600"
+                      }`}
+                  >
+                    {item.icon}
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Reports */}
-        {/* <div>
+          {/* Reports */}
+          {/* <div>
           {menuItem("reports", "Reports", <FaFileAlt size={14} />)}
           {openMenu === "reports" && (
             <div className="ml-8 mt-2 text-sm space-y-1 cursor-pointer">
@@ -350,48 +337,46 @@ const Sidebar: React.FC = () => {
           )}
         </div> */}
 
-        {/* Customer Support */}
-        <button
-          onClick={() => router.push("/admin/support")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${
-            isActive("/admin/support")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <FaComments size={14} /> Customer Support
-        </button>
-         {/* Blogs */}
-        <button
-          onClick={() => router.push("/admin/blogs")}
-          className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap  ${
-            isActive("/admin/blogs")
-              ? "text-green-600 bg-green-50"
-              : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
-          }`}
-        >
-          <TbLogs size={14} /> Blogs
-        </button>
+          {/* Customer Support */}
+          <button
+            onClick={() => router.push("/admin/support")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap ${isActive("/admin/support")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <FaComments size={14} /> Customer Support
+          </button>
+          {/* Blogs */}
+          <button
+            onClick={() => router.push("/admin/blogs")}
+            className={`flex w-full items-center gap-3 p-2 rounded font-medium transition-colors cursor-pointer whitespace-nowrap  ${isActive("/admin/blogs")
+                ? "text-green-600 bg-green-50"
+                : "text-gray-700 hover:text-green-600 hover:bg-gray-50"
+              }`}
+          >
+            <TbLogs size={14} /> Blogs
+          </button>
 
-      
-      </nav>
 
-      {/* Bottom Section */}
-      <div className=" space-y-2 p-2 mt-10 ">
-        <button
-          onClick={() => router.push("/admin/profile")}
-          className="flex items-center gap-3 w-full text-gray-700 hover:text-green-600 text-sm cursor-pointer"
-        >
-          <FaUserCircle size={14} /> Profile
-        </button>
+        </nav>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full text-gray-700 hover:text-red-600 text-sm cursor-pointer"
-        >
-          <TbLogout size={14} /> Logout
-        </button>
-      </div>
+        {/* Bottom Section */}
+        <div className=" space-y-2 p-2 mt-10 ">
+          <button
+            onClick={() => router.push("/admin/profile")}
+            className="flex items-center gap-3 w-full text-gray-700 hover:text-green-600 text-sm cursor-pointer"
+          >
+            <FaUserCircle size={14} /> Profile
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full text-gray-700 hover:text-red-600 text-sm cursor-pointer"
+          >
+            <TbLogout size={14} /> Logout
+          </button>
+        </div>
       </div>
     </aside>
   );

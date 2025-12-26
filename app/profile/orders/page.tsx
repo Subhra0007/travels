@@ -5,6 +5,7 @@ import Image from "next/image";
 import { FaShoppingBag, FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
 import LocalLoader from "../../components/common/LocalLoader";
 import CancellationModal from "../../components/common/CancellationModal";
+import ReviewModal from "../../components/Reviews/ReviewModal";
 
 const PRESET_ORDER_REASONS = [
   "Ordered the wrong item",
@@ -56,6 +57,8 @@ export default function OrdersPage() {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSubmitting, setModalSubmitting] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{ id: string; type: any } | null>(null);
 
   useEffect(() => {
     loadOrders();
@@ -188,11 +191,10 @@ export default function OrdersPage() {
                       type="button"
                       onClick={() => openCancellationModal(order._id)}
                       disabled={modalSubmitting && cancellingId === order._id}
-                      className={`text-sm font-semibold rounded-full border px-4 py-1 ${
-                        modalSubmitting && cancellingId === order._id
-                          ? "border-gray-200 text-gray-400"
-                          : "border-red-200 text-red-600 hover:bg-red-50"
-                      }`}
+                      className={`text-sm font-semibold rounded-full border px-4 py-1 ${modalSubmitting && cancellingId === order._id
+                        ? "border-gray-200 text-gray-400"
+                        : "border-red-200 text-red-600 hover:bg-red-50"
+                        }`}
                     >
                       {modalSubmitting && cancellingId === order._id ? "Cancelling..." : "Cancel Order"}
                     </button>
@@ -236,6 +238,18 @@ export default function OrdersPage() {
                           </span>
                         </p>
                         <p className="text-lg font-bold text-green-600">₹{(price * item.quantity).toLocaleString()}</p>
+
+                        {(item.status === "Delivered" || order.status === "Delivered") && (
+                          <button
+                            onClick={() => {
+                              setReviewTarget({ id: item.itemId, type: "Product" });
+                              setReviewModalOpen(true);
+                            }}
+                            className="mt-2 text-sm font-semibold text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-4 py-1.5 rounded-lg transition-colors"
+                          >
+                            Write a Review
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -248,14 +262,20 @@ export default function OrdersPage() {
                     <FaMapMarkerAlt className="text-green-600" />
                     Delivery Address
                   </h4>
-                  <div className="text-sm text-gray-700">
-                    <p className="font-medium">{order.address.name}</p>
-                    <p>{order.address.address}</p>
-                    <p>
-                      {order.address.city}, {order.address.state} - {order.address.pincode}
+                  <div className="text-sm text-gray-700 space-y-1">
+                    <p className="font-bold text-gray-900">{order.address.name}</p>
+                    <p className="font-medium leading-relaxed">{order.address.address}</p>
+                    <p className="font-medium">
+                      {order.address.city}, {order.address.state} - <span className="font-bold text-gray-900">{order.address.pincode}</span>
                     </p>
-                    {order.address.landmark && <p className="text-gray-500">Landmark: {order.address.landmark}</p>}
-                    <p className="mt-1">Phone: {order.address.phone}</p>
+                    {order.address.landmark && (
+                      <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded inline-block mt-1">
+                        <span className="font-bold">Landmark:</span> {order.address.landmark}
+                      </p>
+                    )}
+                    <p className="mt-2 text-gray-900 font-bold flex items-center gap-1">
+                      <span className="text-gray-500 text-xs font-normal underline decoration-green-200">Phone:</span> {order.address.phone}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -300,6 +320,18 @@ export default function OrdersPage() {
         }}
         onConfirm={handleCancelOrder}
       />
+
+      {reviewTarget && (
+        <ReviewModal
+          isOpen={reviewModalOpen}
+          onClose={() => setReviewModalOpen(false)}
+          targetId={reviewTarget.id}
+          targetType={reviewTarget.type}
+          onSuccess={() => {
+            loadOrders();
+          }}
+        />
+      )}
     </div>
   );
 }

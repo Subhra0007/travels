@@ -113,6 +113,12 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
   const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
   const [currentUser, setCurrentUser] = useState<any | null>(null);
 
+  // Coupon states
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -146,9 +152,43 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
 
   const handleFieldChange =
     (key: keyof typeof formData) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      setFormData((prev) => ({ ...prev, [key]: event.target.value }));
-    };
+      (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData((prev) => ({ ...prev, [key]: event.target.value }));
+      };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
+    setValidatingCoupon(true);
+    setCouponError(null);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: couponCode,
+          subtotal: selection.subtotal + selection.taxes,
+        }),
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Invalid coupon");
+      }
+
+      setAppliedCoupon(data.coupon);
+      setCouponCode("");
+    } catch (err: any) {
+      setCouponError(err.message);
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError(null);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -225,6 +265,7 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
           address: formattedAddress,
           licenceNumber: sanitizedForm.licenceNumber,
         },
+        couponCode: appliedCoupon?.code,
       };
 
       const res = await fetch("/api/bookings", {
@@ -530,6 +571,39 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
               </ul>
             </div>
 
+            <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-900">HAVE A COUPON?</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="COUPON CODE"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm uppercase font-bold text-gray-900 placeholder:text-gray-400 focus:border-green-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={validatingCoupon || !couponCode}
+                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black disabled:opacity-50"
+                >
+                  {validatingCoupon ? "..." : "Apply"}
+                </button>
+              </div>
+              {couponError && <p className="text-xs text-rose-500">{couponError}</p>}
+              {appliedCoupon && (
+                <div className="flex items-center justify-between rounded-xl bg-green-50 px-3 py-2 border border-green-100">
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-600 font-bold text-xs">{appliedCoupon.code}</span>
+                    <span className="text-[10px] text-green-600">Applied!</span>
+                  </div>
+                  <button onClick={handleRemoveCoupon} type="button" className="text-[10px] font-bold text-rose-500 hover:underline">
+                    REMOVE
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2 rounded-2xl bg-gray-900 px-5 py-4 text-sm text-white">
               <div className="flex justify-between text-gray-200">
                 <span>Subtotal</span>
@@ -543,9 +617,15 @@ const VehicleRentalBookingFormClient: React.FC<Props> = ({ rental, searchParams 
                 <span>Platform fee</span>
                 <span>₹{PLATFORM_FEE.toLocaleString()}</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-green-400 font-medium italic">
+                  <span>Discount ({appliedCoupon.code})</span>
+                  <span>-₹{appliedCoupon.appliedDiscount.toLocaleString()}</span>
+                </div>
+              )}
               <div className="flex justify-between border-t border-white/20 pt-2 text-base font-semibold">
                 <span>Total</span>
-                <span>₹{selection.total.toLocaleString()}</span>
+                <span>₹{(selection.total - (appliedCoupon?.appliedDiscount || 0)).toLocaleString()}</span>
               </div>
               <p className="text-xs text-white/70">
                 Payment is handled directly with the rental partner at pickup. This form only secures your reservation.

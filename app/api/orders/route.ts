@@ -9,6 +9,7 @@ import Stay from "@/models/Stay";
 import Tour from "@/models/Tour";
 import Adventure from "@/models/Adventure";
 import VehicleRental from "@/models/VehicleRental";
+import Coupon from "@/models/Coupon";
 
 type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Placed";
 
@@ -111,7 +112,7 @@ export const POST = auth(async (req: NextRequest) => {
     const userId = (req as any).user.id;
     const body = await req.json();
 
-    const { items, address, deliveryCharge = 15 } = body;
+    const { items, address, deliveryCharge = 15, couponCode } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -287,19 +288,65 @@ export const POST = auth(async (req: NextRequest) => {
       });
     }
 
+    // Handle Coupon
+    let discountAmount = 0;
+    let appliedCoupon = null;
+
+    if (couponCode) {
+      appliedCoupon = await Coupon.findOne({
+        code: couponCode.toUpperCase(),
+        isActive: true,
+      });
+
+      if (appliedCoupon) {
+        const now = new Date();
+        const isValid =
+          appliedCoupon.startDate <= now &&
+          appliedCoupon.expiryDate >= now &&
+          totalAmount >= appliedCoupon.minPurchase &&
+          (!appliedCoupon.usageLimit || appliedCoupon.usageCount < appliedCoupon.usageLimit);
+
+        if (isValid) {
+          if (appliedCoupon.discountType === "percentage") {
+            discountAmount = (totalAmount * appliedCoupon.discountAmount) / 100;
+            if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
+              discountAmount = appliedCoupon.maxDiscount;
+            }
+          } else {
+            discountAmount = appliedCoupon.discountAmount;
+          }
+
+          // Ensure discount doesn't exceed total
+          discountAmount = Math.min(discountAmount, totalAmount);
+          totalAmount -= discountAmount;
+        }
+      }
+    }
+
     // Create order
+    const orderItemsForSave = normalizedItems.map((item) => ({
+      ...item,
+      status: "Pending" as OrderStatus,
+      deliveryDate: null,
+    }));
+
     const order = await Order.create({
       user: userId,
-      items: normalizedItems.map((item) => ({
-        ...item,
-        status: "Pending",
-        deliveryDate: null,
-      })),
+      items: orderItemsForSave,
       totalAmount,
       deliveryCharge,
       address,
       status: "Pending",
+      couponCode: appliedCoupon ? appliedCoupon.code : null,
+      discountAmount,
     });
+
+    // Update coupon usage count
+    if (appliedCoupon && discountAmount > 0) {
+      await Coupon.findByIdAndUpdate(appliedCoupon._id, {
+        $inc: { usageCount: 1 },
+      });
+    }
 
     if (productStockUpdates.length) {
       await Promise.all(

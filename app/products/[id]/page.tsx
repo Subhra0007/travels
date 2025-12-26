@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { FaShoppingCart, FaArrowLeft, FaBolt } from "react-icons/fa";
+import { FaShoppingCart, FaArrowLeft, FaBolt, FaStar } from "react-icons/fa";
 import PageLoader from "../../components/common/PageLoader";
 import { useCart } from "../../hooks/useCart";
 import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
+import ReviewDisplay from "../../components/Reviews/ReviewDisplay";
 
 type ProductVariant = {
   _id?: string;
@@ -32,6 +33,10 @@ type Product = {
   outOfStock?: boolean;
   listingType: "buy" | "rent";
   rentPriceDay?: number;
+  rating?: {
+    average: number;
+    count: number;
+  };
 };
 
 export default function ProductDetailPage() {
@@ -174,6 +179,7 @@ export default function ProductDetailPage() {
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-400">
@@ -209,7 +215,16 @@ export default function ProductDetailPage() {
                 <span className="inline-block rounded-full bg-green-100 px-4 py-1 text-sm font-semibold text-green-700 mb-3">
                   {getCategoryName(product.category)}
                 </span>
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                <div className="flex items-center justify-between gap-4 mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+                  {product.rating && product.rating.count > 0 && (
+                    <div className="flex items-center gap-2 rounded-full bg-yellow-100 px-4 py-1.5 text-sm font-bold text-yellow-700 shadow-sm shrink-0">
+                      <FaStar className="text-yellow-500" />
+                      {product.rating.average.toFixed(1)}
+                      <span className="text-yellow-600/60 ml-1 font-medium">({product.rating.count} reviews)</span>
+                    </div>
+                  )}
+                </div>
                 <div className="mb-4 flex flex-wrap items-center gap-3">
                   <p className="text-2xl font-bold text-green-600">
                     {product.listingType === "rent"
@@ -430,6 +445,9 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* Reviews Section */}
+        <ReviewDisplay targetId={productId} targetType="Product" />
       </div>
     </div>
   );

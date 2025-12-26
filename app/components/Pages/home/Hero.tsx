@@ -5,7 +5,7 @@ import Image from "next/image";
 import Typed from "typed.js";
 import { useRouter } from "next/navigation";
 import {
-  
+
   FaCar,
   FaPlus,
   FaMinus,
@@ -92,7 +92,7 @@ export default function HeroSection() {
         "Vehicle Rentals",
         "Cars",
         "Bikes",
-        
+
       ],
       typeSpeed: 80,
       backSpeed: 50,
@@ -184,72 +184,71 @@ export default function HeroSection() {
   };
 
   return (
-    
-      <section className="relative z-60 w-full flex items-center justify-center  py-20">
 
-        {/* ✅ AUTO-SWIPING BACKGROUND */}
-        <div className="absolute inset-0">
-          {bgImages.map((img, index) => (
-            <Image
-              key={index}
-              src={img}
-              alt="Hero Background"
-              fill
-              priority
-              className={`object-cover object-center transition-opacity duration-1200 ease-in-out ${
-                index === currentIndex ? "opacity-100" : "opacity-0"
+    <section className="relative z-60 w-full flex items-center justify-center  py-20">
+
+      {/* ✅ AUTO-SWIPING BACKGROUND */}
+      <div className="absolute inset-0">
+        {bgImages.map((img, index) => (
+          <Image
+            key={index}
+            src={img}
+            alt="Hero Background"
+            fill
+            priority
+            className={`object-cover object-center transition-opacity duration-1200 ease-in-out ${index === currentIndex ? "opacity-100" : "opacity-0"
               }`}
-            />
-          ))}
-        </div>
+            sizes="100vw"
+          />
+        ))}
+      </div>
 
-        {/* Glass Frame */}
-        <div className="elative z-20 w-[90%] h-[85vh] border-3 border-white rounded-3xl shadow-[0_8px_32px_rgba(31,38,135,0.37)] flex flex-col justify-between p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
-          
-         {/* Heading */}
-<motion.div
-  initial={{ opacity: 0, scale: 0.5 }}
-  animate={{ opacity: 1, scale: 1 }}
-  transition={{ duration: 0.6, ease: "easeOut" }}
-  className="flex flex-col md:flex-row justify-between items-center gap-6 mt-6 mb-8"
->
-  <div className="flex items-center justify-center w-full">
-    <h1 className="text-center lg:text-5xl text-4xl font-bold text-black leading-snug">
-     SafarHub,The North Knows the Way. {" "} <br /> Find {" "}
-      <span className="role text-lime-300 bg-green-950 p-2"></span>{" "}Deals 
-    </h1>
-  </div>
-</motion.div>
+      {/* Glass Frame */}
+      <div className="elative z-20 w-[90%] h-[85vh] border-3 border-white rounded-3xl shadow-[0_8px_32px_rgba(31,38,135,0.37)] flex flex-col justify-between p-4 sm:p-6 md:p-10 max-w-7xl mx-auto">
 
-          {/* Card With Tabs */}
-          <div className="relative rounded-3xl overflow-visible border border-white shadow-lg text-black">
-
-            {/* Tabs */}
-            <div className="flex items-center justify-center px-2 sm:px-4 md:px-8 py-3 backdrop-blur-md border-b border-white/20 w-full relative z-0 rounded-t-3xl">
-              <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 justify-center w-full overflow-x-auto scrollbar-none">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.label}
-                    onClick={() => setActiveTab(tab.label)}
-                    className={`flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-full transition-all duration-300 ${
-                      activeTab === tab.label
-                        ? "bg-white text-black font-semibold"
-                        : "bg-white/10 text-white hover:bg-white/20"
-                    }`}
-                  >
-                    {tab.icon}
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Dynamic Form */}
-            <div className="bg-white rounded-b-3xl p-4 sm:p-5">{renderTabContent()}</div>
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="flex flex-col md:flex-row justify-between items-center gap-6 mt-6 mb-8"
+        >
+          <div className="flex items-center justify-center w-full">
+            <h1 className="text-center lg:text-5xl text-4xl font-bold text-black leading-snug">
+              SafarHub,The North Knows the Way. {" "} <br /> Find {" "}
+              <span className="role text-lime-300 bg-green-950 p-2"></span>{" "}Deals
+            </h1>
           </div>
+        </motion.div>
+
+        {/* Card With Tabs */}
+        <div className="relative rounded-3xl overflow-visible border border-white shadow-lg text-black">
+
+          {/* Tabs */}
+          <div className="flex items-center justify-center px-2 sm:px-4 md:px-8 py-3 backdrop-blur-md border-b border-white/20 w-full relative z-0 rounded-t-3xl">
+            <div className="grid grid-cols-2 md:flex gap-2 md:gap-4 justify-center w-full overflow-x-auto scrollbar-none">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.label}
+                  onClick={() => setActiveTab(tab.label)}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-full transition-all duration-300 ${activeTab === tab.label
+                      ? "bg-white text-black font-semibold"
+                      : "bg-white/10 text-white hover:bg-white/20"
+                    }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Dynamic Form */}
+          <div className="bg-white rounded-b-3xl p-4 sm:p-5">{renderTabContent()}</div>
         </div>
-      </section>
-  
+      </div>
+    </section>
+
   );
 }
 
@@ -361,9 +360,8 @@ const StaysForm: React.FC<StaysFormProps> = ({
                           setLocation(city);
                           setShowLocationMenu(false);
                         }}
-                        className={`block w-full text-left px-4 py-2 text-sm ${
-                          active ? "bg-gray-100" : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                          }`}
                       >
                         {city}
                       </button>
@@ -387,9 +385,8 @@ const StaysForm: React.FC<StaysFormProps> = ({
                           setLocation(city);
                           setShowLocationMenu(false);
                         }}
-                        className={`block w-full text-left px-4 py-2 text-sm ${
-                          active ? "bg-gray-100" : ""
-                        }`}
+                        className={`block w-full text-left px-4 py-2 text-sm ${active ? "bg-gray-100" : ""
+                          }`}
                       >
                         {city}
                       </button>
@@ -449,65 +446,65 @@ const StaysForm: React.FC<StaysFormProps> = ({
               static
               className="absolute z-50 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-4 max-h-[50vh] overflow-y-auto"
             >
-            {/* Rooms */}
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium">Rooms</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setRooms(Math.max(1, rooms - 1))}
-                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
-                >
-                  <FaMinus className="w-3 h-3" />
-                </button>
-                <span className="w-8 text-center">{rooms}</span>
-                <button
-                  onClick={() => setRooms(rooms + 1)}
-                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
-                >
-                  <FaPlus className="w-3 h-3" />
-                </button>
+              {/* Rooms */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium">Rooms</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setRooms(Math.max(1, rooms - 1))}
+                    className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    <FaMinus className="w-3 h-3" />
+                  </button>
+                  <span className="w-8 text-center">{rooms}</span>
+                  <button
+                    onClick={() => setRooms(rooms + 1)}
+                    className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    <FaPlus className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
-            </div>
-            {/* Adults */}
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium">Adults</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setAdults(Math.max(1, adults - 1))}
-                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
-                >
-                  <FaMinus className="w-3 h-3" />
-                </button>
-                <span className="w-8 text-center">{adults}</span>
-                <button
-                  onClick={() => setAdults(adults + 1)}
-                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
-                >
-                  <FaPlus className="w-3 h-3" />
-                </button>
+              {/* Adults */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium">Adults</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setAdults(Math.max(1, adults - 1))}
+                    className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    <FaMinus className="w-3 h-3" />
+                  </button>
+                  <span className="w-8 text-center">{adults}</span>
+                  <button
+                    onClick={() => setAdults(adults + 1)}
+                    className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    <FaPlus className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Children */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Children</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setChildren(Math.max(0, children - 1))}
-                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
-                >
-                  <FaMinus className="w-3 h-3" />
-                </button>
-                <span className="w-8 text-center">{children}</span>
-                <button
-                  onClick={() => setChildren(children + 1)}
-                  className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
-                >
-                  <FaPlus className="w-3 h-3" />
-                </button>
+              {/* Children */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Children</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setChildren(Math.max(0, children - 1))}
+                    className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    <FaMinus className="w-3 h-3" />
+                  </button>
+                  <span className="w-8 text-center">{children}</span>
+                  <button
+                    onClick={() => setChildren(children + 1)}
+                    className="p-1 rounded-full bg-gray-200 hover:bg-gray-300"
+                  >
+                    <FaPlus className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
-            </div>
-          </Menu.Items>
+            </Menu.Items>
           )}
         </Menu>
       </div>
@@ -666,16 +663,15 @@ const ToursForm: React.FC<{
               setShow(false);
               setDetailsOpen(true);
             }}
-            className={`w-full text-left text-md font-bold ${
-              destination ? "text-gray-900" : "text-gray-400"
-            } flex items-center justify-between`}
+            className={`w-full text-left text-md font-bold ${destination ? "text-gray-900" : "text-gray-400"
+              } flex items-center justify-between`}
           >
             {destination || "Where are you going?"}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {show && (
-            <Menu.Items 
-              static 
+            <Menu.Items
+              static
               className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">
@@ -857,15 +853,14 @@ const AdventuresForm: React.FC<{
               setModalSection("activity");
               setDetailsOpen(true);
             }}
-            className={`w-full text-left text-md font-bold ${
-              activity ? "text-gray-900" : "text-gray-400"
-            } flex items-center justify-between`}
+            className={`w-full text-left text-md font-bold ${activity ? "text-gray-900" : "text-gray-400"
+              } flex items-center justify-between`}
           >
             {activity || "Choose activity"}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showActivity && (
-            <Menu.Items 
+            <Menu.Items
               className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               {["Trekking", "Rafting", "Camping", "Hiking"].map((a) => (
@@ -897,16 +892,15 @@ const AdventuresForm: React.FC<{
               setModalSection("location");
               setDetailsOpen(true);
             }}
-            className={`w-full text-left text-md font-bold ${
-              destination ? "text-gray-900" : "text-gray-400"
-            } flex items-center justify-between`}
+            className={`w-full text-left text-md font-bold ${destination ? "text-gray-900" : "text-gray-400"
+              } flex items-center justify-between`}
           >
             {destination || "Where are you going?"}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {show && (
-            <Menu.Items 
-              static 
+            <Menu.Items
+              static
               className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">
@@ -1105,16 +1099,15 @@ const VehicleRentalForm: React.FC<{
               setModalSection("pickup");
               setDetailsOpen(true);
             }}
-            className={`w-full text-left text-md font-bold ${
-              pickup ? "text-gray-900" : "text-gray-400"
-            } flex items-center justify-between`}
+            className={`w-full text-left text-md font-bold ${pickup ? "text-gray-900" : "text-gray-400"
+              } flex items-center justify-between`}
           >
             {pickup || "Where to pick up?"}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showPickup && (
-            <Menu.Items 
-              static 
+            <Menu.Items
+              static
               className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">
@@ -1178,16 +1171,15 @@ const VehicleRentalForm: React.FC<{
               setModalSection("dropoff");
               setDetailsOpen(true);
             }}
-            className={`w-full text-left text-md font-bold ${
-              dropoff ? "text-gray-900" : "text-gray-400"
-            } flex items-center justify-between`}
+            className={`w-full text-left text-md font-bold ${dropoff ? "text-gray-900" : "text-gray-400"
+              } flex items-center justify-between`}
           >
             {dropoff || "Where to return?"}
             <ChevronDownIcon className="w-5 h-5 ml-2 text-gray-600" />
           </Menu.Button>
           {showDropoff && (
-            <Menu.Items 
-              static 
+            <Menu.Items
+              static
               className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-[50vh] overflow-y-auto"
             >
               <div className="p-2 border-b sticky top-0 bg-white">

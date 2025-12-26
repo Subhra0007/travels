@@ -60,6 +60,8 @@ export interface IBooking extends Document {
   status: BookingStatus;
   paymentStatus: PaymentStatus;
   paymentReference?: string;
+  couponCode?: string | null;
+  discountAmount?: number;
   metadata?: Record<string, any>;
   cancelledAt?: Date;
   cancellationReason?: string;
@@ -146,6 +148,8 @@ const bookingSchema = new Schema<IBooking>(
       default: "unpaid",
     },
     paymentReference: String,
+    couponCode: { type: String, default: null },
+    discountAmount: { type: Number, default: 0 },
     metadata: Schema.Types.Mixed,
     cancelledAt: Date,
     cancellationReason: String,

@@ -22,6 +22,10 @@ export interface IProduct extends Document {
   outOfStock?: boolean;
   listingType: "buy" | "rent";
   rentPriceDay?: number;
+  rating: {
+    average: number;
+    count: number;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -61,6 +65,10 @@ const productSchema = new Schema<IProduct>(
       required: true,
     },
     rentPriceDay: { type: Number, min: 0 },
+    rating: {
+      average: { type: Number, default: 0, min: 0, max: 5 },
+      count: { type: Number, default: 0, min: 0 },
+    },
   },
   { timestamps: true }
 );

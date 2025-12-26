@@ -103,6 +103,7 @@ type BookingTableProps = {
   variant?: "user" | "vendor" | "admin";
   onUpdateStatus?: (bookingId: string, status: string) => void | Promise<void>;
   onCancel?: (bookingId: string) => void | Promise<void>;
+  onReview?: (bookingId: string, serviceType: any, targetId: string) => void;
   loadingBookingId?: string | null;
   showCancellationMeta?: boolean;
 };
@@ -132,6 +133,7 @@ const BookingTable: React.FC<BookingTableProps> = ({
   variant = "user",
   onUpdateStatus,
   onCancel,
+  onReview,
   loadingBookingId,
   showCancellationMeta = false,
 }) => {
@@ -215,13 +217,13 @@ const BookingTable: React.FC<BookingTableProps> = ({
               const lineItems =
                 serviceType === "stay"
                   ? booking.rooms?.map((room) => ({
-                      name: room.roomName,
-                      quantity: room.quantity,
-                    }))
+                    name: room.roomName,
+                    quantity: room.quantity,
+                  }))
                   : booking.items?.map((item) => ({
-                      name: item.itemName,
-                      quantity: item.quantity,
-                    }));
+                    name: item.itemName,
+                    quantity: item.quantity,
+                  }));
 
               const totalUnits = lineItems?.reduce((sum, item) => sum + (item.quantity ?? 0), 0) ?? 0;
               const lineItemsLabel = lineItems
@@ -275,15 +277,14 @@ const BookingTable: React.FC<BookingTableProps> = ({
                   </td>
                   <td className="px-4 py-3 align-top">
                     <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                        booking.status === "confirmed"
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${booking.status === "confirmed"
                           ? "bg-green-100 text-green-700"
                           : booking.status === "cancelled"
                             ? "bg-rose-100 text-rose-700"
                             : booking.status === "completed"
                               ? "bg-blue-100 text-blue-700"
                               : "bg-amber-100 text-amber-700"
-                      }`}
+                        }`}
                     >
                       {booking.status ?? "pending"}
                     </span>
@@ -298,12 +299,12 @@ const BookingTable: React.FC<BookingTableProps> = ({
                     <td className="px-4 py-3 align-top text-xs text-gray-500">
                       {typeof booking.vendorId === "object" && booking.vendorId
                         ? (
-                            <>
-                              <div className="font-semibold text-gray-900">{booking.vendorId.fullName ?? "—"}</div>
-                              <div>{booking.vendorId.email ?? "—"}</div>
-                              {booking.vendorId.contactNumber && <div>{booking.vendorId.contactNumber}</div>}
-                            </>
-                          )
+                          <>
+                            <div className="font-semibold text-gray-900">{booking.vendorId.fullName ?? "—"}</div>
+                            <div>{booking.vendorId.email ?? "—"}</div>
+                            {booking.vendorId.contactNumber && <div>{booking.vendorId.contactNumber}</div>}
+                          </>
+                        )
                         : "—"}
                     </td>
                   )}
@@ -369,6 +370,24 @@ const BookingTable: React.FC<BookingTableProps> = ({
                           className="rounded-full border border-rose-300 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400"
                         >
                           Cancel booking
+                        </button>
+                      )}
+                      {variant === "user" && booking.status === "completed" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const targetId =
+                              booking.stayId?._id ||
+                              booking.tourId?._id ||
+                              booking.adventureId?._id ||
+                              booking.vehicleRentalId?._id;
+                            if (targetId) {
+                              onReview?.(booking._id, serviceType, targetId);
+                            }
+                          }}
+                          className="mt-2 block w-full rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600 transition hover:bg-orange-100"
+                        >
+                          Write a Review
                         </button>
                       )}
                     </td>

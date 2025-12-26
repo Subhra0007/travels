@@ -40,6 +40,7 @@ import { useCart } from "../hooks/useCart";
 import { useAvailability } from "../hooks/useAvailability";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import ReviewDisplay from "../components/Reviews/ReviewDisplay";
 
 export type TourDetailPayload = {
   _id: string;
@@ -1241,6 +1242,9 @@ const TourDetailClient: React.FC<TourDetailClientProps> = ({ tour }) => {
             </div>
           </section>
         ) : null}
+
+        {/* Reviews Section */}
+        <ReviewDisplay targetId={tour._id} targetType="Tour" />
       </main>
 
       {/* Gallery Lightbox */}

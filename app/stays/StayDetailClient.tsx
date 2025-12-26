@@ -41,6 +41,7 @@ import { useCart } from "../hooks/useCart";
 import { useAvailability } from "../hooks/useAvailability";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import ReviewDisplay from "../components/Reviews/ReviewDisplay";
 
 export type StayDetailPayload = {
   _id: string;
@@ -1296,6 +1297,9 @@ const StayDetailClient: React.FC<StayDetailClientProps> = ({ stay }) => {
             </div>
           </section>
         ) : null}
+
+        {/* Reviews Section */}
+        <ReviewDisplay targetId={stay._id} targetType="Stay" />
       </main>
 
       {/* Gallery Lightbox */}

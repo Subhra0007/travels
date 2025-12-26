@@ -58,9 +58,15 @@ export const GET = async (req: NextRequest) => {
       ];
     }
 
-    const products = await Product.find(query).sort({ createdAt: -1 });
+    const products = await Product.find(query).sort({ createdAt: -1 }).lean();
 
-    return NextResponse.json({ success: true, products });
+    // Ensure rating field exists for all products
+    const normalizedProducts = products.map((p: any) => ({
+      ...p,
+      rating: p.rating || { average: 0, count: 0 },
+    }));
+
+    return NextResponse.json({ success: true, products: normalizedProducts });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || "Failed to fetch products" },

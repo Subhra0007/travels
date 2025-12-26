@@ -39,6 +39,8 @@ export interface IOrder extends Document {
     landmark?: string;
   };
   status: OrderStatus;
+  couponCode?: string | null;
+  discountAmount?: number;
   cancellationReason?: string | null;
   cancelledBy?: mongoose.Types.ObjectId | null;
   cancelledAt?: Date | null;
@@ -93,6 +95,8 @@ const OrderSchema = new Schema<IOrder>(
       enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Placed"],
       default: "Pending",
     },
+    couponCode: { type: String, default: null },
+    discountAmount: { type: Number, default: 0 },
     cancellationReason: { type: String, default: null },
     cancelledBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     cancelledAt: { type: Date, default: null },

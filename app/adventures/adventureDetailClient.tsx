@@ -43,6 +43,7 @@ import { useCart } from "../hooks/useCart";
 import { useAvailability } from "../hooks/useAvailability";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import ReviewDisplay from "../components/Reviews/ReviewDisplay";
 
 export type AdventureDetailPayload = {
   _id: string;
@@ -1328,6 +1329,9 @@ const AdventureDetailClient: React.FC<AdventureDetailClientProps> = ({ adventure
             </div>
           </section>
         ) : null}
+
+        {/* Reviews Section */}
+        <ReviewDisplay targetId={adventure._id} targetType="Adventure" />
       </main>
 
       {/* Gallery Lightbox */}

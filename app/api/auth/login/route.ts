@@ -18,13 +18,13 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
-    
+
     const { email, password } = await req.json();
 
-    
+
     const JWT_SECRET = process.env.JWT_SECRET!;
 
-     // ✅ 1. Admin Login using .env credentials (NO HARDCODE)
+    // ✅ 1. Admin Login using .env credentials (NO HARDCODE)
     const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
     const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
@@ -34,8 +34,12 @@ export async function POST(req: NextRequest) {
 
     // ✅ Check for ADMIN login first (bypass DB)
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      // Try to find if an admin user exists in DB to get a real ID, else use a placeholder valid ObjectId
+      const existingAdmin = await User.findOne({ email: ADMIN_EMAIL });
+      const adminId = existingAdmin?._id || "507f1f77bcf86cd799439011";
+
       const token = jwt.sign(
-        { email: ADMIN_EMAIL, accountType: "admin" },
+        { id: adminId, email: ADMIN_EMAIL, accountType: "admin" },
         process.env.JWT_SECRET!,
         { expiresIn: "24h" }
       );
@@ -46,7 +50,7 @@ export async function POST(req: NextRequest) {
           { email: ADMIN_EMAIL },
           { $inc: { loginCount: 1 }, $set: { lastLogin: new Date() } },
           { upsert: true }
-      );
+        );
       } catch (e) {
         console.error("Failed to update admin meta:", e);
       }
@@ -84,7 +88,7 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
-    
+
     if (!user)
       return NextResponse.json(
         { success: false, message: "User not found" },

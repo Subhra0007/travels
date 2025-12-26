@@ -7,6 +7,8 @@ import BookingTable, { type BookingRecord } from "./BookingTable";
 import PageLoader from "../common/PageLoader";
 import { useProfileLayout } from "@/app/profile/ProfileLayoutContext";
 import CancellationModal from "../common/CancellationModal";
+import ReviewModal from "../Reviews/ReviewModal";
+
 
 const PRESET_BOOKING_REASONS = [
   "Change of travel plans",
@@ -25,6 +27,9 @@ const UserBookingsContent: React.FC = () => {
   const [cancellationModalOpen, setCancellationModalOpen] = useState(false);
   const [pendingCancellationId, setPendingCancellationId] = useState<string | null>(null);
   const [modalSubmitting, setModalSubmitting] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{ id: string; type: any } | null>(null);
+
 
   const loadBookings = async (isInitial = false) => {
     try {
@@ -111,6 +116,20 @@ const UserBookingsContent: React.FC = () => {
             bookings={bookings}
             variant="user"
             onCancel={openCancellationModal}
+            onReview={(bookingId, serviceType, targetId) => {
+              setReviewTarget({
+                id: targetId,
+                type:
+                  serviceType === "stay"
+                    ? "Stay"
+                    : serviceType === "tour"
+                      ? "Tour"
+                      : serviceType === "adventure"
+                        ? "Adventure"
+                        : "VehicleRental",
+              });
+              setReviewModalOpen(true);
+            }}
             loadingBookingId={tableLoadingId}
             emptyMessage="Once you confirm a stay, it will appear here with the reference number and stay details."
           />
@@ -127,6 +146,17 @@ const UserBookingsContent: React.FC = () => {
             }}
             onConfirm={handleConfirmCancellation}
           />
+          {reviewTarget && (
+            <ReviewModal
+              isOpen={reviewModalOpen}
+              onClose={() => setReviewModalOpen(false)}
+              targetId={reviewTarget.id}
+              targetType={reviewTarget.type}
+              onSuccess={() => {
+                loadBookings();
+              }}
+            />
+          )}
         </>
       )}
     </div>

@@ -8,6 +8,7 @@ import VehicleRental from "@/models/VehicleRental";
 import Booking from "@/models/Booking";
 import Settlement from "@/models/Settlement";
 import User from "@/models/User";
+import Coupon from "@/models/Coupon";
 import { auth } from "@/lib/middlewares/auth";
 import { mailSender } from "@/lib/utils/mailSender";
 import bookingUserTemplate from "@/lib/mail/templates/bookingUserTemplate";
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       currency = "INR",
       notes,
       source = "web",
+      couponCode,
     } = body;
 
     if (!customer?.fullName || !customer?.email) {
@@ -253,6 +255,38 @@ export async function POST(req: NextRequest) {
         };
       });
 
+      // Apply Coupon
+      let discountAmount = 0;
+      let appliedCoupon = null;
+
+      if (couponCode) {
+        appliedCoupon = await Coupon.findOne({
+          code: couponCode.toUpperCase(),
+          isActive: true,
+        });
+
+        if (appliedCoupon) {
+          const now = new Date();
+          const subtotalForCoupon = subtotal + taxes; // Determine if taxes are included in minPurchase
+          if (
+            appliedCoupon.startDate <= now &&
+            appliedCoupon.expiryDate >= now &&
+            subtotalForCoupon >= appliedCoupon.minPurchase &&
+            (!appliedCoupon.usageLimit || appliedCoupon.usageCount < appliedCoupon.usageLimit)
+          ) {
+            if (appliedCoupon.discountType === "percentage") {
+              discountAmount = (subtotalForCoupon * appliedCoupon.discountAmount) / 100;
+              if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
+                discountAmount = appliedCoupon.maxDiscount;
+              }
+            } else {
+              discountAmount = appliedCoupon.discountAmount;
+            }
+            discountAmount = Math.min(discountAmount, subtotalForCoupon);
+          }
+        }
+      }
+
       bookingPayload = {
         ...bookingPayload,
         stayId: stay._id,
@@ -265,7 +299,9 @@ export async function POST(req: NextRequest) {
         items: [],
         subtotal,
         taxes,
-        totalAmount: subtotal + taxes + bookingPayload.fees,
+        totalAmount: subtotal + taxes + bookingPayload.fees - discountAmount,
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+        discountAmount,
       };
 
       const conflicts = normalizedRooms
@@ -288,6 +324,10 @@ export async function POST(req: NextRequest) {
       }
 
       const booking = await Booking.create(bookingPayload);
+
+      if (appliedCoupon && discountAmount > 0) {
+        await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usageCount: 1 } });
+      }
 
       const settlementDueDate = new Date(checkOutDate);
       settlementDueDate.setDate(settlementDueDate.getDate() + 7);
@@ -395,6 +435,42 @@ export async function POST(req: NextRequest) {
         totalAmount: subtotal + taxes + bookingPayload.fees,
       };
 
+      // Apply Coupon
+      let discountAmount = 0;
+      let appliedCoupon = null;
+
+      if (couponCode) {
+        appliedCoupon = await Coupon.findOne({
+          code: couponCode.toUpperCase(),
+          isActive: true,
+        });
+
+        if (appliedCoupon) {
+          const now = new Date();
+          const subtotalForCoupon = subtotal + taxes;
+          if (
+            appliedCoupon.startDate <= now &&
+            appliedCoupon.expiryDate >= now &&
+            subtotalForCoupon >= appliedCoupon.minPurchase &&
+            (!appliedCoupon.usageLimit || appliedCoupon.usageCount < appliedCoupon.usageLimit)
+          ) {
+            if (appliedCoupon.discountType === "percentage") {
+              discountAmount = (subtotalForCoupon * appliedCoupon.discountAmount) / 100;
+              if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
+                discountAmount = appliedCoupon.maxDiscount;
+              }
+            } else {
+              discountAmount = appliedCoupon.discountAmount;
+            }
+            discountAmount = Math.min(discountAmount, subtotalForCoupon);
+          }
+        }
+      }
+
+      bookingPayload.totalAmount -= discountAmount;
+      bookingPayload.couponCode = appliedCoupon ? appliedCoupon.code : null;
+      bookingPayload.discountAmount = discountAmount;
+
       const conflictingItems = normalizedItems
         .filter((item) => {
           const key = item.itemId ? item.itemId.toString() : item.itemName;
@@ -415,6 +491,10 @@ export async function POST(req: NextRequest) {
       }
 
       const booking = await Booking.create(bookingPayload);
+
+      if (appliedCoupon && discountAmount > 0) {
+        await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usageCount: 1 } });
+      }
 
       await sendBookingEmails(booking, { start, end });
 
@@ -508,6 +588,42 @@ export async function POST(req: NextRequest) {
         totalAmount: subtotal + taxes + bookingPayload.fees,
       };
 
+      // Apply Coupon
+      let discountAmount = 0;
+      let appliedCoupon = null;
+
+      if (couponCode) {
+        appliedCoupon = await Coupon.findOne({
+          code: couponCode.toUpperCase(),
+          isActive: true,
+        });
+
+        if (appliedCoupon) {
+          const now = new Date();
+          const subtotalForCoupon = subtotal + taxes;
+          if (
+            appliedCoupon.startDate <= now &&
+            appliedCoupon.expiryDate >= now &&
+            subtotalForCoupon >= appliedCoupon.minPurchase &&
+            (!appliedCoupon.usageLimit || appliedCoupon.usageCount < appliedCoupon.usageLimit)
+          ) {
+            if (appliedCoupon.discountType === "percentage") {
+              discountAmount = (subtotalForCoupon * appliedCoupon.discountAmount) / 100;
+              if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
+                discountAmount = appliedCoupon.maxDiscount;
+              }
+            } else {
+              discountAmount = appliedCoupon.discountAmount;
+            }
+            discountAmount = Math.min(discountAmount, subtotalForCoupon);
+          }
+        }
+      }
+
+      bookingPayload.totalAmount -= discountAmount;
+      bookingPayload.couponCode = appliedCoupon ? appliedCoupon.code : null;
+      bookingPayload.discountAmount = discountAmount;
+
       const conflictingItems = normalizedItems
         .filter((item) => {
           const key = item.itemId ? item.itemId.toString() : item.itemName;
@@ -528,6 +644,10 @@ export async function POST(req: NextRequest) {
       }
 
       const booking = await Booking.create(bookingPayload);
+
+      if (appliedCoupon && discountAmount > 0) {
+        await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usageCount: 1 } });
+      }
 
       await sendBookingEmails(booking, { start, end });
 
@@ -623,6 +743,42 @@ export async function POST(req: NextRequest) {
         totalAmount: subtotal + taxes + bookingPayload.fees,
       };
 
+      // Apply Coupon
+      let discountAmount = 0;
+      let appliedCoupon = null;
+
+      if (couponCode) {
+        appliedCoupon = await Coupon.findOne({
+          code: couponCode.toUpperCase(),
+          isActive: true,
+        });
+
+        if (appliedCoupon) {
+          const now = new Date();
+          const subtotalForCoupon = subtotal + taxes;
+          if (
+            appliedCoupon.startDate <= now &&
+            appliedCoupon.expiryDate >= now &&
+            subtotalForCoupon >= appliedCoupon.minPurchase &&
+            (!appliedCoupon.usageLimit || appliedCoupon.usageCount < appliedCoupon.usageLimit)
+          ) {
+            if (appliedCoupon.discountType === "percentage") {
+              discountAmount = (subtotalForCoupon * appliedCoupon.discountAmount) / 100;
+              if (appliedCoupon.maxDiscount && discountAmount > appliedCoupon.maxDiscount) {
+                discountAmount = appliedCoupon.maxDiscount;
+              }
+            } else {
+              discountAmount = appliedCoupon.discountAmount;
+            }
+            discountAmount = Math.min(discountAmount, subtotalForCoupon);
+          }
+        }
+      }
+
+      bookingPayload.totalAmount -= discountAmount;
+      bookingPayload.couponCode = appliedCoupon ? appliedCoupon.code : null;
+      bookingPayload.discountAmount = discountAmount;
+
       const conflictingVehicles = normalizedItems
         .filter((item) => {
           const key = item.itemId ? item.itemId.toString() : item.itemName;
@@ -643,6 +799,10 @@ export async function POST(req: NextRequest) {
       }
 
       const booking = await Booking.create(bookingPayload);
+
+      if (appliedCoupon && discountAmount > 0) {
+        await Coupon.findByIdAndUpdate(appliedCoupon._id, { $inc: { usageCount: 1 } });
+      }
 
       await sendBookingEmails(booking, { start: pickup, end: dropoff });
 

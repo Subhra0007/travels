@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         success: true,
         user: {
-          id: "admin-fixed",
+          id: decoded.id || "admin-fixed",
           fullName: "Super Admin",
           email: ADMIN_EMAIL,
           accountType: "admin",
